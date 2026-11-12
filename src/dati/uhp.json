@@ -1,0 +1,117 @@
+{
+  "id": "uhp",
+  "prodotto": "UHP 120",
+  "tipo": "Pompa di calore aria-acqua monoblocco R290, carrozzeria 100÷160T",
+  "stato": "bozza tappa 0: valori ripresi dal documento di consegne della UHP, NON riverificati sul manuale perché il manuale 00341518 e la scheda non sono tra i file del progetto",
+  "documenti": {
+    "MI": {
+      "titolo": "Manuale di installazione UHP",
+      "codice": "00341518",
+      "file": null,
+      "nota": "non presente nel progetto"
+    },
+    "SC": {
+      "titolo": "Scheda UHP",
+      "edizione": "10/2026",
+      "file": null,
+      "nota": "non presente nel progetto"
+    }
+  },
+  "ingombro": [
+    {
+      "voce": "Larghezza x profondità x altezza",
+      "valore": "1280 x 500 x 1040",
+      "unita": "mm",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Interasse dei piedi",
+      "valore": 784,
+      "unita": "mm",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Peso",
+      "valore": 154,
+      "unita": "kg",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    }
+  ],
+  "attacchi": [
+    {
+      "voce": "Attacchi acqua sul retro",
+      "valore": "G 1\"",
+      "unita": null,
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare",
+      "nota": "a 72 mm dal fondo, a 81 e 94 mm dal fianco destro"
+    }
+  ],
+  "dati_targa": [
+    {
+      "voce": "Potenza",
+      "valore": 12,
+      "unita": "kW",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Refrigerante",
+      "valore": "R290",
+      "unita": null,
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Carica refrigerante",
+      "valore": 1.35,
+      "unita": "kg",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Alimentazione",
+      "valore": 230,
+      "unita": "V",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Potenza massima assorbita",
+      "valore": 7,
+      "unita": "kW",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "Corrente massima",
+      "valore": 45.15,
+      "unita": "A",
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare"
+    },
+    {
+      "voce": "COP",
+      "valore": 4.9,
+      "unita": null,
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare",
+      "nota": "aria 7 °C, acqua 35 °C"
+    },
+    {
+      "voce": "EER",
+      "valore": 4.5,
+      "unita": null,
+      "fonte": "manuale 00341518 e scheda ed. 10/2026, tramite il documento di consegne UHP: pagina da ritrovare",
+      "nota": "aria 35 °C, acqua 18 °C"
+    },
+    {
+      "voce": "Temperatura massima dell'acqua",
+      "valore": 80,
+      "unita": "°C",
+      "fonte": "didascalie del film UHP ('80 °C l'acqua per la casa', '-25 °C fuori'): fonte sul manuale da ritrovare"
+    },
+    {
+      "voce": "Temperatura esterna minima",
+      "valore": -25,
+      "unita": "°C",
+      "fonte": "didascalie del film UHP ('80 °C l'acqua per la casa', '-25 °C fuori'): fonte sul manuale da ritrovare"
+    }
+  ],
+  "mancante": [
+    "Manuale 00341518 e scheda nel progetto, per mettere la pagina accanto a ogni valore",
+    "Tutto il resto (componenti, disposizione) è già nel modello: vedi src/prodotti/uhp/ e il documento di consegne"
+  ]
+}

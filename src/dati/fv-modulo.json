@@ -1,0 +1,359 @@
+{
+  "id": "fv-modulo",
+  "prodotto": "MULTIVOLT 460 BF",
+  "tipo": "Modulo fotovoltaico bifacciale a doppio vetro N-Type",
+  "stato": "bozza tappa 0: tabelle trascritte da Qwen dal testo della scheda, corrette e verificate; il resto scritto a mano",
+  "documenti": {
+    "SC": {
+      "titolo": "Scheda tecnica",
+      "codice": "00341524",
+      "edizione": "1 - 10/2026",
+      "pagine": 2,
+      "file": "X13654allegatoDEPLIANT1-1X_multivolt-460--w--bf_scheda_ita.pdf"
+    },
+    "MI": {
+      "titolo": "Manuale di installazione dei moduli fotovoltaici a doppio vetro",
+      "codice": "00340211SS",
+      "pagine": 20,
+      "file": "X13654allegatoMANUALE_INSTALLAZIONE1-1X_00340211ss.pdf"
+    }
+  },
+  "nota_fonti": "SC: pagine del PDF. MI: pagine stampate. 'disegno' = valore letto da una quota del disegno.",
+  "ingombro": [
+    {
+      "voce": "Altezza",
+      "valore": 1762,
+      "unita": "mm",
+      "nota": "tolleranza ±2",
+      "fonte": "SC p.2 disegno"
+    },
+    {
+      "voce": "Larghezza",
+      "valore": 1134,
+      "unita": "mm",
+      "nota": "tolleranza ±2",
+      "fonte": "SC p.2 disegno"
+    },
+    {
+      "voce": "Spessore del telaio",
+      "valore": 30,
+      "unita": "mm",
+      "fonte": "SC p.2 disegno"
+    },
+    {
+      "voce": "Interasse dei fori di montaggio sul lato lungo",
+      "valore": "400 / 790 / 1400",
+      "unita": "mm",
+      "nota": "tre coppie di fori, ±2",
+      "fonte": "SC p.2 disegno"
+    },
+    {
+      "voce": "Interasse dei fori tra i due lati lunghi",
+      "valore": 1096,
+      "unita": "mm",
+      "nota": "±2",
+      "fonte": "SC p.2 disegno"
+    },
+    {
+      "voce": "Peso",
+      "valore": 24.5,
+      "unita": "kg",
+      "fonte": "SC p.2"
+    }
+  ],
+  "aspetto": [
+    {
+      "voce": "Celle",
+      "valore": "96 mezze celle in griglia 6 x 16, divise in due metà dalla fascia centrale",
+      "fonte": "SC p.1 foto, p.2"
+    },
+    {
+      "voce": "Colore",
+      "valore": "celle nere, telaio in alluminio anodizzato; il colore del telaio dipende dall'ordine",
+      "fonte": "SC p.1 foto, p.2"
+    },
+    {
+      "voce": "Scatole di giunzione",
+      "valore": "tre, in linea al centro del retro, con cavi da 1000 mm",
+      "fonte": "SC p.2 disegno"
+    }
+  ],
+  "elettriche_stc": [
+    {
+      "voce": "Tipo di modulo",
+      "valore": "SSA-48HD-460N",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Potenza massima (Pmax)",
+      "valore": 460,
+      "unita": "W",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tensione a circuito aperto (Voc)",
+      "valore": 35.56,
+      "unita": "V",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tensione di potenza massima (Vmp)",
+      "valore": 30.45,
+      "unita": "V",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Corrente di cortocircuito (Isc)",
+      "valore": 16.14,
+      "unita": "A",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Corrente di potenza massima (Imp)",
+      "valore": 15.13,
+      "unita": "A",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Efficienza del modulo",
+      "valore": "23,02%",
+      "unita": null,
+      "fonte": "SC p.2"
+    }
+  ],
+  "elettriche_nmot": [
+    {
+      "voce": "Tipo di modulo",
+      "valore": "SSA-48HD-460N",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Potenza massima (Pmax)",
+      "valore": 348,
+      "unita": "W",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tensione a circuito aperto (Voc)",
+      "valore": 33.7,
+      "unita": "V",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tensione di potenza massima (Vmp)",
+      "valore": 28.3,
+      "unita": "V",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Corrente di cortocircuito (Isc)",
+      "valore": 13.1,
+      "unita": "A",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Corrente di potenza massima (Imp)",
+      "valore": 12.3,
+      "unita": "A",
+      "fonte": "SC p.2"
+    }
+  ],
+  "bifacciale": [
+    {
+      "voce": "Potenza massima (Pmax)",
+      "aumento_5": 467,
+      "aumento_10": 490,
+      "aumento_15": 512,
+      "unita": "W",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tensione a circuito aperto (Voc)",
+      "aumento_5": 35.02,
+      "aumento_10": 35.02,
+      "aumento_15": 35.02,
+      "unita": "V",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tensione di potenza massima (Vmp)",
+      "aumento_5": 29.91,
+      "aumento_10": 29.91,
+      "aumento_15": 29.91,
+      "unita": "V",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Corrente di cortocircuito (Isc)",
+      "aumento_5": 16.79,
+      "aumento_10": 17.59,
+      "aumento_15": 18.39,
+      "unita": "A",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Corrente di potenza massima (Imp)",
+      "aumento_5": 15.62,
+      "aumento_10": 16.37,
+      "aumento_15": 17.11,
+      "unita": "A",
+      "fonte": "SC p.2"
+    }
+  ],
+  "coefficienti_temperatura": [
+    {
+      "voce": "Coefficiente di temperatura di Isc",
+      "valore": "+0,045",
+      "unita": "%/°C",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Coefficiente di temperatura del Voc",
+      "valore": "-0,260",
+      "unita": "%/°C",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Coefficiente di temperatura di Pmax",
+      "valore": "-0,290",
+      "unita": "%/°C",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "NMOT",
+      "valore": "45±2°C",
+      "unita": null,
+      "fonte": "SC p.2"
+    }
+  ],
+  "condizioni_operative": [
+    {
+      "voce": "Tensione massima del sistema",
+      "valore": "1500 V CC (UL)",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tolleranza di potenza",
+      "valore": "0 ÷ +3%",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Temperatura di esercizio",
+      "valore": "40 °C ÷ +85 °C",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Bifaccialità",
+      "valore": "80±10%",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Valore nominale massimo del fusibile in serie",
+      "valore": "35A",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Carico meccanico anteriore-posteriore",
+      "valore": "5400Pa",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Carico meccanico posteriore-posteriore",
+      "valore": "2400Pa",
+      "unita": null,
+      "fonte": "SC p.2"
+    }
+  ],
+  "meccaniche": [
+    {
+      "voce": "Dimensioni",
+      "valore": "1762X1134X30mm",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Peso",
+      "valore": 24.5,
+      "unita": "kg",
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Tipo di cellula",
+      "valore": "N-Type",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Numero di celle",
+      "valore": "96(6x16)",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Vetro frontale",
+      "valore": "vetro semitemperato rivestito da 2,0 mm",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Vetro posteriore",
+      "valore": "vetro semitemperato con rivestimento da 2,0 mm",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Telaio",
+      "valore": "Lega di alluminio anodizzato",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Cavi di uscita",
+      "valore": "4 mm² (IEC), 12 AWG (UL), 1000 mm (connettore incluso)",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Scatola di derivazione",
+      "valore": "Classificazione IP68, 3 diodi",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Connettore",
+      "valore": "PC-SS01 / PC-SS02 / MC4-EVO2 / MC4-EVO2A",
+      "unita": null,
+      "fonte": "SC p.2"
+    },
+    {
+      "voce": "Imballaggio",
+      "valore": "36 pezzi per pallet, 936 pezzi per container da 40'",
+      "unita": null,
+      "fonte": "SC p.2"
+    }
+  ],
+  "montaggio": [
+    {
+      "voce": "Fissaggio con morsetti: almeno quattro per modulo, simmetrici, lunghi almeno 50 mm",
+      "fonte": "MI p.12 (§5.5.2)"
+    },
+    {
+      "voce": "Garanzia: 25 anni sul prodotto, 30 anni sul rendimento (almeno 87,4%)",
+      "fonte": "SC p.1"
+    }
+  ],
+  "mancante": [
+    "Sigla del modulo: la scheda dice SSA-48HD-460N, il manuale ULSA-48HD: quale va sulla targa?",
+    "Struttura di fissaggio e inclinazione sul tetto: non sono prodotti di questi documenti, vanno decise con Bore",
+    "Numero di moduli dell'impianto da mostrare",
+    "Refusi della scheda da non riportare a schermo: temperatura di esercizio scritta '40 °C ÷ +85 °C' (sulla targa del manuale è -40 °C), 'carico meccanico posteriore-posteriore'"
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "id": "fv-inverter",
+  "prodotto": "ZOE1-4000 / ZOE1-5000 / ZOE1-6000",
+  "tipo": "Inverter monofase per accumulo di energia (ibrido)",
+  "stato": "bozza tappa 0, scritta a mano: la tabella dei dati tecnici nel manuale è un'immagine, letta a vista",
+  "documenti": {
+    "MU": {
+      "titolo": "Manuale d'uso",
+      "codice": "00341435",
+      "edizione": "1 - 04/26",
+      "pagine": 76,
+      "file": "X13009allegatoMANUALE_UTENTE1-1X_00341435-zoe1.pdf"
+    },
+    "GR": {
+      "titolo": "Guida rapida all'installazione (foglio unico, solo immagine)",
+      "codice": "00341305",
+      "pagine": 1,
+      "file": "X13009allegatoMANUALE_INSTALLAZIONE1-1X_00341305_zoe1-quick-installation-manual-ita.pdf"
+    }
+  },
+  "nota_fonti": "Le pagine sono quelle stampate (coincidono con quelle del PDF).",
+  "ingombro": [
+    {
+      "voce": "Larghezza",
+      "valore": 540,
+      "unita": "mm",
+      "fonte": "MU p.22 disegno; MU p.75"
+    },
+    {
+      "voce": "Altezza",
+      "valore": 450,
+      "unita": "mm",
+      "fonte": "MU p.22 disegno; MU p.75"
+    },
+    {
+      "voce": "Profondità",
+      "valore": 185,
+      "unita": "mm",
+      "fonte": "MU p.22 disegno; MU p.75"
+    },
+    {
+      "voce": "Peso",
+      "valore": 27.5,
+      "unita": "kg",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Staffa a parete: interasse orizzontale dei fori",
+      "valore": 400,
+      "unita": "mm",
+      "fonte": "MU p.35 disegno; GR"
+    }
+  ],
+  "aspetto": [
+    {
+      "voce": "Frontale",
+      "valore": "pannello chiaro con scritta Unical in alto e, al centro in basso, schermo LCD con quattro pulsanti e spia",
+      "unita": null,
+      "fonte": "MU p.22; GR foto"
+    },
+    {
+      "voce": "Retro",
+      "valore": "radiatore alettato e modulo di induttanza",
+      "unita": null,
+      "fonte": "MU p.22"
+    },
+    {
+      "voce": "Lato inferiore, da sinistra",
+      "valore": "terminali batteria BAT+/BAT-, interruttore CC, ingressi FV1/FV2, porta COM, collettore WiFi/4G, uscita rete ON-GRID, uscita BACK-UP",
+      "unita": null,
+      "fonte": "MU p.22"
+    }
+  ],
+  "dati_targa": [
+    {
+      "voce": "Tipo di batteria",
+      "valore": "LFP",
+      "unita": null,
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Tensione nominale batteria",
+      "valore": 51.2,
+      "unita": "V",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Intervallo tensione batteria",
+      "valore": "42-60",
+      "unita": "V",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Potenza massima di carica/scarica",
+      "valore": 5,
+      "unita": "kW",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Corrente massima di carica/scarica",
+      "valore": 100,
+      "unita": "A",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Potenza massima in ingresso FV",
+      "ZOE1-4000": 6,
+      "ZOE1-5000": 7.5,
+      "ZOE1-6000": 9,
+      "unita": "kW",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Tensione massima in ingresso FV",
+      "valore": 600,
+      "unita": "V",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Tensione di avvio",
+      "valore": 120,
+      "unita": "V",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Intervallo di tensione MPPT",
+      "valore": "100 - 550",
+      "unita": "V",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Corrente massima per MPPT",
+      "valore": "16 x 2",
+      "unita": "A",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Corrente di cortocircuito massima per MPPT",
+      "valore": "20 x 2",
+      "unita": "A",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Numero di MPPT",
+      "valore": 2,
+      "unita": null,
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Stringhe per MPPT",
+      "valore": 1,
+      "unita": null,
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Potenza nominale lato rete",
+      "ZOE1-4000": 4,
+      "ZOE1-5000": 5,
+      "ZOE1-6000": 6,
+      "unita": "kW",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Corrente nominale lato rete",
+      "ZOE1-4000": 17.4,
+      "ZOE1-5000": 21.7,
+      "ZOE1-6000": 26,
+      "unita": "A",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Potenza apparente massima in ingresso",
+      "ZOE1-4000": 8,
+      "ZOE1-5000": 10,
+      "ZOE1-6000": 11,
+      "unita": "kVA",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Tensione nominale di rete",
+      "valore": 230,
+      "unita": "Vac",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Intervallo di tensione di rete",
+      "valore": "180 - 276",
+      "unita": "Vac",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Frequenza di rete",
+      "valore": "50/60",
+      "unita": "Hz",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Potenza nominale di uscita BACK-UP",
+      "ZOE1-4000": 4,
+      "ZOE1-5000": 5,
+      "ZOE1-6000": 6,
+      "unita": "kW",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Corrente massima di uscita BACK-UP",
+      "ZOE1-4000": 17.4,
+      "ZOE1-5000": 21.7,
+      "ZOE1-6000": 21.7,
+      "unita": "A",
+      "fonte": "MU p.75",
+      "nota": "per il 6000 il manuale riporta 21,7 A come per il 5000: possibile refuso, da non mostrare"
+    },
+    {
+      "voce": "Temperatura di funzionamento",
+      "valore": "-25 ~ +60",
+      "unita": "°C",
+      "fonte": "MU p.75",
+      "nota": "oltre 40 °C riduce la potenza"
+    },
+    {
+      "voce": "Grado di protezione",
+      "valore": "IP66",
+      "unita": null,
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Interfaccia",
+      "valore": "LCD e app",
+      "unita": null,
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Efficienza massima",
+      "valore": 97.8,
+      "unita": "%",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Efficienza europea",
+      "valore": 97.3,
+      "unita": "%",
+      "fonte": "MU p.75"
+    },
+    {
+      "voce": "Garanzia",
+      "valore": 10,
+      "unita": "anni",
+      "fonte": "MU p.75"
+    }
+  ],
+  "funzioni": [
+    {
+      "voce": "Modalità Autoconsumo: di giorno il FV alimenta i carichi, l'eccesso carica la batteria e il resto va in rete; di notte la batteria alimenta i carichi",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.14"
+    },
+    {
+      "voce": "Modalità TOU a fasce orarie (fino a 4 periodi di carica e 4 di scarica) e Immissione totale in rete",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.15-18"
+    },
+    {
+      "voce": "Uscita BACK-UP con commutazione in meno di 10 ms in caso di mancanza rete",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.13"
+    },
+    {
+      "voce": "Scarica minima della batteria preimpostata al 10%",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.14"
+    },
+    {
+      "voce": "Si abbina alle batterie SUM BL; WiFi, Bluetooth, 4G",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.21; manuale SUM BL p.12"
+    }
+  ],
+  "mancante": [
+    "Taglia da mostrare (4000, 5000 o 6000)",
+    "Distanze minime attorno all'inverter: sono nella guida rapida, da rileggere ad alta risoluzione alla tappa 3",
+    "Interno: il manuale vieta di aprire il pannello e non lo mostra; il montaggio pezzo per pezzo sarebbe tutto ricostruito",
+    "Colore esatto dell'involucro (dalle foto: bianco)"
+  ]
+}

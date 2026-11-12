@@ -1,0 +1,179 @@
+{
+  "id": "fv-batteria",
+  "prodotto": "SUM BL5P / BL10P / BL15P / BL20P-DB / BL25P-DB / BL30P-DB",
+  "tipo": "Batteria di accumulo residenziale LFP a moduli impilabili (Battery Box)",
+  "stato": "bozza tappa 0, scritta a mano: la tabella dei parametri nel manuale è un'immagine, letta a vista",
+  "documenti": {
+    "MU": {
+      "titolo": "Manuale d'uso",
+      "codice": "00341436",
+      "edizione": "1 - 04/26",
+      "pagine": 40,
+      "file": "X13009allegatoMANUALE_UTENTE2-1X_00341436-sum-bl-5p_30p.pdf"
+    },
+    "GR": {
+      "titolo": "Guida rapida all'installazione (foglio unico, solo immagine)",
+      "codice": "00341306",
+      "pagine": 1,
+      "file": "X13009allegatoMANUALE_INSTALLAZIONE2-1X_00341306_sum-bl5p--quick-installation-manual-ita.pdf"
+    }
+  },
+  "nota_fonti": "Le pagine sono quelle stampate: nel PDF la pagina è quella stampata più uno.",
+  "ingombro": [
+    {
+      "voce": "Modulo batteria SUM BL5P: larghezza x altezza x profondità",
+      "valore": "650 x 360 x 180",
+      "unita": "mm",
+      "fonte": "MU p.36; MU p.19 disegno"
+    },
+    {
+      "voce": "Peso di un modulo",
+      "valore": 56,
+      "unita": "kg",
+      "fonte": "MU p.36",
+      "nota": "nel testo di p.21 il manuale scrive 50 kg: da chiarire"
+    },
+    {
+      "voce": "Altezza di due moduli impilati sulla base",
+      "valore": 770,
+      "unita": "mm",
+      "fonte": "GR disegno 1.4"
+    },
+    {
+      "voce": "Fori a parete: interasse orizzontale",
+      "valore": 590,
+      "unita": "mm",
+      "fonte": "MU p.19 disegno"
+    }
+  ],
+  "composizione": [
+    {
+      "voce": "5 kWh: 1 modulo; 10 kWh: 2 moduli; 15 kWh: 3 moduli in una colonna",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.13"
+    },
+    {
+      "voce": "20, 25 e 30 kWh: due colonne affiancate con D-Box (SUM BLDbox) sopra una colonna",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.12-13"
+    },
+    {
+      "voce": "Al massimo 3 moduli per colonna; il D-Box sta sopra le batterie, mai sotto",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.13"
+    },
+    {
+      "voce": "Ogni colonna poggia su una base (pedestal) e si fissa a parete con staffe a L",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.14, p.19-21"
+    },
+    {
+      "voce": "Modulo: frontale con etichetta-display centrale (4 tacche di carica, spia di stato, pulsante); sul fianco, sotto pannelli laterali in plastica: messa a terra, porte COM e RS485, interruttore automatico, connettori BAT+/BAT-",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.14, p.34-35"
+    }
+  ],
+  "dati_targa": [
+    {
+      "voce": "Energia nominale",
+      "BL5P": 5.12,
+      "BL10P": 10.24,
+      "BL15P": 15.36,
+      "BL20P-DB": 20.48,
+      "BL25P-DB": 25.6,
+      "BL30P-DB": 30.72,
+      "unita": "kWh",
+      "fonte": "MU p.36",
+      "nota": "in copertina 15,35 e 25,64 kWh"
+    },
+    {
+      "voce": "Capacità utilizzabile",
+      "BL5P": 4.6,
+      "BL10P": 9.2,
+      "BL15P": 13.8,
+      "BL20P-DB": 18.4,
+      "BL25P-DB": 23.0,
+      "BL30P-DB": 27.6,
+      "unita": "kWh",
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Potenza massima di carica/scarica",
+      "BL5P": 2.5,
+      "BL10P": 5,
+      "BL15P": 5,
+      "BL20P-DB": 5,
+      "BL25P-DB": 5,
+      "BL30P-DB": 5,
+      "unita": "kW",
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Peso netto",
+      "BL5P": 56,
+      "BL10P": 105,
+      "BL15P": 154,
+      "BL20P-DB": 203,
+      "BL25P-DB": 259,
+      "BL30P-DB": 308,
+      "unita": "kg",
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Tipo di batteria",
+      "valore": "LFP",
+      "unita": null,
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Tensione nominale",
+      "valore": 51.2,
+      "unita": "V",
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Temperatura di funzionamento",
+      "valore": "-20 ~ 50",
+      "unita": "°C",
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Grado di protezione",
+      "valore": "IP66",
+      "unita": null,
+      "fonte": "MU p.36"
+    },
+    {
+      "voce": "Garanzia",
+      "valore": 10,
+      "unita": "anni",
+      "fonte": "MU p.36"
+    }
+  ],
+  "installazione": [
+    {
+      "voce": "Distanze: almeno 300 mm dalla parete laterale, 400-600 mm tra due colonne, almeno 510 mm sopra una colonna senza D-Box e 300 mm sopra il D-Box, inverter a meno di 2 m",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.18 disegno"
+    },
+    {
+      "voce": "A pavimento con fissaggio a parete; non inclinata né capovolta",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.18"
+    }
+  ],
+  "mancante": [
+    "Taglia da mostrare (5, 10 o 15 kWh in una colonna, oppure con D-Box)",
+    "Altezze dell'impilato: la guida rapida dà 770 mm per due moduli; la figura 4-2 del manuale riporta 920, 1130 e 1340 mm accanto a 5, 10 e 15 kWh e non torna con moduli da 360 mm. Altezza della base e del D-Box non scritte",
+    "Peso del modulo: 56 kg in tabella, 50 kg nel testo",
+    "Interno del modulo (celle, BMS): non documentato, sarebbe ricostruito",
+    "Colore dell'involucro (dalla guida rapida: bianco)"
+  ]
+}

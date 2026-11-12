@@ -1,0 +1,103 @@
+{
+  "id": "acs",
+  "prodotto": "HP 300PSDX",
+  "tipo": "Scaldacqua a pompa di calore con bollitore da 300 litri",
+  "stato": "bozza tappa 0, scritta a mano e verificata sul manuale",
+  "documenti": {
+    "MI": { "titolo": "Istruzioni per l'installatore, il manutentore e utente", "codice": "00340944", "pagine": 56, "file": "X7819allegatoMANUALE_INSTALLAZIONE1-1X_12_12_25-00340944-hp300psdx-installatore-it.pdf" },
+    "DP": { "titolo": "Depliant", "codice": "00341057", "edizione": "1 - 05/2025", "pagine": 2, "file": "X7819allegatoDEPLIANT1-1X_hp-300psdx_ita.pdf" }
+  },
+  "nota_fonti": "Le pagine sono quelle stampate sul documento. 'disegno' = valore letto da una quota del disegno, non da una tabella.",
+  "ingombro": [
+    { "voce": "Diametro del corpo", "valore": 600, "unita": "mm", "fonte": "MI p.14 disegno; MI p.37" },
+    { "voce": "Altezza totale, piedini e imbocchi aria compresi", "valore": 1990, "unita": "mm", "fonte": "MI p.14 disegno; MI p.37" },
+    { "voce": "Altezza dei piedini", "valore": 35, "unita": "mm", "fonte": "MI p.14 disegno" },
+    { "voce": "Altezza del corpo cilindrico fino alla fascia sotto il coperchio", "valore": 1150, "unita": "mm", "nota": "misurata dal fondo del corpo, piedini esclusi", "fonte": "MI p.14 disegno" },
+    { "voce": "Altezza della parte superiore, dalla fascia alla cima degli imbocchi aria", "valore": 805, "unita": "mm", "nota": "35 + 1150 + 805 = 1990", "fonte": "MI p.14 disegno" },
+    { "voce": "Altezza del coperchio in plastica con imbocchi", "valore": 445, "unita": "mm", "fonte": "MI p.14 disegno" },
+    { "voce": "Sporgenza degli imbocchi aria sopra il coperchio", "valore": 40, "unita": "mm", "fonte": "MI p.14 disegno" },
+    { "voce": "Diametro degli imbocchi aria", "valore": 177, "unita": "mm", "nota": "canalizzazioni DN 180", "fonte": "MI p.14 disegno; MI p.37" },
+    { "voce": "Interasse tra i due imbocchi aria", "valore": 320, "unita": "mm", "nota": "ciascuno a 160 mm dall'asse", "fonte": "MI p.14 disegno" },
+    { "voce": "Peso netto", "valore": 72, "unita": "kg", "fonte": "MI p.37" },
+    { "voce": "Peso con serbatoio pieno d'acqua", "valore": 372, "unita": "kg", "fonte": "MI p.37" }
+  ],
+  "attacchi": [
+    { "n": 1, "voce": "Ingresso acqua fredda", "misura": "G3/4", "quota_mm": 32.5, "lato": "destro rispetto al pannello di controllo", "fonte": "MI p.14-15" },
+    { "n": 2, "voce": "Uscita acqua al solare termico", "misura": "G3/4", "quota_mm": 235, "lato": "destro", "fonte": "MI p.14-15" },
+    { "n": 3, "voce": "Ingresso acqua dal solare termico", "misura": "G3/4", "quota_mm": 855, "lato": "destro", "fonte": "MI p.14-15" },
+    { "n": 4, "voce": "Anodo in magnesio anti-corrosione", "misura": "G3/4", "quota_mm": 1170, "lato": "destro", "fonte": "MI p.14-15" },
+    { "n": 5, "voce": "Uscita acqua calda", "misura": "G3/4", "quota_mm": 1270, "lato": "destro", "fonte": "MI p.14-15" },
+    { "n": 6, "voce": "Uscita condensa", "misura": "G1/2", "quota_mm": 1370, "lato": "destro", "fonte": "MI p.14-15" },
+    { "n": 7, "voce": "Pozzetto sonda temperatura ausiliaria", "misura": "PG9", "quota_mm": 855, "lato": "accesso posteriore", "fonte": "MI p.14-15" },
+    { "n": 8, "voce": "Copertura morsettiere ausiliarie: ingressi ON-OFF / FV, flussostato FS, uscita circolatore esterno", "misura": null, "quota_mm": null, "lato": "accesso posteriore", "fonte": "MI p.15, p.18" },
+    { "n": 9, "voce": "Copertura resistenza elettrica 1500 W con termostato integrato 85 °C", "misura": null, "quota_mm": 950, "lato": "accesso posteriore", "fonte": "MI p.14-15" },
+    { "n": 10, "voce": "Copertura termostato integrato 80 °C", "misura": null, "quota_mm": 1150, "lato": "accesso posteriore", "fonte": "MI p.14-15" },
+    { "n": 11, "voce": "Sonda collettore solare / ricircolo ACS", "misura": "cavo 9,5 m", "quota_mm": null, "lato": "accesso posteriore", "fonte": "MI p.15" },
+    { "n": 12, "voce": "Passaggio alimentazione elettrica", "misura": null, "quota_mm": null, "lato": "accesso posteriore", "fonte": "MI p.15" },
+    { "n": 13, "voce": "Passaggio cavi ausiliari", "misura": null, "quota_mm": null, "lato": "accesso posteriore", "fonte": "MI p.15" }
+  ],
+  "nota_attacchi": "Le quote sono altezze dal fondo del corpo (piedini esclusi). L'abbinamento tra numero dell'attacco e quota viene dal confronto dei due disegni di p.14 e p.15: sul manuale le quote non portano il numero. Per 9 e 10 l'abbinamento quota-copertura va confermato.",
+  "componenti": [
+    { "voce": "Coperchio superiore in plastica, isolato acusticamente, con uscita e ingresso aria", "fonte": "MI p.12-13" },
+    { "voce": "Interfaccia utente (regolatore touch screen) sul coperchio", "fonte": "MI p.13; DP p.1" },
+    { "voce": "Evaporatore a microcanali", "fonte": "MI p.13; DP p.1" },
+    { "voce": "Motore ventilatore (asincrono, 1000 giri/min)", "fonte": "MI p.13, p.37" },
+    { "voce": "Compressore rotativo", "fonte": "MI p.13, p.37" },
+    { "voce": "Valvola di espansione elettronica", "fonte": "MI p.13" },
+    { "voce": "Valvola a 2 vie (by-pass)", "fonte": "MI p.13, p.18" },
+    { "voce": "Box elettrico, sotto la copertura superiore, chiuso da un coperchio metallico con 4 viti", "fonte": "MI p.13, p.26" },
+    { "voce": "Piastra di appoggio del gruppo frigorifero sopra il serbatoio", "fonte": "MI p.13" },
+    { "voce": "Serbatoio acqua in acciaio inox Duplex 2205", "fonte": "MI p.12" },
+    { "voce": "Condensatore in alluminio a flusso parallelo, avvolto all'esterno del serbatoio", "fonte": "MI p.12; DP p.1" },
+    { "voce": "Serpentino interno da 1,2 m2 in AISI 316 per solare o fonte ausiliaria, nella parte bassa", "fonte": "MI p.15 disegno, p.37" },
+    { "voce": "Resistenza elettrica 1,5 kW", "fonte": "MI p.17, p.37" },
+    { "voce": "Anodo in magnesio", "fonte": "MI p.16" },
+    { "voce": "Isolamento in poliuretano espanso da 50 mm", "fonte": "MI p.12" },
+    { "voce": "Sonde: T1 ambiente, T2 serbatoio inferiore, T3 serbatoio superiore, T4 evaporatore, T5 aspirazione, T6 solare/ricircolo", "fonte": "MI p.18" }
+  ],
+  "colori": [
+    { "voce": "Rivestimento esterno", "valore": "grigio argento", "fonte": "MI p.12" },
+    { "voce": "Parte superiore", "valore": "nero", "fonte": "MI p.12" },
+    { "voce": "Attacco ingresso acqua fredda", "valore": "blu", "fonte": "MI p.23" }
+  ],
+  "dati_targa": [
+    { "voce": "Alimentazione elettrica", "valore": "220-240 V ~ / 1 fase + N + PE / 50 Hz", "unita": null, "fonte": "MI p.37" },
+    { "voce": "Capacità reale del serbatoio", "valore": 300, "unita": "l", "fonte": "MI p.37" },
+    { "voce": "Potenza termica della pompa di calore", "valore": 1500, "unita": "W", "nota": "ambiente 20 °C, acqua da 15 a 56 °C", "fonte": "MI p.37-38" },
+    { "voce": "Potenza assorbita della pompa di calore", "valore": 365, "unita": "W", "nota": "stesse condizioni", "fonte": "MI p.37-38" },
+    { "voce": "Resistenza elettrica ausiliaria", "valore": 1.5, "unita": "kW", "fonte": "MI p.37" },
+    { "voce": "COP DHW, aria 7 °C", "valore": 3.24, "unita": "W/W", "nota": "EN 16147, profilo XL, acqua da 10 a 56 °C; classe A+", "fonte": "MI p.37-38" },
+    { "voce": "COP DHW, aria 14 °C", "valore": 4.19, "unita": "W/W", "nota": "EN 16147, profilo XL, acqua da 10 a 56 °C; classe A++", "fonte": "MI p.37-38" },
+    { "voce": "Tempo di riscaldamento a serbatoio freddo, aria 7 °C", "valore": "11:49", "unita": "h:min", "fonte": "MI p.37-38" },
+    { "voce": "Tempo di riscaldamento a serbatoio freddo, aria 14 °C", "valore": "9:30", "unita": "h:min", "fonte": "MI p.37-38" },
+    { "voce": "Assorbimento massimo della pompa di calore", "valore": 700, "unita": "W", "fonte": "MI p.37" },
+    { "voce": "Temperatura massima dell'acqua senza resistenza", "valore": 65, "unita": "°C", "fonte": "MI p.37" },
+    { "voce": "Temperatura massima dell'acqua con resistenza", "valore": 70, "unita": "°C", "fonte": "MI p.37" },
+    { "voce": "Temperatura ambiente di lavoro della pompa di calore", "valore": "-10 ~ +43", "unita": "°C", "fonte": "MI p.37" },
+    { "voce": "Refrigerante", "valore": "R290", "unita": null, "fonte": "MI p.37" },
+    { "voce": "Carica refrigerante", "valore": 150, "unita": "g", "fonte": "MI p.37" },
+    { "voce": "Portata aria nominale", "valore": 290, "unita": "m3/h", "fonte": "MI p.37" },
+    { "voce": "Pressione statica massima dei condotti", "valore": 60, "unita": "Pa", "fonte": "MI p.21" },
+    { "voce": "Pressione massima ammissibile del serbatoio", "valore": 10, "unita": "bar", "fonte": "MI p.37" },
+    { "voce": "Superficie del serpentino solare / ausiliario", "valore": 1.2, "unita": "m2", "fonte": "MI p.37" },
+    { "voce": "Potenza scambiata dal serpentino", "valore": 31.6, "unita": "kW", "nota": "con caldaia, DIN 4708, primario 80/60 °C, secondario 10/45 °C", "fonte": "MI p.37-38" },
+    { "voce": "Classe di protezione", "valore": "IPX1", "unita": null, "fonte": "MI p.37" },
+    { "voce": "Potenza sonora", "valore": 51, "unita": "dB(A)", "fonte": "MI p.37" },
+    { "voce": "Pressione sonora a 1 m", "valore": 36, "unita": "dB(A)", "fonte": "MI p.37" }
+  ],
+  "funzioni": [
+    { "voce": "Ciclo antilegionella settimanale: serbatoio a 65 °C per circa 30 minuti", "fonte": "MI p.30" },
+    { "voce": "Contatto fotovoltaico: a contatto chiuso il set del serbatoio sale fino al massimo (65 °C con parametro 29 = 1)", "fonte": "MI p.32" },
+    { "voce": "Set del serbatoio regolabile 35 ~ 65 °C, predefinito 55 °C", "fonte": "MI p.32" },
+    { "voce": "L'aria espulsa è 5-10 °C più fredda di quella aspirata", "fonte": "MI p.19" },
+    { "voce": "Integrazione con solare termico a circolazione forzata, con caldaia, ricircolo ACS con circolatore esterno", "fonte": "MI p.23-25" },
+    { "voce": "Installazione solo interna; locale di almeno 20 m3 se l'aria non è canalizzata", "fonte": "MI p.19" },
+    { "voce": "Wi-Fi integrato e controllo da app", "fonte": "MI p.12, p.41" }
+  ],
+  "mancante": [
+    "Esploso completo: c'è solo la vista d'insieme di p.13, la disposizione fine dei componenti sopra il serbatoio va ricostruita",
+    "Abbinamento certo tra quote e coperture 9 e 10",
+    "Posizione angolare esatta degli attacchi attorno al cilindro (i disegni danno solo le altezze)",
+    "Codice colore (RAL) del rivestimento"
+  ]
+}
