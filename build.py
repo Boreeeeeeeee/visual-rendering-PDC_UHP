@@ -64,7 +64,8 @@ def sito(out_rel: str) -> dict:
     files = {"index.html": pagina(app / "shell.html", [logo, app / "a_base.js"] + [p / "leggero.js" for p in prodotti] + resto, base)}
     for p in prodotti:
         if (p / "shell.html").exists():
-            files["%s/index.html" % p.name] = pagina(p / "shell.html", [logo] + sorted(p.glob("?_*.js")), base + p.name + "/")
+            kit = [] if (p / "b_engine.js").exists() else [SRC / "comune" / "kit.js"]   # la UHP ha il suo motore
+            files["%s/index.html" % p.name] = pagina(p / "shell.html", [logo] + kit + sorted(p.glob("?_*.js")), base + p.name + "/")
     if (app / "og.jpg").exists():
         files["og.jpg"] = (app / "og.jpg").read_bytes()
     return files

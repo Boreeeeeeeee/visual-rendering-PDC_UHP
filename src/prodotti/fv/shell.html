@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fotovoltaico Unical pezzo per pezzo</title>
+<meta name="description" content="Moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL di Unical che si montano pezzo per pezzo. Guarda il film, poi muovi il sole.">
+<meta property="og:title" content="Fotovoltaico Unical pezzo per pezzo">
+<meta property="og:description" content="Guarda l'impianto montarsi, poi provalo tu: smontalo e muovi il sole.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="<!--BASE-->../og.jpg">
+<meta name="theme-color" content="#0b0f13">
+<!--FONTS-->
+<!--IMPORTMAP-->
+<style>
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
+  * { box-sizing: border-box } html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent }
+  #stage { position: fixed; inset: 0 } #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none }
+  button { font: inherit; color: inherit }
+  .btn { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
+  .btn[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
+  #top { position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; flex-wrap: wrap }
+  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase } .brand span { color: var(--green) }
+  .back { position: relative; z-index: 60; pointer-events: auto; display: inline-block; margin-right: 12px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(13,18,22,.7); color: var(--ink); font-size: .78em; letter-spacing: .06em; text-decoration: none; vertical-align: middle }
+  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em } body.free .sub { display: none }
+  #bFilm { display: none } body.free #bFilm { display: inline-flex }
+  #set { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 46px); font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) } #set b { display: block; margin-top: 4px; font-size: 30px; letter-spacing: .02em; color: var(--heat) }
+  body.start #set, body.film #set { display: none }
+  #cap { position: absolute; left: var(--pad); right: var(--pad); bottom: max(var(--pad), env(safe-area-inset-bottom)); display: none; gap: 14px; align-items: flex-end; pointer-events: none; text-shadow: 0 2px 14px #000 } body.film #cap { display: flex }
+  #num { font: 700 clamp(44px, 9vmin, 76px)/.85 var(--display); color: var(--green) } #cap h2 { margin: 0; font: 700 clamp(22px, 4.4vmin, 34px)/1 var(--display); letter-spacing: .05em; text-transform: uppercase } #cap p { margin: 4px 0 0; max-width: 46ch; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; color: var(--ink) }
+  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 52px) var(--pad) calc(var(--pad) + 8px); background: linear-gradient(90deg, rgba(5,8,10,.82), rgba(5,8,10,.1) 70%) } body.start #start { display: flex }
+  #start small { font: 600 13px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--green) } #start h1 { margin: 8px 0; font: 700 clamp(34px, 7.6vmin, 60px)/.95 var(--display); letter-spacing: .03em; text-transform: uppercase; max-width: 9em } #start p { margin: 0; max-width: 34ch; color: var(--ink) }
+  .go { display: flex; flex-direction: column; gap: 10px; width: min(100%, 380px) } .big { pointer-events: auto; display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 22px; border: 0; border-radius: 16px; background: var(--green); color: #10140f; font: 700 20px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; text-align: left }
+  .big svg { width: 22px; height: 22px; fill: currentColor } .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
+  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; white-space: nowrap }
+  #toast.on { animation: toast 2.4s ease both } @keyframes toast { 0% { opacity: 0 } 12%, 78% { opacity: 1 } 100% { opacity: 0 } }
+  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px max(8px, env(safe-area-inset-bottom)); display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) } body.free #dock { display: flex }
+  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px) }
+  #panel section { display: none; flex-direction: column; gap: 10px } #panel section.on { display: flex } #panel p { margin: 0; font-size: 14px; line-height: 1.35 } #panel p small { color: var(--dim) }
+  .riga { display: flex; flex-wrap: wrap; gap: 8px } .riga .btn { min-height: 40px; padding: 0 13px; font-size: 13px }
+  #tabs { pointer-events: auto; display: flex; gap: 6px; width: min(100%, 640px) } .tab { flex: 1; min-height: 52px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer }
+  .tab[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent }
+  #barra { height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); overflow: hidden } #barra i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #4fd07a, #a6ff9a); transition: width .2s linear }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) } input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0 } input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
+  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 40px) } #start h1 { font-size: 28px } .tab { min-height: 40px } #panel { padding: 8px 12px } #panel p { font-size: 12.5px } .big { min-height: 48px } #set { display: none } #dock { flex-direction: row; align-items: flex-end; justify-content: center } #tabs { width: auto; flex: 0 0 auto } .tab { padding: 0 10px } }
+</style>
+</head>
+<body class="start">
+<div id="stage">
+  <canvas id="gl" aria-label="Impianto fotovoltaico Unical che si monta pezzo per pezzo"></canvas>
+  <header id="top">
+    <div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>Fotovoltaico <span>Unical</span></div>
+    <div class="sub">MULTIVOLT 460 BF · ZOE1-6000 · SUM BL15P</div>
+    <button class="btn" id="bFilm" type="button">Film</button>
+  </header>
+  <div id="cap"><div id="num">01</div><div><h2 id="name"></h2><p id="spec"></p></div></div>
+  <div id="start">
+    <div><small>Moduli, inverter e batteria Unical</small><h1>Guardalo montarsi pezzo per pezzo</h1><p>Poi provalo tu: smontalo e muovi il sole, per vedere dove va l'energia.</p></div>
+    <div class="go">
+      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>35 secondi</span></div></button>
+      <button class="btn" id="bExplore" type="button">Salta il film e provalo subito</button>
+    </div>
+  </div>
+  <div id="toast">Ora provalo tu</div>
+  <div id="dock">
+    <div id="panel">
+      <section data-tool="tocca"><p id="pTocca">Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.</p><div class="riga" id="nomi"></div></section>
+      <section data-tool="smonta"><p>Sposta il cursore: i cinque gruppi si separano e tornano a posto.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
+      <section data-tool="sole"><p id="pSole"></p><input type="range" id="sS" min="0" max="1" step="0.01" value="0.8" aria-label="Quanto sole"><div id="barra" aria-label="Carica della batteria"><i id="bSoc"></i></div></section>
+    </div>
+    <div id="tabs">
+      <button class="tab" data-tool="tocca" type="button">Tocca</button><button class="tab" data-tool="smonta" type="button">Smonta</button><button class="tab" data-tool="sole" type="button">Sole</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+/*SCRIPT*/
+</script>
+</body>
+</html>

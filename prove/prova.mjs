@@ -83,8 +83,24 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await premi('kAnti'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 65, 'antilegionella: 65 °C'); await premi('kAnti'); await premi('kRes'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 70, 'resistenza: 70 °C'); await sleep(300); await foto('acs_modi'); await premi('kRes');
   await strum('tocca'); await fr.locator('#nomi .btn').nth(2).evaluate(b => b.click()); ok((await fr.locator('#pTocca').textContent()).includes('Condensatore'), 'la scheda del gruppo si apre');
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), "il ritorno dall'HP 300PSDX riporta alla Casa");
+  // fotovoltaico nella Casa e pagina completa
+  await ora(12.5); c = await st(); ok(c.pv > .4 && c.bat >= 0 && c.sole, 'inverno, mezzogiorno: il fotovoltaico produce più di quanto serve');
+  ok((await page.textContent('#cFv')).startsWith('Sole') && (await page.textContent('#cAcs')).includes('65'), "con il sole in più l'acqua calda sale a 65 °C");
+  await ora(22.5); c = await st(); ok(c.pv === 0 && (c.bat < 0 || c.rete < 0), 'sera: la casa va a batteria o a rete');
+  await page.click('#bEst'); await ora(13); c = await st(); ok(c.soc > .5 && c.pv > .8, 'estate, primo pomeriggio: tanto sole e batteria carica'); await sleep(400); await foto('casa_fv'); await page.click('#bInv');
+  await page.locator('.tag').nth(2).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'fv', "l'etichetta del fotovoltaico apre il prodotto");
+  ok(await fino(async () => await fr.locator('#sS').count() > 0, 20000), 'la pagina del fotovoltaico si carica');
+  const fv = q => fr.locator('body').evaluate((_, q) => (0, eval)(q), q); await fino(async () => !!(await fv('!!window.__fv'))); await sleep(800); await foto('fv_inizio');
+  ok((await fv('window.__fv.seek(10); window.__fv.stato()')).mode === 'film', 'il film del fotovoltaico parte'); await sleep(300); await foto('fv_film');
+  let f = await fv("window.__fv.libero(false); window.__fv.setTool('sole'); { const s = document.getElementById('sS'); s.value = 1; s.dispatchEvent(new Event('input')); } window.__fv.avanti(3); window.__fv.stato()");
+  ok(f.mode === 'free' && f.bat > 0 && f.soc > .45, 'Sole: con il sole la batteria si carica'); await sleep(300); await foto('fv_sole');
+  f = await fv('window.__fv.avanti(60); window.__fv.stato()'); ok(f.soc === 1 && f.bat === 0 && f.rete > 0, 'batteria piena: il resto va in rete');
+  f = await fv("{ const s = document.getElementById('sS'); s.value = 0; s.dispatchEvent(new Event('input')); } window.__fv.avanti(2); window.__fv.stato()"); ok(f.bat < 0 && Math.abs(f.rete) < 1e-6, 'senza sole la batteria alimenta la casa');
+  f = await fv('window.__fv.avanti(120); window.__fv.stato()'); ok(f.soc <= .101 && f.bat === 0 && f.rete < 0, 'alla scarica minima si prende dalla rete');
+  f = await fv("window.__fv.setTool('smonta'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.e > .4, 'Smonta separa i gruppi del fotovoltaico');
+  await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
   // indirizzi diretti
-  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
+  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
   ok(errs.length === 0, 'console senza errori: ' + errs.join(' | ')); await ctx.close();
 }
 console.log(`${fatti - falliti} controlli passati su ${fatti}`); await b.close(); srv.close(); process.exit(falliti ? 1 : 0);

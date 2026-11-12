@@ -97,11 +97,8 @@ const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-// ───────── HP 300PSDX · pagina completa: film di montaggio e strumenti ─────────
-// Dal manuale installatore 00340944 (p.12-15, 18, 30, 32, 37) e dal depliant 00341057: quote, altezze degli attacchi, elenco dei componenti,
-// materiali, set e temperature. Vedi src/dati/acs.json.
-// RICOSTRUITO (il manuale ha solo una vista d'insieme, p.13): disposizione dei componenti sopra il serbatoio e percorso dei tubi in rame,
-// angolo di attacchi, coperture e maniglie attorno al cilindro, estensione del condensatore lungo il serbatoio, numero di spire, interno del compressore.
+// ───────── base comune alle pagine dei prodotti (non della UHP, che ha il suo motore) ─────────
+// Resa, scena da studio, materiali, piano di sezione e motore del montaggio: gruppo() apre un gruppo, P() gli aggiunge un pezzo che arriva in volo.
 const $ = id => document.getElementById(id), PI = Math.PI, rad = d => d * PI / 180;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
 const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }, eoc = t => 1 - Math.pow(1 - t, 3);
@@ -144,6 +141,12 @@ const G = []; let cur;
 function gruppo(nome, facile, tecnico, t0, t1, vista, esp) { cur = { nome, facile, tecnico, t0, t1, vista, esp: V(...esp), pezzi: [] }; G.push(cur); }
 function P(o, da = [0, .7, 0], rit = 0) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), rit }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
 
+
+// ───────── HP 300PSDX · pagina completa: film di montaggio e strumenti ─────────
+// Dal manuale installatore 00340944 (p.12-15, 18, 30, 32, 37) e dal depliant 00341057: quote, altezze degli attacchi, elenco dei componenti,
+// materiali, set e temperature. Vedi src/dati/acs.json.
+// RICOSTRUITO (il manuale ha solo una vista d'insieme, p.13): disposizione dei componenti sopra il serbatoio e percorso dei tubi in rame,
+// angolo di attacchi, coperture e maniglie attorno al cilindro, estensione del condensatore lungo il serbatoio, numero di spire, interno del compressore.
 const B = .035, R = .30, RT = .25, YC = B + 1.51, AT = h => B + h;    // piedini, raggio esterno, raggio del serbatoio, inizio del coperchio, altezza di un attacco
 // 1 ─ serbatoio
 gruppo('Serbatoio', 'Il cuore: trecento litri d\'acqua in un serbatoio di acciaio inossidabile.', 'Acciaio inox Duplex 2205 · 300 l · pressione massima 10 bar · anodo in magnesio contro la corrosione', 2, 7, { az: 25, el: 10, d: 5.6, y: 1.0 }, [0, 0, 0]);

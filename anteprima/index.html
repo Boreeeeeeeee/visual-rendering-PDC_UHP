@@ -55,7 +55,8 @@
   #cTop { position: absolute; left: var(--pad); right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
   #cCap { pointer-events: auto; max-width: 560px; padding: 12px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center }
   #cHour { font: 700 clamp(30px, 6vmin, 44px)/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; grid-row: span 2 }
-  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
+  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs, #cFv { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
+  #cFv[data-m=s] { background: #ffd84a; color: #1b1605 } #cFv[hidden] { display: none }
   #cAcs[data-m=c] { background: #ff6a4a; color: #1b0805 } #cAcs[data-m=r] { background: rgba(255,154,77,.28) }
   #cStato[data-m=c] { background: var(--heat); color: #1b0f05 } #cStato[data-m=f] { background: var(--ice); color: #05121b }
   #cText { margin: 0; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; min-height: 2.7em }
@@ -114,7 +115,7 @@
   <section id="casa" class="scena" aria-label="La casa">
     <div id="cTop">
       <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
-      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cAcs">Acqua calda: pronta</span></span><p id="cText"></p></div>
+      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cAcs">Acqua calda: pronta</span><span id="cFv" hidden></span></span><p id="cText"></p></div>
     </div>
     <div id="tags"></div>
     <div id="cPanel">
@@ -216,6 +217,47 @@ registra({
   },
 });
 
+// ───────── Fotovoltaico Unical · livello leggero per Home e Casa ─────────
+// MULTIVOLT 460 BF (scheda 00341524): 1762 x 1134 x 30 mm, 96 mezze celle 6 x 16, doppio vetro, telaio in alluminio.
+// ZOE1-6000 (manuale 00341435 p.22, 75): 540 x 450 x 185 mm, frontale chiaro con scritta Unical in alto e schermo LCD in basso al centro.
+// SUM BL15P (manuale 00341436 p.13-14, 36): tre moduli da 650 x 360 x 180 mm impilati su una base, etichetta-display al centro con 4 tacche di carica.
+// Ricostruito: altezza della base della batteria (50 mm, ricavata dai 770 mm per due moduli della guida rapida), colore esatto degli involucri (bianco dalle foto).
+const FV = (() => {
+  const tMod = cv(256, 128, (c, w, h) => { c.fillStyle = '#07090c'; c.fillRect(0, 0, w, h); const cw = (w - 12) / 16, ch = (h - 8) / 6;
+    for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { c.fillStyle = (i + j) % 2 ? '#10161f' : '#0e141c'; c.fillRect(4 + i * cw + (i > 7 ? 4 : 0) + .6, 4 + j * ch + .6, cw - 1.2, ch - 1.2); } });
+  const vetro = std({ map: tMod, roughness: .18, metalness: .35 }), telaio = std({ color: 0x15171a, roughness: .5, metalness: .6 });
+  // modulo sdraiato: lunghezza lungo x, larghezza lungo z, faccia superiore con le celle
+  const modGeo = box(1.762, .03, 1.134), modMat = [telaio, telaio, vetro, telaio, telaio, telaio];
+  const bianco = std({ color: 0xe9ebec, roughness: .45, metalness: .05 }), grigio = std({ color: 0x9aa0a5, roughness: .5, metalness: .4 }), nero = std({ color: 0x15171a, roughness: .5 });
+  function inverter() {
+    const g = new THREE.Group(); g.add(mesh(rbox(.54, .45, .14, .02), bianco, 0, 0, .045 + .07)); g.add(mesh(box(.46, .40, .045), grigio, 0, 0, .0225));   // corpo e radiatore sul retro
+    const tL = cv(256, 80, c => drawUnicalLogo(c, 8, 6, 230)); g.add(mesh(new THREE.PlaneGeometry(.15, .047), std({ map: tL, transparent: true, roughness: .5 }), 0, .15, .1865));
+    const tD = cv(64, 48, c => { c.fillStyle = '#0d1114'; c.fillRect(0, 0, 64, 48); c.fillStyle = '#7fd0ff'; c.fillRect(8, 8, 48, 18); c.fillStyle = '#3a4046'; for (let i = 0; i < 4; i++) c.fillRect(8 + i * 13, 32, 9, 9); });
+    g.add(mesh(new THREE.PlaneGeometry(.1, .075), new THREE.MeshBasicMaterial({ map: tD }), 0, -.13, .1865));
+    for (const x of [-.2, -.12, -.04, .05, .13, .2]) g.add(mesh(cyl(.012, .03, 10), nero, x, -.24, .1));      // terminali sul lato inferiore
+    return g;
+  }
+  function batteria(n = 3) {
+    const g = new THREE.Group(), tLed = cv(32, 96, () => {}), led = new THREE.MeshBasicMaterial({ map: tLed });
+    g.add(mesh(box(.65, .05, .18), grigio, 0, .025, 0));
+    for (let i = 0; i < n; i++) { g.add(mesh(rbox(.65, .355, .18, .012), bianco, 0, .05 + .18 + i * .36, 0)); g.add(mesh(new THREE.PlaneGeometry(.025, .075), led, 0, .05 + .18 + i * .36, .0905)); }
+    let ult = -1;
+    function carica(soc) { const k = Math.round(clamp(soc) * 4); if (k === ult) return; ult = k; const c = tLed.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 32, 96); for (let i = 0; i < 4; i++) { c.fillStyle = i < k ? '#7dff9a' : '#27302b'; c.fillRect(8, 74 - i * 20, 16, 12); } tLed.needsUpdate = true; }
+    carica(.5); return { group: g, carica, alto: .05 + n * .36 };
+  }
+  return { modGeo, modMat, inverter, batteria };
+})();
+registra({
+  id: 'fv', nome: 'Fotovoltaico', riga: 'MULTIVOLT 460 BF, inverter ZOE1-6000 e batteria SUM BL15P', apri: 'Apri il fotovoltaico', pagina: 'fv/',
+  alto: 1.75, ordine: 3,
+  costruisci() {      // per la Home: un modulo, l'inverter e la batteria uno accanto all'altro
+    const g = new THREE.Group(), m = mesh(FV.modGeo, FV.modMat, -.55, .85, -.1); m.rotation.set(-rad(20), PI / 2, PI / 2); g.add(m);       // in piedi, appoggiato all'indietro
+    g.add(mesh(box(.95, 1.9, .03), std({ color: 0x23282d, roughness: .9 }), .55, .95, -.03));                                               // un pezzo di parete per inverter e batteria
+    const b = FV.batteria(3); b.group.position.set(.55, 0, .08); g.add(b.group); const i = FV.inverter(); i.position.set(.55, 1.55, -.015); g.add(i);
+    return { group: g, tick() {} };
+  },
+});
+
 // ───────── UHP 120 · livello leggero per Home e Casa ─────────
 // Stesse quote del modello completo (c_build.js, dal manuale 00341518 §5.5.2): larghezza 1280, profondità 450, altezza 1040 + piedi,
 // interasse piedi 784, attacchi acqua G 1" sul retro a 72 mm dal fondo. Pochi pezzi: il dettaglio vero sta nella pagina del prodotto.
@@ -282,11 +324,10 @@ const Home = (() => {
   // voci del cerchio: i prodotti fatti, più (solo in anteprima) i segnaposti neutri di quelli in arrivo
   const voci = PRODOTTI.slice().sort((a, b) => (a.ordine || 9) - (b.ordine || 9)).map(p => ({ ...p, fatto: true }));
   if (ANTEPRIMA) {
-    // Sagome neutre per provare il movimento. Le misure del modulo FV vengono dalla scheda dati; le altre tre sono generiche.
+    // Sagome neutre per provare il movimento. Le misure sono generiche.
     const sag = (nome, riga, alto, forma) => voci.push({ id: null, nome, riga, alto, fatto: false, costruisci: () => ({ group: forma(), tick() {} }) });
     const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
     const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
-    sag('Fotovoltaico', 'MULTIVOLT, ZOE1 e SUM BL · in arrivo con la tappa 3', 1.5, () => { const g = solido(box(1.134, 1.762, .03), .881); g.children.forEach(o => { o.rotation.x = -rad(28); o.position.set(0, .79, 0); }); return g; });
     sag('Ibrida', 'In arrivo con la tappa 4', .9, () => solido(box(.5, .9, .4), .45));
     sag('Ventilconvettori', 'In arrivo con la tappa 5', .6, () => solido(box(1.0, .58, .2), .29));
     sag('Climatizzatori', 'In arrivo con la tappa 6', .6, () => solido(box(.85, .3, .22), .45));
@@ -347,7 +388,7 @@ const Casa = (() => {
   const camera = new THREE.PerspectiveCamera(30, 1, .1, 200);
   const sun = new THREE.DirectionalLight(0xffffff, 2); scene.add(sun, sun.target);
   const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x2a2a26, .5); scene.add(hemi);
-  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.5, P1 = .1, P2 = 1.4;   // metri
+  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.8, P1 = .1, P2 = 1.4, H2 = WH + .2 + 1.0, FM = FY + WH + .2;   // H2 = pareti fino alla gronda (piano terra + solaio + 1 m di mansarda), FM = pavimento della mansarda   // metri
 
   // materiali: i tagli (pareti, solaio e tetto sezionati) hanno un colore a parte, come in un disegno in sezione
   const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xd8d2c4, roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
@@ -363,15 +404,16 @@ const Casa = (() => {
   const fLiv = std({ map: tWood, roughness: .7, emissive: 0x000000 }), fBag = std({ map: tTile, roughness: .5, emissive: 0x000000 });
   const fl = (x0, x1, m) => { const o = add(new THREE.PlaneGeometry(x1 - x0, 2 * HD - TW), m, (x0 + x1) / 2, FY + .002, TW / 2); o.rotation.x = -PI / 2; return o; };
   fl(-HW + TW, P1, fLiv); fl(P1, HW - TW, fBag);
-  add(box(2 * HW, WH, TW), wall, 0, FY + WH / 2, -HD + TW / 2);
-  for (const s of [-1, 1]) add(box(TW, WH, 2 * HD), sez(wall), s * (HW - TW / 2), FY + WH / 2, 0);
+  add(box(2 * HW, H2, TW), wall, 0, FY + H2 / 2, -HD + TW / 2);
+  add(box(2 * HW - 2 * TW, .2, 2 * HD - TW), sez(slab), 0, FY + WH + .1, TW / 2);      // solaio della mansarda
+  for (const s of [-1, 1]) add(box(TW, H2, 2 * HD), sez(wall), s * (HW - TW / 2), FY + H2 / 2, 0);
   for (const x of [P1, P2]) add(box(.1, WH, 2 * HD - 2.0), sez(wall), x, FY + WH / 2, -1.0);
   // timpano posteriore e tetto a due falde con il colmo dal fronte al retro: il fronte è tagliato, le falde restano
   const tri = new THREE.Shape(); tri.moveTo(-HW, 0); tri.lineTo(HW, 0); tri.lineTo(0, RH); tri.closePath();
-  add(new THREE.ExtrudeGeometry(tri, { depth: TW, bevelEnabled: false }), wall, 0, FY + WH, -HD);
+  add(new THREE.ExtrudeGeometry(tri, { depth: TW, bevelEnabled: false }), wall, 0, FY + H2, -HD);
   const tRoof = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#4a3f3a'; c.fillRect(0, 0, w, h); c.fillStyle = '#3a312d'; for (let x = 0; x < w; x += 16) c.fillRect(x, 0, 2, h); c.fillRect(0, 0, w, 3); }), 10, 12);
   const roofM = std({ map: tRoof, roughness: .85 }), SPORTO = .4, ang = Math.atan(RH / HW), LF = (HW + SPORTO) / Math.cos(ang);
-  const falde = [-1, 1].map(s => { const o = add(box(LF, .12, 2 * HD + .3), [roofM, roofM, roofM, std({ color: 0x9c8468, roughness: .9 }), cut, roofM], s * (HW + SPORTO) / 2, FY + WH + RH - Math.tan(ang) * (HW + SPORTO) / 2 + .07, -.15); o.rotation.z = -s * ang; return o; });
+  const falde = [-1, 1].map(s => { const o = add(box(LF, .12, 2 * HD + .3), [roofM, roofM, roofM, std({ color: 0x9c8468, roughness: .9 }), cut, roofM], s * (HW + SPORTO) / 2, FY + H2 + RH - Math.tan(ang) * (HW + SPORTO) / 2 + .07, -.15); o.rotation.z = -s * ang; return o; });
 
   // arredi essenziali, solo per far leggere le stanze
   const soft = std({ color: 0x5d6f7c, roughness: .95 }), legno = std({ color: 0x6b5238, roughness: .7 }), bianco = std({ color: 0xf1f1ee, roughness: .4 }), nero = std({ color: 0x17191b, roughness: .5 });
@@ -428,6 +470,27 @@ const Casa = (() => {
     tubo([c, V(c.x + .1, c.y, c.z), V(c.x + .1, FY + 2.3, c.z), V(c.x + .1, FY + 2.3, zb), V(.52, FY + 2.3, zb), V(.52, FY + 2.02, zb)], .016, 1, 'acs');        // calda fino alla doccia (percorso generico)
     tubo([V(XI, f.y, c.z + .5), V(f.x + .1, f.y, c.z + .5), V(f.x + .1, f.y, f.z), f], .016, 1, 'fredda');
   }
+  // fotovoltaico: 14 moduli MULTIVOLT 460 BF, sette per falda (est e ovest), una stringa per ciascuno dei due MPPT dello ZOE1-6000.
+  // I profili passano a 400 mm dai lati corti dei moduli: è dove il manuale 00340211SS (p.14, metodo C, S = 400 ± 50) vuole i quattro morsetti sul lato lungo.
+  // Inverter e batteria in mansarda, sulla parete di fondo in muratura: ambiente asciutto, lontano dall'acqua, superficie non infiammabile (manuali 00341435 p.31-32 e 00341436 p.8).
+  // Generici: ganci e profili (accessori per tetti residenziali, senza un modello preciso), quadro, contatore e percorso dei cavi.
+  const fvDef = PRODOTTI.find(p => p.id === 'fv'); let bat = null;
+  if (fvDef) {
+    const allu = std({ color: 0xb9bec2, roughness: .4, metalness: .8 }), ZC = [-1.731, -.577, .577, 1.731], UU = [.3 + .881, .3 + .881 + 1.782];
+    falde.forEach((f, k) => { const s = k ? 1 : -1, lx = u => s * (-LF / 2 + u), posti = [];
+      ZC.forEach(z => posti.push([UU[0], z])); ZC.slice(1).forEach(z => posti.push([UU[1], z]));          // 4 nella fila alta, 3 in quella bassa
+      const im = new THREE.InstancedMesh(FV.modGeo, FV.modMat, posti.length), m4 = new THREE.Matrix4(); posti.forEach(([u, z], i) => { m4.makeTranslation(lx(u), .145, z); im.setMatrixAt(i, m4); }); f.add(im);
+      for (const [r, u0] of [[0, UU[0]], [1, UU[1]]]) for (const d of [-.481, .481]) { const z0 = ZC[r] - .62, z1 = ZC[3] + .62; f.add(mesh(box(.04, .04, z1 - z0), allu, lx(u0 + d), .11, (z0 + z1) / 2));
+        for (let z = z0 + .2; z < z1; z += .8) f.add(mesh(box(.06, .03, .04), allu, lx(u0 + d), .075, z)); } });
+    const zi = -HD + TW, fvG = new THREE.Group(), inv = FV.inverter(); inv.position.set(.75, FM + 1.45, zi); bat = FV.batteria(3); bat.group.position.set(-.35, FM, zi + .11); fvG.add(inv, bat.group); g.add(fvG);
+    fvG.traverse(o => { o.userData.prodotto = 'fv'; }); viste.push({ def: fvDef, ist: { group: fvG, tick() {} }, pos: V(.2, FM + 2.25, zi + .2) });
+    const grigio = std({ color: 0x8f969b, roughness: .5, metalness: .4 }), yq = FY + 1.7, zc = zi + .12, yr = FY + H2 + RH - Math.tan(ang) * 1.6 - .12;
+    add(box(.3, .4, .1), grigio, -.3, yq, zi + .05); add(box(.12, .4, .3), grigio, -HW - .06, FY + 1.3, 1.0);       // quadro di casa e contatore (generici)
+    for (const s of [-1, 1]) tubo([V(s * 1.6, yr, zi + .5), V(s * 1.6, yr, zc), V(.75 + s * .05, yr, zc), V(.75 + s * .05, FM + 1.2, zc)], .012, 1, 'fv');
+    tubo([V(.6, FM + 1.2, zc), V(.6, FM + .59, zc), V(-.02, FM + .59, zc)], .014, 1, 'bat');
+    tubo([V(.92, FM + 1.2, zc), V(.92, FM + .06, zc), V(-.3, FM + .06, zc), V(-.3, yq + .2, zc)], .012, 1, 'casa');
+    tubo([V(-.45, yq, zc), V(-HW + TW + .06, yq, zc), V(-HW + TW + .06, yq, 1.0), V(-HW - .06, yq, 1.0), V(-HW - .06, FY + 1.5, 1.0)], .012, 1, 'rete');
+  }
   // aria che attraversa la macchina, visibile quando lavora
   const NA = 36, aPos = new Float32Array(NA * 3), aSeed = Array.from({ length: NA }, (_, i) => [rng(i + 3)(), rng(i + 40)(), rng(i + 77)()]);
   const aria = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(aPos, 3)), new THREE.PointsMaterial({ size: .05, transparent: true, opacity: 0, depthWrite: false, color: 0xbfe6ff }));
@@ -437,9 +500,9 @@ const Casa = (() => {
   const sole = add(new THREE.SphereGeometry(1.5, 20, 14), new THREE.MeshBasicMaterial({ color: 0xfff1c9, fog: false }), 0, 0, 0);
 
   // ───────── la giornata ─────────
-  const S = { t: 6.4, estate: false, play: true, carico: 0, doccia: 0, caldo: 1, ricarica: false };
+  const S = { t: 6.4, estate: false, play: true, carico: 0, doccia: 0, caldo: 1, ricarica: false, fv: !!fvDef, pv: 0, ld: 0, bat: 0, rete: 0, soc: .5, sole: false };
   const C = (h) => new THREE.Color(h), NOTTE = C(0x070b12), ALBA = C(0x6a5a6e), GI = C(0x86a5bf), GE = C(0x6aa6dc), tmp = C(0), CALDO = C(0xff7a2a), FREDDO = C(0x3fa9ff);
-  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85), acs: C(0xff5a3c), fredda: C(0x58b8ff) };
+  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85), acs: C(0xff5a3c), fredda: C(0x58b8ff), fv: C(0xffd84a), bat: C(0x7dff9a), casa: C(0xfff2b0), rete: C(0xc49bff) };
   const FASI = {
     inverno: [[0, 'Notte. Fuori fa freddo: la pompa di calore lavora piano e tiene la casa in temperatura.'], [5, 'Mattino presto. Prende calore dall\'aria fredda e lo passa all\'acqua dell\'impianto: la casa è calda prima della sveglia.'],
       [9, 'Giorno. Con il sole la casa chiede meno calore e la macchina rallenta.'], [16, 'Sera. Fuori torna il freddo e la casa si riempie: lavora di più.'], [22, 'Notte. Rallenta e mantiene.']],
@@ -456,8 +519,16 @@ const Casa = (() => {
   function acqua(t) { let doccia = 0, caldo = 1; const tt = t < 1 ? t + 24 : t;
     for (const [a, b] of DOCCE) { const r = b + 3.6; if (tt >= a && tt < b) { doccia = 1; caldo = lerp(1, .5, (tt - a) / (b - a)); } else if (tt >= b && tt < r) caldo = lerp(.5, 1, (tt - b) / (r - b)); }
     return { doccia, caldo }; }
+  // energia nella giornata (indicativa), secondo la modalità Autoconsumo dello ZOE1 (manuale 00341435 p.14): di giorno il fotovoltaico alimenta la casa,
+  // quello che avanza carica la batteria e poi va in rete; di notte la batteria alimenta la casa fino alla scarica minima (10%), poi si prende dalla rete.
+  const EN = [false, true].map(estate => { const r = [], alba = estate ? 5.6 : 7.7, tram = estate ? 21 : 16.8; let soc = .3;
+    for (let giro = 0; giro < 3; giro++) for (let i = 0; i < 240; i++) { const t = i / 10, k = clamp((t - alba) / (tram - alba)), pv = (t > alba && t < tram ? Math.pow(Math.sin(k * PI), 1.2) : 0) * (estate ? 1 : .6);
+      const ld = .14 + .42 * carico(t, estate) + .12 * camp(t, 18.5, 21.5, 0, 1) + (acqua(t).caldo < .999 ? .1 : 0), av = pv - ld; let b = 0;
+      if (av > 0) { b = soc < 1 ? Math.min(av, .6) : 0; soc = Math.min(1, soc + b * .034); } else { b = soc > .1 ? Math.max(av, -.6) : 0; soc = Math.max(.1, soc + b * .034); }
+      r[i] = { pv, ld, b, rete: av - b, soc }; }
+    return r; });
   const fase = (t, estate) => { const f = FASI[estate ? 'estate' : 'inverno']; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
-  let onStato = () => {};
+  let onStato = () => {}; const VEL = {};
   function applica() {
     const { t, estate } = S, alba = estate ? 5.6 : 7.7, tram = estate ? 21 : 16.8, k = clamp((t - alba) / (tram - alba)), su = t > alba && t < tram ? Math.sin(k * PI) : 0;
     const giorno = sm(0, .22, su), crep = sm(0, .1, su) * (1 - sm(.12, .4, su));
@@ -471,19 +542,22 @@ const Casa = (() => {
     S.carico = carico(t, estate);
     const tinta = estate ? FREDDO : CALDO; fLiv.emissive.copy(tinta).multiplyScalar(.10 * S.carico); fBag.emissive.copy(tinta).multiplyScalar(.10 * S.carico);
     const aq = acqua(t); S.doccia = aq.doccia; S.caldo = aq.caldo; S.ricarica = !aq.doccia && aq.caldo < .999;
-    for (const tb of tubi) { if (tb.ramo === 'acs' || tb.ramo === 'fredda') tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], S.doccia); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
+    const en = EN[estate ? 1 : 0][Math.min(239, Math.floor(t * 10))]; S.pv = en.pv; S.ld = en.ld; S.bat = en.b; S.rete = en.rete; S.soc = en.soc; S.sole = S.fv && en.pv - en.ld > .05; if (bat) bat.carica(en.soc);
+    const ATT = { acs: S.doccia, fredda: S.doccia, fv: sm(0, .08, S.pv), bat: sm(0, .02, Math.abs(S.bat)), casa: 1, rete: sm(0, .02, Math.abs(S.rete)) };
+    VEL.acs = VEL.fredda = 1.5 * S.doccia; VEL.fv = 2.2 * S.pv; VEL.bat = 2.6 * S.bat; VEL.casa = .5 + S.ld; VEL.rete = 2.6 * S.rete;
+    for (const tb of tubi) { if (tb.ramo in ATT) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], ATT[tb.ramo]); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
     aria.material.opacity = .55 * sm(.02, .3, S.carico); aria.material.color.set(estate ? 0xffc9a0 : 0xbfe6ff);
     onStato(S, fase(t, estate));
   }
   // camera a orbita limitata: trascina per girare, pizzica o rotella per avvicinarti
   const cam = { az: rad(-7), el: rad(20), zoom: 1, dist: 20, tgt: V(.75, 1.2, 0) }; let W = 1, H = 1;
   function resize(w, h) { W = w; H = h; camera.aspect = w / h; camera.fov = w < h ? 40 : 30; camera.updateProjectionMatrix();
-    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.8 : 5.6) / Math.tan(hf), (basso ? 5.0 : 4.3) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 1.6 : basso ? 1.35 : 1.0, 0); if (stretto && !mossaCam) cam.el = rad(27); }
+    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.8 : 5.6) / Math.tan(hf), (basso ? 5.6 : 4.7) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 2.9 : basso ? 2.7 : 2.5, 0); if (stretto && !mossaCam) cam.el = rad(27); }
   function posaCamera() { const d = cam.dist * cam.zoom, ce = Math.cos(cam.el); camera.position.set(cam.tgt.x + Math.sin(cam.az) * ce * d, cam.tgt.y + Math.sin(cam.el) * d, cam.tgt.z + Math.cos(cam.az) * ce * d); camera.lookAt(cam.tgt); }
   const etich = V(); let onEtichetta = () => {}, mossaCam = false;
   function tick(dt, now) {
     if (S.play) { S.t = (S.t + dt * .8) % 24; applica(); }
-    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (tb.ramo === 'acs' || tb.ramo === 'fredda' ? 1.5 * S.doccia : S.carico > .02 ? .5 + 1.6 * S.carico : 0);
+    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (tb.ramo in VEL ? VEL[tb.ramo] : S.carico > .02 ? .5 + 1.6 * S.carico : 0);
     ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica ? 1 : 0);
     if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = ist.bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = ist.bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = ist.bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
     posaCamera();
@@ -557,7 +631,8 @@ Casa.su(p => apri(p.id), (S, testo) => {
   $('cHour').textContent = hh(S.t); $('cText').textContent = testo; sDay.value = S.t; sDay.style.setProperty('--f', (S.t / 24 * 100) + '%');
   $('bInv').setAttribute('aria-pressed', !S.estate); $('bEst').setAttribute('aria-pressed', S.estate); $('bPlay').setAttribute('aria-pressed', S.play); $('bPlay').textContent = S.play ? 'Pausa' : 'Avvia';
   $('cStato').textContent = S.carico < .03 ? 'A riposo' : (S.estate ? 'Raffresca' : 'Riscalda'); $('cStato').dataset.m = S.carico < .03 ? 'off' : (S.estate ? 'f' : 'c');
-  const a = $('cAcs'); a.textContent = S.doccia ? 'Doccia: esce acqua calda' : S.ricarica ? 'Acqua calda: si ricarica' : 'Acqua calda: pronta'; a.dataset.m = S.doccia ? 'c' : S.ricarica ? 'r' : 'off';
+  const f = $('cFv'); f.hidden = !S.fv; f.textContent = S.pv > .05 ? (S.bat > .01 ? 'Sole: alimenta la casa e carica la batteria' : S.rete > .02 ? 'Sole: batteria piena, il resto va in rete' : S.rete < -.02 ? 'Poco sole: la rete aiuta' : 'Sole: alimenta la casa') : (S.bat < -.01 ? 'Buio: la batteria alimenta la casa' : 'Buio: la casa prende dalla rete'); f.dataset.m = S.pv > .05 ? 's' : 'off';
+  const a = $('cAcs'); a.textContent = S.doccia ? 'Doccia: esce acqua calda' : S.sole ? 'Acqua calda: il sole la porta a 65 °C' : S.ricarica ? 'Acqua calda: si ricarica' : 'Acqua calda: pronta'; a.dataset.m = S.doccia ? 'c' : S.ricarica ? 'r' : 'off';
 }, (i, x, y, vis) => { const tag = tags[i]; tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`; tag.style.visibility = vis ? 'visible' : 'hidden'; });
 sDay.addEventListener('input', () => { const v = +sDay.value; Casa.play(false); Casa.ora(v); });   // il valore si legge prima: fermare la giornata riscrive il cursore
 $('bPlay').onclick = () => Casa.play(!Casa.S.play); $('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
@@ -579,7 +654,7 @@ function frame(ts) {
   if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1);
 }
 // per le prove automatiche
-window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3) }),
+window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3) }),
   passo(n = 1, dt = 1 / 30) { for (let i = 0; i < n; i++) { last += dt; attiva && attiva.tick(dt, last); } attiva && renderer.render(attiva.scene, attiva.camera); } };
 rotta(); document.body.classList.add('pronto'); requestAnimationFrame(frame);
 
