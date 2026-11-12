@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UHP 120 pezzo per pezzo</title>
+<meta name="description" content="La pompa di calore Unical UHP 120 che si monta pezzo per pezzo. Guarda il film, poi smontala, guardaci dentro e accendila tu.">
+<meta property="og:title" content="UHP 120 pezzo per pezzo">
+<meta property="og:description" content="Guarda la pompa di calore montarsi, poi provala tu: smontala, guardaci dentro, accendila.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0b0f13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
+</script>
+<style>
+  /* Un solo mondo visivo, scuro: officina di notte. Scena 3D a tutto schermo; in basso una barra di sei strumenti
+     e sopra un pannello che dice in una riga cosa fare con lo strumento scelto. Pensato prima per il telefono. */
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --copper: #e08a52;
+    --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden }
+  #stage { position: relative; height: 100%; width: 100%; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none }
+  canvas#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
+  button { font: inherit; color: inherit }
+  [hidden] { display: none !important }
+
+  /* testi sopra la scena */
+  #hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: var(--pad);
+    background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%) }
+  #top { display: flex; flex-direction: column; gap: 9px }
+  #brandrow { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap }
+  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase }
+  .brand span { color: var(--green) }
+  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em }
+  #segs { display: flex; gap: 4px; height: 3px }
+  #segs i { background: var(--line); overflow: hidden; border-radius: 2px; min-width: 5px }
+  #segs b { display: block; height: 100%; background: var(--green); transform-origin: left; transform: scaleX(0) }
+  #read { display: flex; gap: clamp(12px, 2vmin, 22px); margin-top: 4px; opacity: 0; transition: opacity .5s }
+  #read.on { opacity: 1 }
+  #read div { display: flex; flex-direction: column; gap: 2px }
+  #read small { font: 600 clamp(10px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) }
+  #read b { font: 700 clamp(24px, 3.6vmin, 34px)/1 var(--display); font-variant-numeric: tabular-nums }
+  #rOut b { color: var(--ice) } #rWat b { color: var(--heat) }
+  #hook { position: absolute; left: 0; right: 0; top: 13%; text-align: center; opacity: 0; padding: 0 16px }
+  #hook b { display: block; font: 700 clamp(50px, 13vmin, 132px)/.9 var(--display); letter-spacing: .01em; font-variant-numeric: tabular-nums; text-shadow: 0 4px 40px rgba(0,0,0,.6) }
+  #hook span { display: block; margin-top: 8px; font: 600 clamp(15px, 2.7vmin, 26px)/1.1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--dim) }
+  #bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px }
+  #cap { display: flex; gap: clamp(10px, 1.6vmin, 18px); align-items: flex-start; max-width: min(100%, 560px); text-shadow: 0 2px 16px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.6) }
+  #cap.in { animation: rise .6s cubic-bezier(.2,.8,.2,1) both }
+  #num { font: 700 clamp(44px, 8.2vmin, 84px)/.82 var(--display); color: transparent; -webkit-text-stroke: 1.5px var(--green); font-variant-numeric: tabular-nums }
+  #name { margin: 0; font: 700 clamp(24px, 4.3vmin, 44px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase; text-wrap: balance }
+  #spec { margin: 6px 0 0; font-size: clamp(13px, 1.7vmin, 15px); line-height: 1.35; color: #c3cdca; text-wrap: pretty; max-width: 44ch }
+  #tick { margin: 9px 0 0; min-height: 1.3em; font: 600 clamp(13px, 1.9vmin, 17px)/1.3 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--copper) }
+  #tick:not(:empty)::before { content: ""; display: inline-block; width: 18px; height: 1.5px; background: var(--copper); vertical-align: middle; margin-right: 8px }
+  #tick.in { animation: rise .3s ease-out both }
+  #count { text-align: right; flex: none; margin-bottom: 50px }
+  #count b { display: block; font: 700 clamp(26px, 4.6vmin, 46px)/.9 var(--display); font-variant-numeric: tabular-nums }
+  #count span { font: 600 clamp(9px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+  #flash { position: absolute; inset: 0; background: #dff1ff; opacity: 0; pointer-events: none }
+  #lens { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ice); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 28px rgba(143,211,255,.5), inset 0 0 26px rgba(143,211,255,.22); pointer-events: none; display: none }
+
+  /* pulsanti */
+  .btn { pointer-events: auto; cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 0 15px; min-height: 40px; display: inline-flex; align-items: center; gap: 7px;
+    font: 600 clamp(13px, 1.7vmin, 14px)/1 var(--display); letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(8px); white-space: nowrap }
+  .btn:hover { border-color: rgba(255,255,255,.4) } .btn:focus-visible, .tab:focus-visible, .key:focus-visible, .chip:focus-visible, input:focus-visible, .big:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px }
+  .btn[aria-pressed="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .btn svg, .tab svg, .big svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none }
+  #film, #freetop { position: absolute; right: var(--pad); display: none; gap: 8px }
+  #film { bottom: var(--pad) } #freetop { top: calc(var(--pad) + 46px) }
+  body.film #film, body.free #freetop { display: flex }
+  body.start #bottom, body.free #bottom, body.start #read { display: none }
+  body.free #segs, body.start #segs { visibility: hidden }
+
+  /* schermata d'inizio */
+  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 44px) var(--pad) calc(var(--pad) + 8px);
+    background: linear-gradient(rgba(6,12,20,.7), transparent 34%, transparent 58%, rgba(6,10,14,.92)) }
+  body.start #start { display: flex }
+  #start small { font: 600 clamp(12px, 1.8vmin, 14px)/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--green) }
+  #start h1 { margin: 8px 0 8px; font: 700 clamp(34px, 7.4vmin, 76px)/.95 var(--display); letter-spacing: .01em; text-transform: uppercase; max-width: 13ch; text-wrap: balance; text-shadow: 0 3px 30px rgba(0,0,0,.6) }
+  #start p { margin: 0; font-size: clamp(15px, 2.2vmin, 19px); line-height: 1.35; max-width: 32ch; color: #d5dedb; text-shadow: 0 2px 14px rgba(0,0,0,.8) }
+  #start .go { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: min(100%, 380px) }
+  .big { cursor: pointer; border: 0; border-radius: 16px; background: var(--green); color: #10140f; min-height: 62px; padding: 10px 20px; display: flex; align-items: center; gap: 14px; text-align: left;
+    font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 40px rgba(0,0,0,.45) }
+  .big svg { width: 26px; height: 26px; fill: currentColor; stroke: none }
+  .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
+  #start .btn { justify-content: center; min-height: 46px }
+  #start .credit { margin: 2px 0 0; font-size: 12px; line-height: 1.3; color: var(--dim); max-width: none; text-shadow: none }
+
+  /* avviso di passaggio alla parte interattiva */
+  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+    opacity: 0; pointer-events: none; white-space: nowrap; box-shadow: 0 14px 50px rgba(0,0,0,.5) }
+  #toast.on { animation: toast 2.4s ease both }
+  @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.9) } 12%, 78% { opacity: 1; transform: translate(-50%, -50%) scale(1) } 100% { opacity: 0; transform: translate(-50%, -62%) scale(1) } }
+
+  /* barra degli strumenti e pannello */
+  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px 8px; display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) }
+  body.free #dock { display: flex }
+  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px); display: flex; flex-direction: column }
+  #panel section { display: flex; flex-direction: column; gap: 10px }
+  .how { display: flex; gap: 12px; align-items: center; font-size: clamp(15px, 2vmin, 16px); line-height: 1.3; text-wrap: pretty }
+  .how b { color: var(--green); font-weight: 600 }
+  .gest { flex: none; position: relative; width: 44px; height: 26px; border-radius: 13px; border: 1.5px solid var(--line) }
+  .gest::after { content: ""; position: absolute; left: 4px; top: 4px; width: 15px; height: 15px; border-radius: 50%; background: var(--green); animation: swipe 1.8s ease-in-out infinite }
+  .gest.tap::after { left: 13px; animation: tap 1.4s ease-in-out infinite }
+  @keyframes swipe { 0%, 100% { transform: translateX(0) } 50% { transform: translateX(19px) } }
+  @keyframes tap { 0%, 100% { transform: scale(.55); opacity: .5 } 50% { transform: scale(1.05); opacity: 1 } }
+  #tabs { pointer-events: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; width: min(100%, 640px) }
+  .tab { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 2px 7px; min-height: 58px; border-radius: 13px; border: 1px solid var(--line); background: var(--panel);
+    font: 600 clamp(10.5px, 2.8vw, 13px)/1 var(--display); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(8px) }
+  .tab svg { width: 24px; height: 24px }
+  .tab[aria-selected="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .tab.pulse { animation: pulse .7s ease both }
+  @keyframes pulse { 40% { transform: translateY(-7px); border-color: var(--green) } }
+  /* cursori */
+  .sl { display: flex; align-items: center; gap: 10px }
+  .sl svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; flex: none }
+  .sl output { font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); font-variant-numeric: tabular-nums; min-width: 3.3em; text-align: right }
+  input[type=range] { flex: 1; appearance: none; -webkit-appearance: none; height: 44px; background: transparent; margin: 0; min-width: 80px; touch-action: none }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--p, 0%), var(--line) var(--p, 0%)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -12px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); box-shadow: 0 0 0 2px var(--green) }
+  input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg) }
+  #sT::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  #sT::-moz-range-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  .note { margin: 0; font-size: 14px; line-height: 1.35; color: var(--dim); min-height: 1.35em; text-wrap: pretty }
+  /* pezzi */
+  .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; touch-action: pan-x }
+  .chips::-webkit-scrollbar { display: none }
+  .chip, .key { cursor: pointer; flex: none; border: 1px solid var(--line); background: rgba(255,255,255,.04); border-radius: 999px; min-height: 38px; padding: 0 13px; font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #10140f; border-color: var(--ink) }
+  #cardIn small { font: 600 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--green) }
+  #cardIn h3 { margin: 4px 0 5px; font: 700 clamp(22px, 3.4vmin, 28px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase }
+  #cardIn p { margin: 0; font-size: 15px; line-height: 1.35; text-wrap: pretty } #cardIn p + p { margin-top: 6px; color: var(--dim); font-size: 13px }
+  /* comando */
+  .keys { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
+  .key { padding: 0 4px; min-height: 44px; border-radius: 12px; text-align: center; letter-spacing: .05em; font-size: clamp(12px, 3vw, 14px) }
+  .key[aria-pressed="true"] { border-color: var(--heat); color: var(--heat); background: rgba(255,154,77,.1) }
+  #kPw[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: rgba(169,189,143,.12) }
+  #kCool[aria-pressed="true"] { border-color: var(--ice); color: var(--ice); background: rgba(143,211,255,.1) }
+  /* giro */
+  #rT { font: 600 clamp(17px, 2.6vmin, 20px)/1.2 var(--display); letter-spacing: .03em; min-height: 2.4em; display: block; text-wrap: balance }
+  .prog { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden } .prog i { display: block; height: 100%; width: 0; background: var(--green) }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between }
+
+  @media (max-width: 560px) { #film { left: var(--pad); justify-content: flex-end } body.film #bottom { padding-bottom: 52px } #count { display: none } .sub { display: none } .keys { grid-template-columns: repeat(2, 1fr) } #kPw { grid-column: span 2 }
+    #freetop .btn { min-height: 36px; padding: 0 11px; letter-spacing: .08em } #freetop { gap: 6px } }
+  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 30px) } #start h1 { font-size: 30px } .tab { min-height: 46px; flex-direction: row; gap: 6px } .tab svg { width: 18px; height: 18px } #panel { padding: 8px 12px } input[type=range] { height: 34px } }
+  @media (prefers-reduced-motion: reduce) { #cap.in, #tick.in, .gest::after, .tab.pulse { animation: none } }
+</style>
+</head>
+<body class="start">
+<div id="stage">
+  <canvas id="gl" aria-label="Pompa di calore Unical UHP 120 che si monta pezzo per pezzo"></canvas>
+  <div id="hud">
+    <header id="top">
+      <div id="brandrow"><div class="brand">UHP <span>120</span></div><div class="sub">Unical · monoblocco R290 · 1280 × 500 × 1040 mm</div></div>
+      <div id="segs"></div>
+      <div id="read"><div id="rOut"><small>Aria fuori</small><b>7 °C</b></div><div id="rWat"><small>Acqua di casa</small><b>35 °C</b></div></div>
+    </header>
+    <div id="hook"><b id="hk1">−25 °C</b><span id="hk2">fuori</span></div>
+    <footer id="bottom">
+      <div id="cap"><div id="num">00</div><div><h2 id="name">Unical UHP 120</h2><p id="spec">Pompa di calore aria-acqua a propano</p><p id="tick"></p></div></div>
+      <div id="count"><b>0</b><span>pezzi</span></div>
+    </footer>
+  </div>
+  <div id="lens"></div>
+
+  <div id="film">
+    <button class="btn" id="bPlay" type="button">Pausa</button>
+    <button class="btn" id="bSkip" type="button">Salta il film</button>
+    <button class="btn" id="bSnd2" type="button" aria-pressed="false">Audio</button>
+  </div>
+  <div id="freetop">
+    <button class="btn" id="bFilm" type="button"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4"/></svg>Film</button>
+    <button class="btn" id="bSnd" type="button" aria-pressed="false">Audio</button>
+  </div>
+
+  <div id="start">
+    <div><small>Pompa di calore Unical UHP 120</small><h1>Guardala montarsi pezzo per pezzo</h1><p>Poi provala tu: smontala, guardaci dentro, accendila, cambia il meteo.</p></div>
+    <div class="go">
+      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>50 secondi</span></div></button>
+      <button class="btn" id="bExplore" type="button">Salta il film e provala subito</button>
+      <p class="credit">Animazione dimostrativa di Borelli Impianti, ricostruita dai manuali Unical.</p>
+    </div>
+  </div>
+  <div id="toast">Ora provala tu</div>
+
+  <div id="dock">
+    <div id="panel">
+      <section id="pTouch">
+        <div class="how" id="howTouchRow"><i class="gest"></i><span id="howTouch">Trascina per girarla. Tocca un pezzo per sapere cos'è.</span></div>
+        <div id="cardIn" hidden><small id="cK"></small><h3 id="cT"></h3><p id="cE"></p><p id="cS"></p></div>
+        <div class="chips" id="chips" aria-label="Gruppi della macchina"></div>
+      </section>
+      <section id="pExpl" hidden>
+        <div class="how"><i class="gest"></i><span>Trascina il cursore: la macchina si smonta in <b id="nP">742</b> pezzi.</span></div>
+        <div class="sl"><input id="sE" type="range" min="0" max="100" value="0" aria-label="Quanto smontare"><output id="oE">0%</output></div>
+      </section>
+      <section id="pXray" hidden>
+        <div class="how"><i class="gest"></i><span id="howX">Muovi il dito sulla macchina: dentro il cerchio la vedi lavorare.</span></div>
+        <p class="note">Rosso e arancio: caldo. Azzurro: freddo.</p>
+      </section>
+      <section id="pRide" hidden>
+        <div><small style="font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--green)">Segui il gas nel suo giro</small><b id="rT">Si parte dal compressore</b></div>
+        <div class="row"><div class="prog" style="flex:1"><i id="rP"></i></div><button class="btn" id="bRideGo" type="button">Ferma</button></div>
+      </section>
+      <section id="pRem" hidden>
+        <div class="how"><i class="gest tap"></i><span>Premi i tasti: la macchina risponde.</span></div>
+        <div class="keys">
+          <button class="key" id="kPw" type="button" aria-pressed="true">Accesa</button>
+          <button class="key" id="kHeat" type="button" aria-pressed="true">Caldo</button><button class="key" id="kCool" type="button" aria-pressed="false">Freddo</button>
+          <button class="key" id="kSil" type="button" aria-pressed="false">Silent</button><button class="key" id="kPow" type="button" aria-pressed="false">Powerful</button>
+        </div>
+        <p class="note" id="lState"></p>
+      </section>
+      <section id="pMeteo" hidden>
+        <div class="how"><i class="gest"></i><span>Trascina: cambia la temperatura fuori casa.</span></div>
+        <div class="sl"><svg viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M20.7 7 3.3 17"/></svg><input id="sT" type="range" min="-25" max="35" value="7" aria-label="Temperatura esterna"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg><output id="oT">7 °C</output></div>
+        <p class="note" id="mHint"></p>
+      </section>
+    </div>
+    <div id="tabs" role="tablist" aria-label="Strumenti">
+      <button class="tab" role="tab" data-tool="touch" aria-selected="true" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="2.6"/><path d="M7.5 9.5a6.4 6.4 0 0 1 9 0M4.6 6.6a10.5 10.5 0 0 1 14.8 0"/></svg>Tocca</button>
+      <button class="tab" role="tab" data-tool="expl" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M8 8 3.5 3.5M16 8l4.5-4.5M8 16l-4.5 4.5M16 16l4.5 4.5M3.5 3.5h3M3.5 3.5v3M20.5 3.5h-3M20.5 3.5v3M3.5 20.5h3M3.5 20.5v-3M20.5 20.5h-3M20.5 20.5v-3"/></svg>Smonta</button>
+      <button class="tab" role="tab" data-tool="xray" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M7.5 10.5h6M10.5 7.5v6"/></svg>Raggi X</button>
+      <button class="tab" role="tab" data-tool="ride" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 8c0-3.4 14-3.4 14 0S5 12.600 5 16s14 3.400 14 0"/><circle cx="19" cy="16" r="1.800" fill="currentColor"/></svg>Giro</button>
+      <button class="tab" role="tab" data-tool="rem" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v8M6.300 6.800a8 8 0 1 0 11.400 0"/></svg>Accendi</button>
+      <button class="tab" role="tab" data-tool="meteo" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><path d="M12 2v20M3.300 7l17.400 10M20.700 7 3.300 17M12 6.500 9.800 4.300M12 6.500l2.200-2.200M12 17.500l-2.200 2.200M12 17.500l2.200 2.200"/></svg>Meteo</button>
+    </div>
+  </div>
+  <div id="flash"></div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+// ───────── base: utilità, renderer, scena ─────────
+const $ = id => document.getElementById(id);
+const PI = Math.PI, rad = d => d * PI / 180;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
+const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const eoc = t => 1 - Math.pow(1 - t, 3), eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eob = t => { const c = 1.25; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const eoe = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+try { await Promise.race([Promise.all([document.fonts.load('800 60px Barlow'), document.fonts.load('700 60px "Barlow Condensed"')]), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+
+const canvas = $('gl'), stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const COARSE = matchMedia('(pointer: coarse)').matches;   // telefono o tablet: tengo più bassa la risoluzione di resa
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+const scene = new THREE.Scene();
+const C_STUDIO = new THREE.Color(0x0b0f13), C_COLD = new THREE.Color(0x0b2038);
+scene.background = C_STUDIO.clone(); scene.fog = new THREE.Fog(0x0b0f13, 5, 16);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture;
+scene.environmentIntensity = 0.85;
+const camera = new THREE.PerspectiveCamera(30, 1, 0.03, 60);
+const keyL = new THREE.DirectionalLight(0xffffff, 2.3); keyL.position.set(2.5, 4, 3.5); scene.add(keyL);
+const rimL = new THREE.DirectionalLight(0x9fd0ff, 1.5); rimL.position.set(-3, 2.5, -3.5); scene.add(rimL);
+scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, 0.45));
+
+let composer = null, bloom = null, HQ = true;
+function mkComposer() {
+  const s = renderer.getDrawingBufferSize(new THREE.Vector2());
+  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(s.x, s.y, { type: THREE.HalfFloatType, samples: 4 }));
+  composer.addPass(new RenderPass(scene, camera));
+  bloom = new UnrealBloomPass(new THREE.Vector2(s.x / 2, s.y / 2), 0.5, 0.55, 0.92); composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+}
+function resize() {
+  const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight);
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 36 : 30; camera.updateProjectionMatrix();
+  if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
+}
+
+// ───────── texture disegnate su canvas ─────────
+function cv(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const rep = (t, x, y) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(x, y); return t; };
+const T = {};
+T.noise = rep(cv(256, 256, (g, w, h) => { const r = rng(3); g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); for (let i = 0; i < 9000; i++) { const v = 100 + r() * 56 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); } }, false), 6, 6);
+T.brush = rep(cv(256, 256, (g, w, h) => { const r = rng(5); g.fillStyle = '#d9d9d9'; g.fillRect(0, 0, w, h); for (let i = 0; i < 1400; i++) { const v = 170 + r() * 85 | 0; g.fillStyle = `rgba(${v},${v},${v},.5)`; g.fillRect(0, r() * h, w, .6 + r()); } }), 1, 2);
+T.lam = rep(cv(64, 256, (g, w, h) => { for (let y = 0; y < h; y += 4) { g.fillStyle = y % 8 ? '#6d7479' : '#3c4146'; g.fillRect(0, y, w, 4); } }), 1, 3);
+T.spangle = rep(cv(256, 256, (g, w, h) => { const r = rng(11); g.fillStyle = '#c4c9cc'; g.fillRect(0, 0, w, h); for (let i = 0; i < 260; i++) { const v = 150 + r() * 90 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.55)`; g.beginPath(); const x = r() * w, y = r() * h; g.moveTo(x, y); for (let k = 0; k < 5; k++) g.lineTo(x + (r() - .5) * 60, y + (r() - .5) * 60); g.fill(); } }), 2, 2);
+T.base = cv(1024, 360, (g, w, h) => { // nervature stampate del fondo, come nel disegno del manuale
+  g.fillStyle = '#6a6a6a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#c8c8c8'; g.lineWidth = 9; g.lineJoin = 'round';
+  const rr = (x, y, a, b, r) => { g.beginPath(); g.roundRect(x, y, a, b, r); g.stroke(); };
+  rr(40, 30, 620, 46, 20); rr(40, 110, 300, 90, 20); rr(380, 110, 280, 60, 20); rr(380, 200, 280, 46, 20); rr(40, 240, 300, 80, 20); rr(700, 30, 280, 130, 24); rr(700, 190, 280, 130, 24); rr(380, 276, 280, 46, 20);
+  g.fillStyle = '#2a2a2a'; g.beginPath(); g.arc(275, 285, 15, 0, 7); g.fill();
+}, false);
+T.side = cv(512, 1024, (g, w, h) => { g.fillStyle = '#707070'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d0d0d0'; g.lineWidth = 12; g.beginPath(); g.roundRect(46, 60, w - 92, h - 150, 40); g.stroke(); g.fillStyle = '#383838'; g.beginPath(); g.roundRect(196, 700, 120, 50, 8); g.fill(); }, false);
+T.chev = rep(cv(128, 128, (g, w, h) => { g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d8d8d8'; g.lineWidth = 7; for (let y = -64; y < h + 64; y += 22) { g.beginPath(); g.moveTo(0, y + 40); g.lineTo(64, y); g.lineTo(128, y + 40); g.stroke(); } }, false), 1, 5);
+T.pcb = cv(512, 512, (g, w, h) => {
+  const r = rng(21); g.fillStyle = '#17503a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2c8660'; g.lineWidth = 2;
+  for (let i = 0; i < 70; i++) { let x = r() * w, y = r() * h; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { if (r() < .5) x += (r() - .5) * 150; else y += (r() - .5) * 150; g.lineTo(x, y); } g.stroke(); }
+  for (let i = 0; i < 26; i++) { const x = 20 + r() * (w - 90), y = 20 + r() * (h - 70), a = 20 + r() * 60, b = 14 + r() * 36; g.fillStyle = ['#15171a', '#22262b', '#0f1113'][i % 3]; g.fillRect(x, y, a, b); g.fillStyle = '#b9bec2'; for (let k = 0; k < a; k += 7) { g.fillRect(x + k, y - 3, 3, 3); g.fillRect(x + k, y + b, 3, 3); } }
+  g.fillStyle = '#d9c36a'; for (let i = 0; i < 120; i++) { g.beginPath(); g.arc(r() * w, r() * h, 2.4, 0, 7); g.fill(); }
+  g.fillStyle = '#e9efe9'; g.font = '600 13px sans-serif'; ['CN23', 'CN24', 'CN43', 'XT1', 'SW2', 'RS-485', 'DC FAN', 'EXV', 'IPM'].forEach((s, i) => g.fillText(s, 18 + (i % 3) * 170, 30 + (i / 3 | 0) * 160));
+});
+T.plate = cv(512, 300, (g, w, h) => { // targhetta: solo dati della scheda UHP 120
+  g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); g.fillStyle = '#16191b'; g.font = '800 46px Barlow, Arial, sans-serif'; g.fillText('Unical', 22, 56);
+  g.font = '700 30px Barlow, Arial, sans-serif'; g.fillText('UHP 120', 330, 54); g.fillRect(22, 72, w - 44, 3); g.font = '500 23px Barlow, Arial, sans-serif';
+  [['Refrigerante', 'R290 · 1,35 kg'], ['Alimentazione', '230 V ~ 50 Hz'], ['Potenza max assorbita', '7 kW'], ['Corrente max', '45,15 A'], ['Acqua', 'max 80 °C · 3 bar'], ['Peso', '154 kg']].forEach((r, i) => { g.fillText(r[0], 22, 108 + i * 32); g.fillText(r[1], 300, 108 + i * 32); });
+});
+T.flame = cv(256, 256, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#f2c230'; g.strokeStyle = '#141414'; g.lineWidth = 14; g.lineJoin = 'round'; g.beginPath(); g.moveTo(128, 22); g.lineTo(238, 214); g.lineTo(18, 214); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#141414'; g.beginPath(); g.moveTo(128, 78); g.bezierCurveTo(176, 126, 168, 186, 128, 190); g.bezierCurveTo(84, 186, 84, 140, 108, 118); g.bezierCurveTo(112, 138, 124, 132, 128, 78); g.fill(); g.font = '700 26px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('R290', 128, 248); });
+T.letter = cv(256, 1100, (g, w, h) => { g.clearRect(0, 0, w, h); g.save(); g.translate(w / 2, h / 2); g.rotate(-PI / 2); g.fillStyle = '#33383d'; g.font = '800 250px Barlow, "Helvetica Neue", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('Unical', 0, 14, h - 40); g.restore(); });
+T.vessel = cv(256, 256, (g, w, h) => { g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(40, 60, 176, 120); g.fillStyle = '#1b1e20'; g.font = '700 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('5 L', 128, 118); g.font = '500 26px Barlow, Arial, sans-serif'; g.fillText('precarica 1 bar', 128, 158); });
+T.io = s => cv(128, 64, (g, w, h) => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); g.fillStyle = '#16191b'; g.font = '800 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText(s, 64, 48); });
+T.glow = cv(64, 64, (g) => { const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.55)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); });
+T.ground = cv(1024, 1024, (g, w, h) => { g.fillStyle = '#0b0f13'; g.fillRect(0, 0, w, h); const r = g.createRadialGradient(512, 512, 0, 512, 512, 512); r.addColorStop(0, 'rgba(120,140,150,.5)'); r.addColorStop(.35, 'rgba(60,72,80,.25)'); r.addColorStop(1, 'rgba(11,15,19,0)'); g.fillStyle = r; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(190,210,220,.10)'; g.lineWidth = 1; for (let i = 0; i <= 1024; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); }
+  const k = g.createRadialGradient(512, 512, 380, 512, 512, 512); k.addColorStop(0, 'rgba(11,15,19,0)'); k.addColorStop(1, 'rgba(11,15,19,1)'); g.fillStyle = k; g.fillRect(0, 0, w, h); });
+T.shadow = cv(256, 128, (g) => { const r = g.createRadialGradient(128, 64, 0, 128, 64, 128); r.addColorStop(0, 'rgba(0,0,0,.8)'); r.addColorStop(.6, 'rgba(0,0,0,.35)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.setTransform(1, 0, 0, .5, 0, 0); g.fillStyle = r; g.fillRect(0, 0, 256, 256); });
+
+// ───────── materiali ─────────
+const LENS = { value: new THREE.Vector3(-9999, -9999, 0) };   // lente a raggi X: x, y, raggio in pixel del buffer
+const XRM = [];                                              // materiali dell'involucro, che possono diventare trasparenti
+const std = o => new THREE.MeshStandardMaterial(o);
+function xr(mat) {
+  mat.userData.o = mat.opacity;
+  mat.onBeforeCompile = s => { s.uniforms.uLens = LENS; s.fragmentShader = 'uniform vec3 uLens;\n' + s.fragmentShader.replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n\tif (uLens.z > 0.0 && distance(gl_FragCoord.xy, uLens.xy) < uLens.z) discard;'); };
+  XRM.push(mat); return mat;
+}
+const M = {
+  dark: std({ color: 0x2a2d31, roughness: .58, metalness: .25, bumpMap: T.noise, bumpScale: .5 }),
+  basePlate: std({ color: 0x2c3034, roughness: .5, metalness: .35, bumpMap: T.base, bumpScale: 4 }),
+  galv: std({ color: 0xb4bbc0, roughness: .42, metalness: .85, map: T.spangle }),
+  steel: std({ color: 0xc3c9cd, roughness: .3, metalness: 1, map: T.brush }),
+  inox: std({ color: 0xd3d8dc, roughness: .24, metalness: 1, bumpMap: T.chev, bumpScale: 2.5 }),
+  cast: std({ color: 0x55595d, roughness: .7, metalness: .6, bumpMap: T.noise, bumpScale: 1.2 }),
+  lam: std({ color: 0x8b9298, roughness: .45, metalness: .8, map: T.lam }),
+  black: std({ color: 0x111316, roughness: .32, metalness: .35 }),
+  plastic: std({ color: 0x17191c, roughness: .62, metalness: .05 }),
+  blade: std({ color: 0x23272b, roughness: .38, metalness: .1, side: THREE.DoubleSide }),
+  rubber: std({ color: 0x0c0c0d, roughness: .95, metalness: 0 }),
+  foam: std({ color: 0x18191b, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2 }),
+  copper: std({ color: 0xc9743c, roughness: .28, metalness: 1 }),
+  brass: std({ color: 0xc9a245, roughness: .32, metalness: 1 }),
+  gold: std({ color: 0xc9a44c, roughness: .42, metalness: .9, emissive: 0x000000 }),
+  alu: std({ color: 0xcfd4d8, roughness: .35, metalness: .9 }),
+  red: std({ color: 0xb3261e, roughness: .45, metalness: .1 }),
+  blue: std({ color: 0x1f5fa8, roughness: .5, metalness: .1 }),
+  cap: std({ color: 0x20262c, roughness: .35, metalness: .3 }),
+  heater: std({ color: 0xb5622a, roughness: .6, metalness: .1, emissive: 0xff5a14, emissiveIntensity: 0 }),
+  vessel: std({ color: 0xffffff, roughness: .45, metalness: .3, map: T.vessel }),
+  pcb: std({ color: 0xffffff, roughness: .55, metalness: .2, map: T.pcb }),
+  plateLab: std({ color: 0xffffff, roughness: .5, metalness: .1, map: T.plate }),
+  flame: std({ color: 0xffffff, roughness: .6, map: T.flame, transparent: true }),
+  led: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 2.2, 0.9) }),
+  term: std({ color: 0x9aa39a, roughness: .6, metalness: .1 }),
+  shellC: std({ color: 0x0e1012, roughness: .28, metalness: .5, side: THREE.DoubleSide }),
+  // involucro (trasparente a comando)
+  sGreen: xr(std({ color: 0x4d613d, roughness: .58, metalness: .02, bumpMap: T.noise, bumpScale: .5 })),
+  sSlat: xr(std({ color: 0x546941, roughness: .52, metalness: .02 })),
+  sDark: xr(std({ color: 0x2a2d31, roughness: .55, metalness: .25, bumpMap: T.noise, bumpScale: .5 })),
+  sSide: xr(std({ color: 0x2c2f33, roughness: .52, metalness: .25, bumpMap: T.side, bumpScale: 5 })),
+  sGuard: xr(std({ color: 0x15171a, roughness: .5, metalness: .5 })),
+  sLetter: xr(std({ color: 0xffffff, roughness: .6, map: T.letter, transparent: true, polygonOffset: true, polygonOffsetFactor: -2 })),
+  sScrew: xr(std({ color: 0xaab0b4, roughness: .35, metalness: 1 })),
+  sFelt: xr(std({ color: 0x4b4f55, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 3, side: THREE.DoubleSide })),
+  sJacket: xr(std({ color: 0x141517, roughness: .85, metalness: 0, bumpMap: T.noise, bumpScale: 2, side: THREE.DoubleSide })),
+  sDoor: xr(std({ color: 0x0e1012, roughness: .28, metalness: .5, side: THREE.DoubleSide })),
+  sLid: xr(std({ color: 0x24282c, roughness: .5, metalness: .4 })),
+  sLabel: xr(std({ color: 0xffffff, roughness: .5, map: T.plate })),
+};
+// modalità fantasma per il giro nel circuito: tutto tranne tubi e rame diventa quasi trasparente
+let GHM = null, ghostNow = 0;
+function setGhost(x) {
+  if (!GHM) { const keep = [M.copper, M.brass, M.led]; GHM = Object.values(M).filter(m => !XRM.includes(m) && !keep.includes(m)); for (const m of GHM) { m.userData.o = m.opacity; m.userData.t = m.transparent; } }
+  if (x === ghostNow) return; ghostNow = x;
+  for (const m of GHM) { m.opacity = lerp(m.userData.o, .07, x); const tr = x > .004 || m.userData.t; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; }
+}
+function setXray(x) { for (const m of XRM) { const o = lerp(m.userData.o, 0.06, x); m.opacity = o; const tr = x > 0.004 || m.map === T.letter || m.map === T.flame; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < 0.5; } }
+
+// ───────── geometrie ─────────
+const G = {
+  box: (w, h, d) => new THREE.BoxGeometry(w, h, d),
+  rbox: (w, h, d, r = .005) => new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2.01, h / 2.01, d / 2.01)),
+  cyl: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s),
+  cylZ: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s).rotateX(PI / 2),
+  cylX: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s).rotateZ(PI / 2),
+  open: (r, h, a0, al, s = 40) => new THREE.CylinderGeometry(r, r, h, s, 1, true, a0, al),
+  dome: (r, k, up = true) => new THREE.SphereGeometry(r, 32, 12, 0, PI * 2, up ? 0 : PI / 2, PI / 2).scale(1, k, 1),
+  torus: (R, r, arc = PI * 2, s = 40) => new THREE.TorusGeometry(R, r, 10, s, arc),
+  plane: (w, h) => new THREE.PlaneGeometry(w, h),
+};
+function annulus(ro, ri, h, a0 = 0, a1 = PI * 2, seg = 44) {   // anello con asse Y, centrato
+  const s = new THREE.Shape(); s.absarc(0, 0, ro, a0, a1, false);
+  if (a1 - a0 >= PI * 2 - 1e-4) { const hl = new THREE.Path(); hl.absarc(0, 0, ri, 0, PI * 2, true); s.holes.push(hl); } else { s.absarc(0, 0, ri, a1, a0, true); s.closePath(); }
+  const g = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false, curveSegments: seg }); g.translate(0, 0, -h / 2); g.rotateX(PI / 2); return g;
+}
+const curveOf = pts => new THREE.CatmullRomCurve3(pts.map(p => V(p[0], p[1], p[2])), false, 'catmullrom', 0.12);
+const tubeGeo = (pts, r, seg) => new THREE.TubeGeometry(curveOf(pts), seg || Math.max(16, pts.length * 12), r, 10, false);
+function mesh(geo, mat, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); return m; }
+const screwGeo = mergeGeometries([new THREE.CylinderGeometry(.0062, .0062, .0042, 6).translate(0, .0031, 0), new THREE.CylinderGeometry(.0082, .0082, .001, 14).translate(0, .0005, 0), new THREE.CylinderGeometry(.0027, .0027, .014, 8).translate(0, -.007, 0)]);
+
+
+// ───────── motore del montaggio ─────────
+// Ogni pezzo ha una posizione finale, un istante di partenza e uno di arrivo: lo stato della macchina è una funzione
+// pura del tempo t e del fattore di esplosione E, quindi si può scorrere avanti e indietro.
+const machine = new THREE.Group(); scene.add(machine);
+const GROUPS = [], PIECES = [];
+let CUR = null;
+const BEAT = 0.125;                       // i pezzi vanno in sede su una griglia di sedicesimi a 120 bpm
+
+function group(key, name, spec, t0, t1, o = {}) {
+  const node = new THREE.Group(); machine.add(node);
+  CUR = { key, name, spec, t0, t1, node, i: GROUPS.length, stage: V(...(o.stage || [0, .3, 1])), ex: V(...(o.ex || [0, 0, 0])), spread: o.spread ?? .9,
+    trav: o.trav ?? .45, pieces: [], c: V(), size: .3, az: o.az ?? 30, el: o.el ?? 14, zoom: o.zoom ?? 1, keys: o.keys || null, info: o.info || null };
+  GROUPS.push(CUR); return CUR;
+}
+function piece(o, base) {
+  const p = Object.assign({ g: CUR, st: -1, d: o.d ?? 0, dur: o.dur ?? .5, from: o.from ? V(...o.from) : null, spin: o.spin ? V(...o.spin) : null,
+    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click' }, base);
+  CUR.pieces.push(p); PIECES.push(p); return p;
+}
+function P(m, o = {}) { (o.parent || CUR.node).add(m); m.userData.g = CUR.i; piece(o, { m, im: null, inst: -1, fp: m.position.clone(), fq: m.quaternion.clone(), fs: m.scale.clone() }); return m; }
+// pezzi ripetuti: list = [{p:[x,y,z], r:[rx,ry,rz] | q:Quaternion, s:[sx,sy,sz]}]
+function PIN(geo, mat, list, o = {}) {
+  const im = new THREE.InstancedMesh(geo, mat, list.length); im.frustumCulled = false; im.userData.g = CUR.i; (o.parent || CUR.node).add(im);
+  const n = list.length, e = new THREE.Euler();
+  list.forEach((it, i) => {
+    const f = n > 1 ? i / (n - 1) : 0, q = it.q ? it.q.clone() : new THREE.Quaternion().setFromEuler(e.set(...(it.r || [0, 0, 0])));
+    const pick = v => typeof v === 'function' ? v(i, it, f) : v;
+    piece({ d: o.df ? o.df(i, f) : lerp(o.d0 ?? 0, o.d1 ?? (o.d0 ?? 0), f), dur: o.dur, from: pick(o.from), spin: pick(o.spin), k: pick(o.k), ease: o.ease, n: i === 0 ? o.n : null, snd: o.snd || 'tick' },
+      { m: null, im, inst: i, fp: V(...it.p), fq: q, fs: V(...(it.s || [1, 1, 1])) });
+  });
+  return im;
+}
+// viti: entrano lungo il proprio asse avvitandosi. list = [{p, r}] con l'asse della vite su +Y locale
+function screws(list, o = {}) {
+  const e = new THREE.Euler();
+  return PIN(screwGeo, o.mat || M.steel, list, Object.assign({ dur: .34, ease: eoc, snd: 'screw', spin: [0, 12, 0], from: (i, it) => { const a = V(0, 1, 0).applyEuler(e.set(...(it.r || [0, 0, 0]))).multiplyScalar(.11); return [a.x, a.y, a.z]; } }, o));
+}
+
+function finalize() {
+  machine.updateMatrixWorld(true);
+  const R = rng(7), q = new THREE.Quaternion();
+  for (const g of GROUPS) {
+    const W = g.t1 - g.t0, box = new THREE.Box3();
+    g.ta = g.t0 + W * g.trav; g.tb = g.t1 - .12;
+    for (const p of g.pieces) {
+      const c = V();
+      if (p.im) c.copy(p.fp).applyMatrix4(p.im.parent.matrixWorld);
+      else { p.m.geometry.computeBoundingBox(); p.m.geometry.boundingBox.getCenter(c); p.m.updateMatrixWorld(true); c.applyMatrix4(p.m.matrixWorld); }
+      p.wc = c; box.expandByPoint(c);
+    }
+    box.getCenter(g.c); g.size = Math.max(.14, box.getSize(V()).length() / 2); g.box = box;
+    for (const p of g.pieces) {
+      p.ts = g.t0 + p.d * (W - .95);
+      p.te = Math.max(p.ts + .2, Math.round((p.ts + p.dur) / BEAT) * BEAT);
+      if (p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
+      if (!p.from) p.from = V((R() - .5) * .5, .16 + R() * .4, .12 + R() * .42);
+      if (!p.spin) p.spin = V((R() - .5) * 2.2, (R() - .5) * 2.2, (R() - .5) * 2.2);
+      if (!p.k) p.k = p.wc.clone().sub(g.c).multiplyScalar(g.spread);
+      const par = p.im ? p.im.parent : p.m.parent; par.getWorldQuaternion(q).invert(); p.from.applyQuaternion(q); p.k.applyQuaternion(q);
+    }
+  }
+}
+
+const _v = V(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4(), _s = V(), ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+let lastE = -1, lastShr = -1, onLand = null, onStart = null, placed = 0;
+function apply(t, E = 0, shr = 1, emit = false) {
+  for (const g of GROUPS) { g.q = eio(clamp((t - g.ta) / (g.tb - g.ta))); g.node.position.copy(g.stage).multiplyScalar(1 - g.q).addScaledVector(g.ex, E); }
+  const same = E === lastE && shr === lastShr, dirty = new Set(); let n = 0;
+  for (const p of PIECES) {
+    let a = (t - p.ts) / (p.te - p.ts); const st = a <= 0 ? 0 : a >= 1 ? 2 : 1;
+    if (st === 2) n++;
+    if (st === p.st && st !== 1 && same) continue;
+    if (emit && st === 2 && p.st === 1 && onLand) onLand(p);
+    if (emit && st >= 1 && p.st === 0 && p.n && onStart) onStart(p);
+    p.st = st;
+    if (st === 0) { if (p.im) { p.im.setMatrixAt(p.inst, ZERO); dirty.add(p.im); } else p.m.visible = false; continue; }
+    a = clamp(a); const r = 1 - p.ease(a), sc = Math.min(1, a * 5) * shr;
+    _v.copy(p.fp).addScaledVector(p.from, r).addScaledVector(p.k, E);
+    _q.setFromEuler(_e.set(p.spin.x * r, p.spin.y * r, p.spin.z * r)).premultiply(p.fq); _s.copy(p.fs).multiplyScalar(sc);
+    if (p.im) { _m.compose(_v, _q, _s); p.im.setMatrixAt(p.inst, _m); dirty.add(p.im); }
+    else { p.m.visible = sc > .001; p.m.position.copy(_v); p.m.quaternion.copy(_q); p.m.scale.copy(_s); }
+  }
+  dirty.forEach(im => { im.instanceMatrix.needsUpdate = true; }); lastE = E; lastShr = shr; placed = n;
+}
+
+
+// ───────── la macchina: Unical UHP 100÷160T (dati UHP 120) ─────────
+// Quote dal manuale di installazione 00341518 §5.5.2: A 1280, C 450, F 1040, G 72, D 94, E 81, H 784. Metri, X larghezza, Y alto, Z verso il fronte.
+const Wd = 1.28, Dp = .45, Y0 = .036, YB = .081, YT = 1.076, XL = -.64, XR = .64, ZB = -.225, ZF = .225, XP = .19;
+const HP = YT - .03 - YB, YC = YB + HP / 2;
+const FAN = { x: -.215, y: .565, r: .30 };
+const PIPE = {};
+const qBasis = (x, y) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, V().crossVectors(x, y)));
+
+// 1 ─ Basamento e telaio
+group('base', 'Basamento', 'Fondo che raccoglie la condensa, cavo scaldante antigelo e quattro antivibranti.', 3.5, 6.0, { stage: [0, .2, .7], ex: [0, -.28, 0], az: 24, el: 24, zoom: .8,
+  info: { e: 'Il pavimento della macchina. Raccoglie l\'acqua che si forma sulla batteria e la porta allo scarico.', s: 'Cavo scaldante sul fondo contro il ghiaccio · 4 antivibranti · attacchi acqua G 1"' } });
+{
+  const feet = []; for (const x of [-.392, .392]) for (const z of [-.19, .19]) feet.push({ p: [x, .018, z] });
+  PIN(G.cyl(.027, .036, 20, .021), M.rubber, feet, { d0: 0, d1: .08, from: [0, -.22, 0], spin: [0, 2, 0], n: 'Antivibranti' });
+  [-.392, .392].forEach((x, i) => P(mesh(G.rbox(.06, .03, .5, .004), M.dark, x, Y0 + .015, 0), { d: .1 + i * .05, from: [x * .6, .25, 0], spin: [0, .8, 0], n: 'Piedi' }));
+  P(mesh(G.rbox(Wd, .015, Dp, .005), M.basePlate, 0, YB - .0075, 0), { d: .22, from: [0, .45, .1], spin: [.5, 0, 0], dur: .6, n: 'Fondo stampato' });
+  P(mesh(G.box(Wd, .028, .004), M.dark, 0, YB + .014, ZF - .002), { d: .3, from: [0, 0, .3], spin: [0, 0, 0] });
+  P(mesh(G.box(Wd, .028, .004), M.dark, 0, YB + .014, ZB + .002), { d: .32, from: [0, 0, -.3], spin: [0, 0, 0] });
+  P(mesh(G.box(.004, .028, Dp), M.dark, XL + .002, YB + .014, 0), { d: .34, from: [-.3, 0, 0], spin: [0, 0, 0] });
+  P(mesh(G.box(.004, .028, Dp), M.dark, XR - .002, YB + .014, 0), { d: .36, from: [.3, 0, 0], spin: [0, 0, 0] });
+  const y = YB + .005;
+  P(mesh(tubeGeo([[.14, y, -.195], [-.55, y, -.195], [-.605, y, -.15], [-.605, y, .13], [-.57, y, .17], [-.52, y, .13], [-.52, y, -.11], [-.47, y, -.15], [.14, y, -.15]], .0042, 120), M.heater), { d: .44, from: [0, .3, 0], spin: [0, 0, 0], dur: .55, n: 'Cavo scaldante antigelo' });
+  P(mesh(annulus(.017, .009, .005), M.term, -.3, YB + .003, .13), { d: .5, n: 'Scarico condensa' });
+  P(mesh(G.cyl(.012, .034, 14), M.term, -.3, YB - .032, .13), { d: .52, from: [0, -.2, 0] });
+  P(mesh(G.box(.004, HP - .03, .4), M.galv, XP, YC - .005, 0), { d: .56, from: [0, .5, 0], spin: [0, .5, 0], dur: .55, n: 'Paratia del vano tecnico' });
+  [[XR - .015, ZB + .015], [XR - .015, ZF - .015], [XL + .015, ZB + .015]].forEach((p, i) => P(mesh(G.box(.026, HP, .026), M.dark, p[0], YC, p[1]), { d: .62 + i * .04, from: [0, .5, 0], spin: [0, 1.5, 0], n: i ? null : 'Montanti' }));
+  [ZF - .012, ZB + .012].forEach((z, i) => P(mesh(G.box(Wd - .06, .018, .018), M.dark, 0, YT - .045, z), { d: .76 + i * .04, from: [0, .3, z * 1.5], spin: [.8, 0, 0] }));
+  const sc = []; for (const x of [-.5, -.17, .17, .5]) for (const z of [-.17, .17]) sc.push({ p: [x, YB + .001, z] });
+  screws(sc, { d0: .84, d1: 1, n: 'Viti del fondo' });
+}
+
+// 2 ─ Compressore twin rotary (in sezione finché non arriva lo sportello)
+const gC = group('comp', 'Compressore twin rotary', 'DC inverter a due camere di compressione, su piattaforma antivibrante e con doppio rivestimento termoacustico.', 6.0, 13.5, { stage: [.5, .18, .95], ex: [.2, 0, .8], az: 38, el: 12, trav: .5,
+  keys: [[.03, 40, 16, 1.05, 0], [.3, 30, 9, .62, -.07], [.5, 46, 12, .9, 0], [.72, 34, 7, .7, -.02], [.9, 44, 12, 1.1, 0]],
+  info: { e: 'Il cuore. Schiaccia il gas propano e lo scalda: è da qui che parte il calore per la casa.', s: 'Twin rotary DC inverter · due camere di compressione · doppio rivestimento termoacustico · protezione sullo scarico a 115 °C' } });
+const cmp = new THREE.Group(); cmp.position.set(.315, YB, -.035); gC.node.add(cmp);
+const crank = new THREE.Group(); cmp.add(crank);
+{
+  const cp = (m, o) => P(m, Object.assign({ parent: cmp }, o)), ck = (m, o) => P(m, Object.assign({ parent: crank, spin: [0, 4, 0], from: [0, .35, 0] }, o));
+  cp(mesh(G.rbox(.22, .012, .22, .004), M.galv, 0, .006, 0), { d: 0, from: [0, -.2, 0], n: 'Piattaforma antivibrante' });
+  const gr = [0, 1, 2].map(i => { const a = rad(90 + i * 120); return { p: [Math.cos(a) * .088, .027, Math.sin(a) * .088] }; });
+  PIN(G.cyl(.017, .03, 16), M.rubber, gr, { parent: cmp, d0: .03, d1: .06, n: 'Gommini' });
+  cp(mesh(new THREE.CylinderGeometry(.118, .118, .005, 3), M.black, 0, .0445, 0, 0, rad(-30), 0), { d: .08, n: 'Piede' });
+  screws(gr.map(g => ({ p: [g.p[0], .048, g.p[2]] })), { parent: cmp, d0: .1, d1: .12 });
+  cp(mesh(G.dome(.066, .45, false), M.shellC, 0, .075, 0), { d: .13, from: [0, -.25, 0], spin: [0, 2, 0], n: 'Fondello' });
+  cp(mesh(G.cyl(.05, .012, 32), M.cast, 0, .087, 0), { d: .16, n: 'Supporto inferiore' });
+  ck(mesh(G.cyl(.0105, .25, 20), M.steel, 0, .19, 0), { d: .2, dur: .6, n: 'Albero a due eccentrici' });
+  [[.105, .0085, .24, 'Pistone rotante inferiore'], [.136, -.0085, .36, 'Pistone rotante superiore']].forEach(([y, x, d, n]) => {
+    ck(mesh(G.cyl(.0235, .022, 28), M.steel, x, y, 0), { d });
+    ck(mesh(annulus(.0315, .0235, .022), M.brass, x, y, 0), { d: d + .02, n });
+    cp(mesh(annulus(.058, .0405, .024), M.cast, 0, y, 0), { d: d + .05, n: y < .12 ? 'Cilindro inferiore' : 'Cilindro superiore' });
+    cp(mesh(G.box(.02, .02, .004), M.steel, .049 * Math.sin(rad(215)), y, .049 * Math.cos(rad(215)), 0, rad(215 - 90), 0), { d: d + .07 });
+  });
+  cp(mesh(annulus(.058, .013, .007), M.steel, 0, .1205, 0), { d: .33, n: 'Piastra intermedia' });
+  cp(mesh(G.cyl(.05, .012, 32), M.cast, 0, .154, 0), { d: .45, n: 'Supporto superiore' });
+  cp(mesh(G.cyl(.042, .018, 28, .034), M.steel, 0, .169, 0), { d: .47, n: 'Silenziatore' });
+  ck(mesh(G.cyl(.0345, .075, 36), M.lam, 0, .235, 0), { d: .49, n: 'Rotore' });
+  ck(mesh(annulus(.0345, .018, .008, 0, PI), M.brass, 0, .2765, 0), { d: .5 });
+  ck(mesh(annulus(.0345, .018, .008, PI, PI * 2), M.brass, 0, .1935, 0), { d: .5 });
+  cp(mesh(annulus(.0615, .0375, .075), M.lam, 0, .235, 0), { d: .52, from: [0, .45, 0], spin: [0, 1.5, 0], dur: .6, n: 'Statore' });
+  [.283, .187].forEach((y, i) => cp(mesh(G.torus(.0495, .0115), M.copper, 0, y, 0, PI / 2, 0, 0), { d: .54 + i * .01, n: i ? null : 'Avvolgimenti in rame' }));
+  cp(mesh(G.open(.066, .26, PI / 2, rad(250)), M.shellC, 0, .205, 0), { d: .56, from: [-.2, .35, -.25], spin: [0, 2.5, 0], dur: .65, n: 'Mantello' });
+  // separatore di liquido con le due aspirazioni (una per camera)
+  cp(mesh(G.cyl(.03, .19, 28), M.shellC, -.06, .225, .13), { d: .6, n: 'Separatore di liquido' });
+  cp(mesh(G.dome(.03, .5), M.shellC, -.06, .32, .13), { d: .61 }); cp(mesh(G.dome(.03, .5, false), M.shellC, -.06, .13, .13), { d: .61 });
+  cp(mesh(annulus(.0325, .03, .014), M.steel, -.06, .25, .13), { d: .62 });
+  [[.105, .64], [.136, .66]].forEach(([y, d], i) => cp(mesh(tubeGeo([[-.06 + (i ? .012 : -.012), .118, .13], [-.06 + (i ? .012 : -.012), y - .012, .12], [-.05, y, .1], [-.028, y, .06]], .0062, 28), M.copper), { d, n: i ? null : 'Due aspirazioni' }));
+  cp(mesh(G.cyl(.008, .05, 14), M.copper, -.06, .36, .13), { d: .66 });
+  cp(mesh(G.dome(.066, .45), M.shellC, 0, .335, 0), { d: .68, from: [0, .4, 0], spin: [0, 2, 0], n: 'Calotta' });
+  cp(mesh(G.rbox(.052, .03, .05, .006), M.plastic, .012, .366, .026), { d: .7, n: 'Scatola morsetti' });
+  cp(mesh(G.cyl(.008, .06, 14), M.copper, -.02, .385, -.02), { d: .72, n: 'Mandata' });
+  cp(mesh(annulus(.0695, .066, .022), M.heater, 0, .068, 0), { d: .74, n: 'Riscaldatore del carter' });
+  const dn = [Math.sin(rad(35)), 0, Math.cos(rad(35))];
+  cp(mesh(G.open(.066, .26, rad(-20), rad(110)), M.sDoor, 0, .205, 0), { d: .84, from: [dn[0] * .3, .04, dn[2] * .3], spin: [0, 0, 0], dur: .6, ease: eoc, n: 'Chiusura del mantello' });
+  cp(mesh(G.open(.0725, .275, PI / 2, PI), M.sFelt, 0, .2, 0), { d: .88, from: [0, 0, -.35], spin: [0, 0, 0], ease: eoc, n: 'Primo strato fonoassorbente' });
+  cp(mesh(G.open(.0725, .275, -PI / 2, PI), M.sFelt, 0, .2, 0), { d: .89, from: [0, 0, .35], spin: [0, 0, 0], ease: eoc });
+  cp(mesh(G.open(.0785, .285, 0, PI), M.sJacket, 0, .2, 0), { d: .92, from: [.35, 0, 0], spin: [0, 0, 0], ease: eoc, n: 'Secondo strato termoacustico' });
+  cp(mesh(G.open(.0785, .285, PI, PI), M.sJacket, 0, .2, 0), { d: .93, from: [-.35, 0, 0], spin: [0, 0, 0], ease: eoc });
+  cp(mesh(annulus(.0785, .034, .01), M.sJacket, 0, .345, 0), { d: .95, from: [0, .3, 0], spin: [0, 0, 0] });
+  cp(mesh(annulus(.0805, .0785, .022), M.sFelt, 0, .25, 0), { d: .97, from: [0, .3, 0], spin: [0, 3, 0] });
+}
+PIPE.comp = [[-.06, .4, .13], [-.06, .3, .13], [-.06, .14, .13], [-.05, .112, .1], [-.028, .118, .06], [0, .12, .01], [.012, .16, -.01], [0, .21, .012], [-.012, .27, 0], [0, .32, -.01], [-.02, .36, -.02], [-.02, .42, -.02]];
+
+// 3 ─ Batteria alettata a L (schiena e fianco sinistro)
+const cy0 = YB + .03, cH = .87, cyc = cy0 + cH / 2;
+group('coil', 'Batteria alettata', 'Tubi in rame e alette in alluminio con trattamento anticorrosione GOLD-FIN, su più ranghi.', 13.5, 18, { stage: [-.2, .25, -1.05], ex: [-.1, 0, -.75], az: 152, el: 13, zoom: .95,
+  info: { e: 'Il polmone. L\'aria esterna passa tra le alette e cede il suo calore al gas, anche sotto zero.', s: 'Tubi in rame · alette in alluminio GOLD-FIN · ranghi multipli · sbrinamento automatico' } });
+{
+  P(mesh(G.box(.004, cH + .02, .062), M.galv, .166, cyc, -.185), { d: 0, from: [.4, 0, 0], spin: [0, 0, 0], n: 'Piastre tubiere' });
+  P(mesh(G.box(.062, cH + .02, .004), M.galv, -.605, cyc, .15), { d: .03, from: [0, 0, .4], spin: [0, 0, 0] });
+  const rows = [[-.198, -.618, .035, .25], [-.172, -.592, .02, .75]], pitch = cH / 14;
+  const tgeo = (zb, xs, rho) => { const c = new THREE.CurvePath(); c.add(new THREE.LineCurve3(V(.163, 0, zb), V(xs + rho, 0, zb))); c.add(new THREE.QuadraticBezierCurve3(V(xs + rho, 0, zb), V(xs, 0, zb), V(xs, 0, zb + rho))); c.add(new THREE.LineCurve3(V(xs, 0, zb + rho), V(xs, 0, .148))); return new THREE.TubeGeometry(c, 56, .0048, 8, false); };
+  rows.forEach(([zb, xs, rho, o], r) => PIN(tgeo(zb, xs, rho), M.copper, Array.from({ length: 14 }, (_, i) => ({ p: [0, cy0 + pitch * (i + o), 0] })), { d0: .05 + r * .1, d1: .15 + r * .1, from: [.8, 0, 0], spin: [0, 0, 0], dur: .45, ease: eoc, n: r ? null : 'Tubi in rame' }));
+  const ya = i => cy0 + pitch * (i + .25), yb = i => cy0 + pitch * (i + .75);
+  const bend = (A, B, out) => { const x = B.clone().sub(A), L = x.length(); return { p: A.clone().add(B).multiplyScalar(.5).toArray(), q: qBasis(x.normalize(), out), L }; };
+  const b1 = Array.from({ length: 14 }, (_, i) => bend(V(.165, ya(i), -.198), V(.165, yb(i), -.172), V(1, 0, 0)));
+  const b2 = Array.from({ length: 14 }, (_, i) => bend(V(-.618, ya(i), .15), V(-.592, yb(i), .15), V(0, 0, 1)));
+  PIN(G.torus(b1[0].L / 2, .0048, PI, 14), M.copper, b1, { d0: .26, d1: .3, from: [.25, 0, 0], spin: [0, 0, 0], n: 'Curve di ritorno' });
+  PIN(G.torus(b2[0].L / 2, .0048, PI, 14), M.copper, b2, { d0: .28, d1: .32, from: [0, 0, .25], spin: [0, 0, 0] });
+  const fb = [], nb = 200; for (let i = 0; i < nb; i++) fb.push({ p: [.155 - i * .0036, cyc, -.185] });
+  PIN(G.box(.0011, cH, .054), M.gold, fb, { d0: .3, d1: .64, dur: .36, from: [0, .7, 0], spin: [0, 0, 0], ease: eoc, n: 'Alette GOLD-FIN', snd: 'fin' });
+  const fc = []; for (let i = 1; i <= 9; i++) { const a = i / 10 * PI / 2; fc.push({ p: [-.565 - .04 * Math.sin(a), cyc, -.145 - .04 * Math.cos(a)], r: [0, a, 0] }); }
+  PIN(G.box(.0011, cH, .054), M.gold, fc, { d0: .64, d1: .67, dur: .36, from: [0, .7, 0], spin: [0, 0, 0], ease: eoc, snd: 'fin' });
+  const fs = [], ns = 82; for (let i = 0; i < ns; i++) fs.push({ p: [-.605, cyc, -.148 + i * .0036] });
+  PIN(G.box(.054, cH, .0011), M.gold, fs, { d0: .67, d1: .8, dur: .36, from: [0, .7, 0], spin: [0, 0, 0], ease: eoc, snd: 'fin' });
+  P(mesh(G.cyl(.011, .7, 16), M.copper, .186, cyc, -.148), { d: .83, from: [.3, 0, .2], n: 'Collettore' });
+  P(mesh(G.cyl(.006, .034, 14, .013), M.brass, .186, YB + .12, -.203), { d: .86, n: 'Distributore' });
+  [1, 4, 7, 10, 13].forEach((k, i) => P(mesh(tubeGeo([[.186, YB + .138, -.203], [.2 + i * .004, YB + .2 + i * .02, -.2], [.185, ya(k) - .03, -.2], [.167, ya(k), -.198]], .0026, 24), M.copper), { d: .88 + i * .012, n: i ? null : 'Capillari' }));
+  P(mesh(G.rbox(.014, .03, .012, .003), M.plastic, .16, YB + .2, -.153), { d: .95, n: 'Sonda di sbrinamento' });
+}
+
+// 4 ─ Ventilatore
+const fanRot = new THREE.Group();
+group('fan', 'Ventilatore', 'Motore DC inverter brushless, pale a profilo antiriflusso per ridurre il rumore.', 18, 21, { stage: [-.15, .1, 1.0], ex: [0, 0, .5], az: 318, el: 10, zoom: 1.0,
+  info: { e: 'Aspira l\'aria attraverso la batteria. Cambia velocità da solo, in base a quanto calore serve.', s: 'Motore DC inverter brushless · profilo antiriflusso · potenza sonora 58 dB(A), 45 dB(A) a 1 m (UHP 120)' } });
+{
+  [-.12, .12].forEach((dx, i) => P(mesh(G.box(.03, HP - .04, .012), M.galv, FAN.x + dx, YC - .01, -.058), { d: i * .05, from: [0, .5, 0], spin: [0, 1, 0], n: i ? null : 'Montanti del motore' }));
+  P(mesh(G.box(.3, .15, .004), M.galv, FAN.x, FAN.y, -.05), { d: .12, spin: [0, 0, 1] });
+  P(mesh(G.cylZ(.058, .075, 32), M.black, FAN.x, FAN.y, -.008), { d: .2, from: [0, .1, .45], spin: [0, 0, 3], dur: .55, n: 'Motore DC brushless' });
+  P(mesh(G.cylZ(.047, .012, 32, .04), M.alu, FAN.x, FAN.y, .035), { d: .26, from: [0, 0, .4], spin: [0, 0, 2] });
+  P(mesh(G.cylZ(.006, .05, 12), M.steel, FAN.x, FAN.y, .06), { d: .3, from: [0, 0, .4], spin: [0, 0, 6] });
+  screws([[-.11, -.05], [.11, -.05], [-.11, .05], [.11, .05]].map(a => ({ p: [FAN.x + a[0], FAN.y + a[1], -.047], r: [PI / 2, 0, 0] })), { d0: .34, d1: .4 });
+  fanRot.position.set(FAN.x, FAN.y, .09); CUR.node.add(fanRot);
+  P(mesh(G.cylZ(.062, .056, 36), M.plastic), { parent: fanRot, d: .46, from: [0, 0, .5], spin: [0, 0, 4], n: 'Mozzo' });
+  P(mesh(G.cylZ(.034, .012, 24, .028), M.alu, 0, 0, .033), { parent: fanRot, d: .5, from: [0, 0, .5], spin: [0, 0, 4] });
+  const bs = new THREE.Shape(); bs.moveTo(-.04, .05); bs.quadraticCurveTo(-.135, .09, -.15, .245); bs.quadraticCurveTo(-.06, .306, .045, .287); bs.quadraticCurveTo(.108, .16, .04, .05); bs.closePath();
+  const bg = new THREE.ExtrudeGeometry(bs, { depth: .004, bevelEnabled: false, curveSegments: 16 }); bg.translate(0, 0, -.002);
+  { const p = bg.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = rad(lerp(36, 17, clamp((y - .05) / .24))); p.setXYZ(i, x * Math.cos(a) + z * Math.sin(a), y, -x * Math.sin(a) + z * Math.cos(a)); } bg.computeVertexNormals(); }
+  for (let i = 0; i < 3; i++) P(mesh(bg, M.blade, 0, 0, 0, 0, 0, i * PI * 2 / 3), { parent: fanRot, d: .56 + i * .07, from: [Math.sin(i * 2.1) * .35, Math.cos(i * 2.1) * .35, .3], spin: [0, 1.5, 1], dur: .55, n: i ? null : 'Pale antiriflusso' });
+  P(mesh(G.torus(.312, .011), M.plastic, FAN.x, FAN.y, .196), { d: .84, from: [0, 0, .5], spin: [0, 0, 2], dur: .55, n: 'Convogliatore' });
+  P(mesh(tubeGeo([[FAN.x + .05, FAN.y + .02, -.035], [FAN.x + .2, FAN.y + .26, -.08], [XP - .02, .9, -.06], [XP + .01, .95, -.06]], .004, 30), M.plastic), { d: .92, n: 'Cablaggio' });
+}
+
+// 5 ─ Scambiatore a piastre e kit idronico (manuale §5.8.2, modelli 100÷160T)
+const RIDE_HIDE = [];   // pezzi che durante il giro nel circuito coprirebbero i tubi
+const WIN = [.559, Y0 + .072, ZB - .02], WOUT = [.465, Y0 + .072, ZB - .02];
+PIPE.wIn = [WIN, [.559, .108, -.2], [.559, .108, -.06], [.556, .2, -.047], [.555, .29, -.06], [.555, .29, -.092]];
+PIPE.wHx = [[.555, .29, -.086], [.55, .5, -.086], [.555, .71, -.086]];   // i flussi corrono sulla faccia anteriore dello scambiatore, per restare visibili
+PIPE.wA = [[.555, .71, -.092], [.555, .71, -.055], [.525, .755, -.06], [.488, .78, -.105]];
+PIPE.wB = [[.455, .875, -.1], [.47, .9, -.06], [.5, .895, -.035], [.52, .87, -.03]];
+PIPE.wC = [[.52, .87, -.03], [.508, .85, .02], [.5, .8, .03], [.5, .34, .03], [.5, .262, .03]];
+PIPE.wOut = [[.5, .138, .03], [.492, .112, .0], [.47, .108, -.08], [.465, .108, -.2], WOUT];
+group('hyd', 'Scambiatore e kit idronico', 'Piastre in acciaio inox AISI 316L, circolatore inverter, vaso da 5 litri, valvola di sicurezza 3 bar e flussostato.', 21, 25.5, { stage: [.85, .15, .55], ex: [.75, 0, .1], az: 425, el: 12, zoom: .95,
+  info: { e: 'Qui il calore passa dal gas all\'acqua di casa, che esce verso termosifoni o pavimento.', s: 'Scambiatore a piastre inox AISI 316L · circolatore inverter · vaso 5 l · valvola 3 bar · flussostato · mandata fino a 80 °C' } });
+{
+  P(mesh(G.box(.115, .5, .004), M.steel, .525, .5, -.179), { d: 0, from: [0, 0, -.35], spin: [0, 0, 0], n: 'Piastra di fondo' });
+  const pl = []; for (let i = 0; i < 30; i++) pl.push({ p: [.525, .5, -.1755 + i * .0027] });
+  PIN(G.box(.115, .5, .0019), M.inox, pl, { d0: .03, d1: .3, dur: .3, from: [0, .05, .45], spin: [0, 0, 0], ease: eoc, n: 'Piastre inox AISI 316L', snd: 'fin' });
+  P(mesh(G.box(.115, .5, .004), M.steel, .525, .5, -.0925), { d: .33, from: [0, 0, .35], spin: [0, 0, 0] });
+  [[.555, .71, M.steel, .014], [.555, .29, M.steel, .014], [.495, .71, M.copper, .009], [.495, .29, M.copper, .009]].forEach(([x, y, m, r], i) => P(mesh(G.cylZ(r, .03, 16), m, x, y, -.077), { d: .36 + i * .01, from: [0, 0, .3], spin: [0, 0, 3] }));
+  P(mesh(G.box(.004, .4, .06), M.heater, .5845, .5, -.135), { d: .4, from: [.3, 0, 0], spin: [0, 0, 0], n: 'Resistenza antigelo' });
+  // circolatore
+  P(mesh(G.cyl(.03, .1, 24), M.cast, .5, .2, .03), { d: .44, n: 'Circolatore inverter' });
+  P(mesh(G.cylZ(.044, .04, 28), M.cast, .5, .2, .045), { d: .46 });
+  P(mesh(G.cylZ(.041, .058, 28), M.black, .5, .2, .094), { d: .48, from: [0, 0, .4], spin: [0, 0, 3] });
+  P(mesh(G.rbox(.07, .07, .024, .008), M.plastic, .5, .2, .134), { d: .5, from: [0, 0, .4] });
+  P(mesh(G.torus(.02, .003), M.led, .5, .2, .147), { d: .52, from: [0, 0, .3] });
+  [.262, .138].forEach((y, i) => P(mesh(G.cyl(.023, .022, 6), M.brass, .5, y, .03), { d: .53 + i * .01, spin: [0, 5, 0] }));
+  // vaso di espansione piatto da 5 litri
+  RIDE_HIDE.push(P(mesh(G.rbox(.07, .36, .22, .022), M.vessel, .597, .7, .09, 0, 0, 0), { d: .56, from: [.4, .1, 0], spin: [0, 1.2, 0], dur: .55, n: 'Vaso di espansione 5 l' }));
+  RIDE_HIDE.push(P(mesh(tubeGeo([[.559, .135, -.05], [.59, .2, -.02], [.6, .4, .05], [.597, .52, .07]], .006, 30), M.rubber), { d: .6 }));
+  // separatore aria-acqua, sfiato, valvola di sicurezza, flussostato
+  P(mesh(G.cyl(.03, .18, 24), M.steel, .455, .8, -.12), { d: .63, n: 'Separatore aria-acqua' });
+  P(mesh(G.dome(.03, .5), M.steel, .455, .89, -.12), { d: .64 });
+  P(mesh(G.cyl(.012, .034, 14), M.brass, .455, .915, -.12), { d: .66, n: 'Sfiato automatico' });
+  P(mesh(G.cylZ(.012, .04, 12), M.brass, .455, .79, -.072), { d: .68, n: 'Valvola di sicurezza 3 bar' });
+  P(mesh(G.cylZ(.016, .018, 16), M.red, .455, .79, -.045), { d: .69 });
+  P(mesh(G.cyl(.014, .05, 6), M.brass, .52, .87, -.03), { d: .71, n: 'Flussostato' });
+  P(mesh(G.rbox(.034, .04, .034, .005), M.plastic, .52, .915, -.03), { d: .72 });
+  // tubi dell'acqua
+  [['wIn', 'Ingresso acqua (ritorno)'], ['wA', null], ['wB', null], ['wC', null], ['wOut', 'Uscita acqua (mandata)']].forEach(([k, n], i) => P(mesh(tubeGeo(PIPE[k], .0135, 40), M.alu), { d: .75 + i * .03, dur: .5, n }));
+  [WIN, WOUT].forEach((p, i) => { P(mesh(G.cylZ(.019, .05, 20), M.brass, p[0], p[1], ZB - .012), { d: .9 + i * .02, from: [0, 0, -.3], spin: [0, 0, 4], n: i ? null : 'Attacchi G 1"' }); P(mesh(G.cylZ(.025, .014, 6), M.brass, p[0], p[1], ZB - .03), { d: .92 + i * .02, from: [0, 0, -.3], spin: [0, 0, 6], snd: 'screw' }); });
+  [[.555, .26, -.05], [.555, .74, -.06], [.5, .31, .045]].forEach((p, i) => P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, ...p), { d: .96 + i * .01, n: i ? null : 'Sonde acqua' }));
+}
+
+// 6 ─ Circuito frigorifero (manuale §5.8.1)
+const DIS = [.295, YB + .415, -.055], ACT = [.255, YB + .385, .095];
+PIPE.a = [DIS, [.295, .56, -.055], [.31, .7, -.045], [.325, .735, -.01], [.31, .73, .02], [.3, .678, .02]];
+PIPE.b = [[.33, .645, .02], [.332, .6, .02], [.37, .57, .0], [.43, .6, -.04], [.47, .68, -.06], [.495, .71, -.066], [.495, .71, -.092]];
+PIPE.rHx = [[.495, .71, -.086], [.5, .5, -.086], [.495, .29, -.086]];
+PIPE.c = [[.495, .29, -.092], [.495, .285, -.06], [.46, .28, -.05], [.428, .36, -.07], [.418, .5, -.1], [.425, .54, -.14], [.425, .49, -.15]];
+PIPE.d = [[.425, .31, -.15], [.415, .275, -.17], [.37, .255, -.19], [.3, .25, -.192], [.235, .25, -.192], [.2, .23, -.2], [.186, YB + .137, -.203]];
+PIPE.coil = (() => { const a = []; for (let i = 0; i < 7; i++) { const y = cy0 + .06 + i * .125, L = i % 2 === 0; a.push([L ? .15 : -.56, y, -.153], [L ? -.56 : .15, y, -.153]); } return a; })();
+PIPE.e = [[.186, .82, -.148], [.2, .8, -.13], [.215, .7, -.1], [.24, .6, -.04], [.265, .6, .01], [.27, .645, .02]];
+PIPE.f = [[.3, .645, .02], [.3, .6, .04], [.275, .56, .085], [.257, .52, .095], ACT];
+group('ref', 'Circuito frigorifero', 'Propano R290, 1,35 kg: valvola a 4 vie, valvola di espansione elettronica e ricevitore di liquido.', 25.5, 28.5, { stage: [.25, .55, .75], ex: [.1, .55, .35], az: 410, el: 16, zoom: .9,
+  info: { e: 'Il percorso chiuso del propano: gira sempre lo stesso gas, senza consumarsi.', s: 'R290 · 1,35 kg · valvola a 4 vie · valvola di espansione elettronica · ricevitore di liquido · pressostati a 32 e 0,3 bar' } });
+{
+  P(mesh(G.cylX(.016, .1, 20), M.brass, .3, .66, .02), { d: 0, spin: [2, 0, 0], n: 'Valvola a 4 vie' });
+  P(mesh(G.cyl(.008, .03, 12), M.copper, .3, .682, .02), { d: .03 });
+  [.27, .3, .33].forEach((x, i) => P(mesh(G.cyl(.008, .03, 12), M.copper, x, .642, .02), { d: .04 + i * .01 }));
+  P(mesh(G.rbox(.032, .034, .03, .004), M.blue, .345, .688, .04), { d: .09, n: 'Bobina di inversione' });
+  P(mesh(G.cyl(.035, .15, 24), M.shellC, .425, .4, -.15), { d: .14, n: 'Ricevitore di liquido' });
+  P(mesh(G.dome(.035, .45), M.shellC, .425, .475, -.15), { d: .15 }); P(mesh(G.dome(.035, .45, false), M.shellC, .425, .325, -.15), { d: .15 });
+  P(mesh(G.cyl(.012, .04, 14), M.brass, .235, .262, -.192), { d: .2, n: 'Valvola di espansione elettronica' });
+  P(mesh(G.cyl(.02, .034, 20), M.plastic, .235, .3, -.192), { d: .22 });
+  [.3, .37].forEach((x, i) => P(mesh(G.cylX(.012, .05, 16), M.copper, x, i ? .255 : .25, -.191), { d: .25 + i * .02, n: i ? null : 'Filtri' }));
+  [['a', .0085, 'Mandata del gas caldo'], ['b', .0085, null], ['c', .0065, 'Linea del liquido'], ['d', .0065, null], ['e', .0085, null], ['f', .0085, 'Aspirazione']].forEach(([k, r, n], i) => P(mesh(tubeGeo(PIPE[k], r, 48), M.copper), { d: .3 + i * .07, dur: .5, n }));
+  P(mesh(tubeGeo(PIPE.f.slice(1), .0125, 30), M.foam), { d: .74, n: 'Isolamento' });
+  [[.302, .6, -.052, 'Pressostato di alta 32 bar'], [.318, .715, -.04, null], [.278, .565, .08, 'Pressostato di bassa']].forEach(([x, y, z, n], i) => { P(mesh(G.cyl(.007, .022, 6), M.brass, x, y, z + .012, PI / 2, 0, 0), { d: .8 + i * .03, n }); P(mesh(G.cyl(.009, .02, 12), M.plastic, x, y, z + .03, PI / 2, 0, 0), { d: .81 + i * .03 }); });
+  [[.415, .275, -.155], [.3, .575, .06]].forEach((p, i) => P(mesh(G.cyl(.0045, .024, 8), M.brass, p[0], p[1] + .014, p[2]), { d: .9 + i * .02, n: i ? null : 'Attacchi di carica' }));
+  P(mesh(G.plane(.085, .085), M.flame, XP + .0035, .78, .1, 0, PI / 2, 0), { d: .96, from: [.3, 0, 0], spin: [0, 0, 0], n: 'Etichetta R290' });
+}
+
+// 7 ─ Quadri elettrici
+group('el', 'Quadri elettrici', 'Box inverter sigillato sotto il coperchio e scheda del circuito idraulico con la morsettiera.', 28.5, 31, { stage: [.3, .75, .5], ex: [.1, .85, .1], az: 400, el: 30, zoom: .95,
+  info: { e: 'Il cervello. Decide ogni secondo a che velocità far girare compressore e ventilatore.', s: 'Box inverter sigillato sotto il coperchio · scheda idraulica con morsettiera · comando remoto touch con Wi-Fi e RS-485' } });
+{
+  const ix = .415, iy = .94;
+  P(mesh(G.rbox(.4, .012, .34, .004), M.galv, ix, iy, 0), { d: 0, n: 'Box inverter' });
+  P(mesh(G.box(.36, .003, .3), M.pcb, ix, iy + .009, 0), { d: .05, from: [0, .3, 0], spin: [0, 1, 0], n: 'Scheda inverter' });
+  PIN(G.cyl(.016, .05, 18), M.cap, [[-.12, -.08], [-.075, -.08], [-.12, -.03], [-.075, -.03]].map(a => ({ p: [ix + a[0], iy + .036, a[1]] })), { d0: .1, d1: .16, from: [0, .25, 0], n: 'Condensatori' });
+  P(mesh(G.torus(.026, .012), M.copper, ix + .05, iy + .024, -.07, PI / 2, 0, 0), { d: .18, n: 'Induttanza' });
+  P(mesh(G.rbox(.07, .03, .05, .004), M.black, ix + .12, iy + .026, .06), { d: .2 });
+  P(mesh(G.rbox(.05, .022, .09, .004), M.plastic, ix - .02, iy + .022, .08), { d: .22 });
+  P(mesh(G.box(.06, .01, .13), M.alu, XP - .03, .975, 0), { d: .24, n: 'Dissipatore' });
+  PIN(G.box(.055, .075, .003), M.alu, Array.from({ length: 10 }, (_, i) => ({ p: [XP - .03, .93, -.054 + i * .012] })), { d0: .26, d1: .34, from: [-.3, 0, 0], spin: [0, 0, 0], snd: 'fin' });
+  P(mesh(G.rbox(.404, .008, .344, .003), M.sLid, ix, iy + .068, 0), { d: .4, from: [0, .3, 0], spin: [0, 0, 0], n: 'Coperchio sigillato' });
+  screws([[-.19, -.16], [.19, -.16], [-.19, .16], [.19, .16], [0, -.16], [0, .16]].map(a => ({ p: [ix + a[0], iy + .072, a[1]] })), { d0: .46, d1: .52, mat: M.sScrew });
+  // scheda del circuito idraulico con la morsettiera utente
+  const hx = .4775, hy = .56;
+  P(mesh(G.rbox(.16, .4, .006, .003), M.galv, hx, hy, .153), { d: .54, from: [0, 0, .4], n: 'Scheda del circuito idraulico' });
+  P(mesh(G.box(.14, .3, .003), M.pcb, hx, hy + .04, .158), { d: .58, from: [0, 0, .4], spin: [0, 0, 1] });
+  PIN(G.box(.011, .022, .018), M.term, Array.from({ length: 12 }, (_, i) => ({ p: [hx - .066 + i * .012, hy - .15, .167] })), { d0: .62, d1: .72, from: [0, 0, .25], spin: [0, 0, 0], n: 'Morsettiera XT1', snd: 'fin' });
+  PIN(G.box(.022, .028, .02), M.blue, [0, 1, 2].map(i => ({ p: [hx - .04 + i * .03, hy + .12, .168] })), { d0: .72, d1: .76, from: [0, 0, .25], n: 'Relè' });
+  P(mesh(G.rbox(.165, .405, .034, .006), M.sLid, hx, hy, .175), { d: .8, from: [0, 0, .4], spin: [0, 0, 0] });
+  [[[ix - .1, iy, .0], [.3, .8, .05], [.327, YB + .39, .0]], [[ix - .15, iy, -.05], [XP + .03, .9, -.06], [XP + .012, .95, -.06]], [[ix + .1, iy, .1], [.5, .86, .14], [hx, hy + .2, .15]]].forEach((p, i) => P(mesh(tubeGeo(p, .0045, 26), M.plastic), { d: .86 + i * .03, n: i ? null : 'Cablaggi' }));
+}
+
+// 8 ─ Involucro
+group('shell', 'Involucro', 'Pannelli verde Reseda, fianchi e coperchio antracite. Il coperchio si chiude con 7 viti.', 31, 36, { stage: [0, 0, 0], ex: [0, 0, 0], az: 385, el: 12, zoom: 1,
+  info: { e: 'La carrozzeria. Protegge tutto da pioggia e neve e lascia passare l\'aria.', s: 'Pannelli verde Reseda · coperchio con 7 viti · 1280 × 500 × 1040 mm · 154 kg' } });
+{
+  const F0 = { spin: [0, 0, 0], ease: eoc };
+  // schiena
+  P(mesh(G.rbox(.45, HP, .01, .003), M.sDark, .415, YC, ZB + .005), Object.assign({ d: 0, from: [0, 0, -.6], k: [0, 0, -.9], dur: .6, n: 'Schiena del vano tecnico' }, F0));
+  PIN(G.cylZ(.014, .022, 14), M.sGuard, [.5, .56, .62].map(y => ({ p: [.6, y, ZB - .008] })), { d0: .05, d1: .08, from: [0, 0, -.3], k: [0, 0, -.95], n: 'Passacavi' });
+  [['IN', WIN[0]], ['OUT', WOUT[0]]].forEach(([s, x], i) => P(mesh(G.plane(.05, .025), std({ map: T.io(s), roughness: .5 }), x, WIN[1] + .05, ZB - .001, 0, PI, 0), Object.assign({ d: .09, from: [0, 0, -.3], k: [0, 0, -.9] }, F0)));
+  const gb = []; for (let i = 0; i < 23; i++) gb.push({ p: [-.62 + i * .036, YC, ZB + .004] });
+  PIN(G.box(.004, HP, .004), M.sGuard, gb, { d0: .08, d1: .2, from: [0, .1, -.5], spin: [0, 0, 0], k: [0, 0, -.9], ease: eoc, n: 'Griglia posteriore', snd: 'fin' });
+  PIN(G.box(.8, .004, .004), M.sGuard, [0, 1, 2, 3, 4].map(i => ({ p: [-.225, YB + .1 + i * .19, ZB + .001] })), { d0: .2, d1: .23, from: [0, 0, -.5], spin: [0, 0, 0], k: [0, 0, -.92], ease: eoc });
+  // fianco sinistro
+  const gl = []; for (let i = 0; i < 12; i++) gl.push({ p: [XL + .004, YC, -.2 + i * .035] });
+  PIN(G.box(.004, HP, .004), M.sGuard, gl, { d0: .22, d1: .28, from: [-.5, .1, 0], spin: [0, 0, 0], k: [-.8, 0, 0], ease: eoc, n: 'Griglia laterale', snd: 'fin' });
+  PIN(G.box(.004, .004, .41), M.sGuard, [0, 1, 2, 3, 4].map(i => ({ p: [XL + .001, YB + .1 + i * .19, -.005] })), { d0: .28, d1: .3, from: [-.5, 0, 0], spin: [0, 0, 0], k: [-.82, 0, 0], ease: eoc });
+  P(mesh(G.rbox(.03, HP, .03, .004), M.sGreen, XL + .015, YC, ZF - .015), Object.assign({ d: .3, from: [-.3, 0, .3], k: [-.4, 0, .8] }, F0));
+  // fianco destro con maniglia
+  P(mesh(G.rbox(.012, HP, Dp, .004), M.sSide, XR - .006, YC, 0), Object.assign({ d: .33, from: [.6, 0, 0], k: [.9, 0, 0], dur: .6, n: 'Fianco destro' }, F0));
+  P(mesh(G.box(.003, .042, .1), M.sGuard, XR + .0008, YB + .245, 0), Object.assign({ d: .36, from: [.6, 0, 0], k: [.9, 0, 0] }, F0));
+  P(mesh(G.plane(.11, .065), M.sLabel, XR + .0012, YB + .72, .1, 0, PI / 2, 0), Object.assign({ d: .37, from: [.6, 0, 0], k: [.9, 0, 0], n: 'Targhetta' }, F0));
+  // frontale del ventilatore: lamiera forata e lamelle verticali
+  const fs = new THREE.Shape(); fs.moveTo(XL, YB); fs.lineTo(XP, YB); fs.lineTo(XP, YB + HP); fs.lineTo(XL, YB + HP); fs.closePath(); const hole = new THREE.Path(); hole.absarc(FAN.x, FAN.y, .305, 0, PI * 2, true); fs.holes.push(hole);
+  P(mesh(new THREE.ExtrudeGeometry(fs, { depth: .004, bevelEnabled: false, curveSegments: 48 }), M.sGreen, 0, 0, ZF - .012), Object.assign({ d: .42, from: [0, 0, .7], k: [0, 0, 1], dur: .65, n: 'Frontale del ventilatore' }, F0));
+  const dg = []; for (const s of [1, -1]) for (let i = -4; i <= 4; i++) { const o = i * .066, L = 2 * Math.sqrt(.3 * .3 - o * o); dg.push({ p: [FAN.x - s * o * .7071, FAN.y + o * .7071, ZF - .014], r: [0, 0, s * PI / 4], s: [L, 1, 1] }); }
+  PIN(G.box(1, .0035, .0035), M.sGuard, dg, { d0: .46, d1: .5, from: [0, 0, .6], spin: [0, 0, 0], k: [0, 0, 1], ease: eoc, n: 'Griglia di protezione', snd: 'fin' });
+  const sl = [], nsl = 62; for (let i = 0; i < nsl; i++) sl.push({ p: [XL + .014 + i * (XP - XL - .028) / (nsl - 1), YC, ZF - .002] });
+  PIN(G.box(.0034, HP - .012, .009), M.sSlat, sl, { d0: .5, d1: .72, dur: .34, from: [0, .12, .45], spin: [0, 0, 0], k: (i, it, f) => [0, 0, 1.08 + .1 * Math.sin(f * PI)], ease: eoc, n: 'Lamelle frontali', snd: 'fin' });
+  // frontale destro con la scritta
+  P(mesh(G.rbox(XR - XP, HP, .012, .004), M.sGreen, (XP + XR) / 2, YC, ZF - .006), Object.assign({ d: .75, from: [.15, 0, .7], k: [0, 0, 1], dur: .65, n: 'Frontale destro' }, F0));
+  P(mesh(G.plane(.17, .73), M.sLetter, .5, YC, ZF + .0008), Object.assign({ d: .75, from: [.15, 0, .7], k: [0, 0, 1], dur: .65 }, F0));
+  screws([.27, .57].map(x => ({ p: [x, YB + .03, ZF + .001], r: [PI / 2, 0, 0] })), { d0: .8, d1: .82, mat: M.sScrew, k: [0, 0, 1.12], n: 'Due viti esagonali' });
+  // coperchio con nervature e 7 viti
+  P(mesh(G.rbox(Wd + .006, .03, Dp + .006, .008), M.sDark, 0, YT - .015, 0), Object.assign({ d: .84, from: [0, .6, 0], k: [0, .9, 0], dur: .7, n: 'Coperchio' }, F0));
+  PIN(G.rbox(1.16, .006, .085, .0028), M.sDark, [-.14, 0, .14].map(z => ({ p: [0, YT + .002, z] })), { d0: .84, d1: .84, dur: .7, from: [0, .6, 0], spin: [0, 0, 0], k: [0, .9, 0], ease: eoc });
+  const ts = [-.5, -.17, .17, .5].map(x => ({ p: [x, YT - .015, ZB - .003], r: [-PI / 2, 0, 0] })).concat([-.12, .12].map(z => ({ p: [XL - .003, YT - .015, z], r: [0, 0, PI / 2] })), [{ p: [XR + .003, YT - .015, 0], r: [0, 0, -PI / 2] }]);
+  screws(ts, { d0: .92, d1: 1, mat: M.sScrew, k: (i, it) => [it.p[0] * .2, 1.0, it.p[2] * .4], n: 'Sette viti del coperchio' });
+}
+finalize();
+
+
+// ───────── scena, particelle, filmato ─────────
+const T_ASM = 3.5, T_RUN = 36, T_END = 49, MC = V(0, .56, 0);
+const ground = mesh(new THREE.CircleGeometry(7, 64), new THREE.MeshBasicMaterial({ map: T.ground }), 0, 0, 0, -PI / 2); scene.add(ground);
+const shadow = mesh(G.plane(2.5, 1.4), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), 0, .003, 0, -PI / 2); scene.add(shadow);
+
+function points(n, size, add = true) {
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  const p = new THREE.Points(g, new THREE.PointsMaterial({ size, map: T.glow, vertexColors: true, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }));
+  p.frustumCulled = false; p.userData.size = size; PTS.push(p); return p;
+}
+// Three.js non tiene conto dell'angolo di campo nella grandezza dei punti: la correggo qui a ogni cambio di inquadratura
+const PTS = [];
+function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; }
+// i flussi corrono dentro i tubi: li disegno 2 cm più vicini alla camera, così non restano nascosti dalla parete del tubo
+function pushed(p, d = .022) { p.material.onBeforeCompile = s => { s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
+const R0 = rng(99);
+// neve
+const NS = 1500, snow = points(NS, .013), snowB = new Float32Array(NS * 4); scene.add(snow);
+for (let i = 0; i < NS; i++) { snowB[i * 4] = (R0() - .5) * 7; snowB[i * 4 + 1] = R0() * 3.4; snowB[i * 4 + 2] = (R0() - .5) * 6; snowB[i * 4 + 3] = .45 + R0() * .7; }
+function updSnow(now, amt) {
+  snow.visible = amt > .01; if (!snow.visible) return; const p = snow.geometry.attributes.position, c = snow.geometry.attributes.color;
+  for (let i = 0; i < NS; i++) { const v = snowB[i * 4 + 3], y = ((snowB[i * 4 + 1] - v * now) % 3.4 + 3.4) % 3.4, x = ((snowB[i * 4] + now * .5 * v + Math.sin(now * .7 + i) * .12 + 3.5) % 7 + 7) % 7 - 3.5;
+    p.setXYZ(i, x, y, snowB[i * 4 + 2]); const k = amt * (.5 + .5 * v) * sm(0, .25, y); c.setXYZ(i, k, k, k * 1.05); }
+  p.needsUpdate = c.needsUpdate = true;
+}
+// aria attraverso batteria e ventilatore
+const NA = 650, air = points(NA, .017), airB = new Float32Array(NA * 5); machine.add(air);
+for (let i = 0; i < NA; i++) { airB[i * 5] = R0(); airB[i * 5 + 1] = R0(); airB[i * 5 + 2] = Math.sqrt(R0()); airB[i * 5 + 3] = R0() * PI * 2; airB[i * 5 + 4] = R0(); }
+function updAir(now, amt, spd, warmOut) {
+  air.visible = amt > .01; if (!air.visible) return; const p = air.geometry.attributes.position, c = air.geometry.attributes.color;
+  for (let i = 0; i < NA; i++) {
+    const u = (airB[i * 5 + 4] + now * .16 * spd) % 1, z = lerp(-.8, 1.25, u), fr = airB[i * 5 + 2] * .285, fa = airB[i * 5 + 3];
+    let x = lerp(-.62, .16, airB[i * 5]), y = lerp(.13, .97, airB[i * 5 + 1]);
+    if (z < -.2) { x += (x + .23) * .5 * (-.2 - z); y += (y - .55) * .5 * (-.2 - z); }
+    else { const a = fa + Math.max(0, z - .09) * 2.4, r = fr * (1 + Math.max(0, z - .2) * .35), t = sm(-.2, .09, z); x = lerp(x, FAN.x + Math.cos(a) * r, t); y = lerp(y, FAN.y + Math.sin(a) * r, t); }
+    p.setXYZ(i, x, y, z); const f = amt * sm(0, .12, u) * (1 - sm(.8, 1, u)) * .55, o = sm(-.25, -.1, z);
+    if (warmOut) c.setXYZ(i, lerp(.45, 1.1, o) * f, lerp(.7, .5, o) * f, lerp(1, .2, o) * f); else c.setXYZ(i, lerp(.6, .18, o) * f, lerp(.8, .5, o) * f, f * 1.1);
+  }
+  p.needsUpdate = c.needsUpdate = true;
+}
+// flussi lungo i tubi: campioni di posizione e colore per ogni tratto
+class Flow {
+  constructor(parent, n, size) { this.pts = pushed(points(n, size)); this.n = n; parent.add(this.pts); this.ph = new Float32Array(n); this.jit = new Float32Array(n * 3); for (let i = 0; i < n; i++) { this.ph[i] = (i + R0() * .6) / n; for (let k = 0; k < 3; k++) this.jit[i * 3 + k] = (R0() - .5) * .008; } }
+  // segs = [{pts:[[x,y,z]…], rev:bool, c0:[r,g,b], c1:[r,g,b]}]
+  path(segs) {
+    const S = 420, cs = segs.map(s => { const c = curveOf(s.rev ? s.pts.slice().reverse() : s.pts); return { c, L: c.getLength(), s }; }), tot = cs.reduce((a, b) => a + b.L, 0);
+    const P = new Float32Array(S * 3), C = new Float32Array(S * 3); let k = 0; this.marks = [];
+    for (const o of cs) { const m = Math.max(2, Math.round(S * o.L / tot)); this.marks.push(k / S); for (let i = 0; i < m && k < S; i++, k++) { const f = i / (m - 1), v = o.c.getPointAt(f); P[k * 3] = v.x; P[k * 3 + 1] = v.y; P[k * 3 + 2] = v.z; for (let j = 0; j < 3; j++) C[k * 3 + j] = lerp(o.s.c0[j], o.s.c1[j], f); } }
+    for (; k < S; k++) for (let j = 0; j < 3; j++) { P[k * 3 + j] = P[(k - 1) * 3 + j]; C[k * 3 + j] = C[(k - 1) * 3 + j]; }
+    return { P, C, S, marks: this.marks, curve: new THREE.CatmullRomCurve3(Array.from({ length: 90 }, (_, i) => { const q = Math.round(i / 89 * (S - 1)); return V(P[q * 3], P[q * 3 + 1], P[q * 3 + 2]); }), true, 'centripetal') };
+  }
+  upd(now, amt, spd, pa) {
+    this.pts.visible = amt > .01; if (!this.pts.visible) return; const p = this.pts.geometry.attributes.position, c = this.pts.geometry.attributes.color, S = pa.S;
+    for (let i = 0; i < this.n; i++) { const u = (this.ph[i] + now * spd) % 1, f = u * (S - 1), a = f | 0, b = Math.min(S - 1, a + 1), t = f - a;
+      p.setXYZ(i, lerp(pa.P[a * 3], pa.P[b * 3], t) + this.jit[i * 3], lerp(pa.P[a * 3 + 1], pa.P[b * 3 + 1], t) + this.jit[i * 3 + 1], lerp(pa.P[a * 3 + 2], pa.P[b * 3 + 2], t) + this.jit[i * 3 + 2]);
+      c.setXYZ(i, pa.C[a * 3] * amt, pa.C[a * 3 + 1] * amt, pa.C[a * 3 + 2] * amt); }
+    p.needsUpdate = c.needsUpdate = true;
+  }
+}
+const HOT = [1.7, .26, .06], WARM = [1.5, .7, .12], COLD = [.1, .5, 1.8], COOL = [.3, .9, 1.6], PALE = [.45, .8, 1.3];
+const compW = PIPE.comp.map(p => [p[0] + cmp.position.x, p[1] + cmp.position.y, p[2] + cmp.position.z]);
+const fRef = new Flow(machine, 430, .022), fWat = new Flow(machine, 250, .032), fCmp = new Flow(cmp, 70, .014);
+const seg = (k, c0, c1, rev) => ({ pts: Array.isArray(k) ? k : PIPE[k], c0, c1, rev: !!rev });
+const PATH = {
+  heat: fRef.path([seg('a', HOT, HOT), seg('b', HOT, HOT), seg('rHx', HOT, WARM), seg('c', WARM, WARM), seg('d', WARM, COLD), seg('coil', COLD, COOL), seg('e', COOL, PALE), seg('f', PALE, PALE), seg(compW, PALE, HOT)]),
+  cool: fRef.path([seg('a', HOT, HOT), seg('e', HOT, HOT, 1), seg('coil', HOT, WARM, 1), seg('d', WARM, COLD, 1), seg('c', COLD, COLD, 1), seg('rHx', COLD, COOL, 1), seg('b', COOL, PALE, 1), seg('f', PALE, PALE), seg(compW, PALE, HOT)]),
+  wHeat: null, wCool: null, cmp: fCmp.path([seg(PIPE.comp, COLD, HOT)]),
+};
+{ const w = (c0, c1) => fWat.path([seg('wIn', c0, c0), seg('wHx', c0, c1), seg('wA', c1, c1), seg([[.488, .78, -.105], [.455, .8, -.12], [.455, .875, -.1]], c1, c1), seg('wB', c1, c1), seg('wC', c1, c1), seg([[.5, .262, .03], [.5, .138, .03]], c1, c1), seg('wOut', c1, c1)]);
+  PATH.wHeat = w([.12, .45, 1.6], [1.7, .5, .08]); PATH.wCool = w([.4, .8, 1.2], [.06, .3, 1.8]); }
+// scintille all'arrivo dei pezzi
+const NK = 240, spark = points(NK, .009), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
+function emitSpark(pos, n) { const p = spark.geometry.attributes.position; for (let k = 0; k < n; k++) { const i = spI = (spI + 1) % NK; p.setXYZ(i, pos.x, pos.y, pos.z); spV[i * 4] = (Math.random() - .5) * 1.1; spV[i * 4 + 1] = Math.random() * 1.0 + .2; spV[i * 4 + 2] = (Math.random() - .5) * 1.1; spV[i * 4 + 3] = 1; } }
+function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 3.2 * k, 1.5 * k * k, .4 * k * k); } p.needsUpdate = c.needsUpdate = true; }
+const ring = mesh(new THREE.RingGeometry(.93, 1, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(.7, 1.4, 1.1), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 0, .01, 0, -PI / 2); scene.add(ring); let ringT = 9;
+
+// ───────── stato della macchina in funzione ─────────
+const S = { ghost: 0, cold: 0, snow: 0, xray: 0, fan: 0, comp: 0, air: 0, ref: 0, wat: 0, frost: 0, E: 0, shr: 1, outT: 7, watT: 35, read: 0, cool: false, demo: 0 };
+let fanA = 0, crankA = 0;
+const C_GOLD = new THREE.Color(0xc9a44c), C_FROST = new THREE.Color(0xeaf6ff), C_SLAT = new THREE.Color(0x546941), _c = new THREE.Color();
+function applyLook(now, dt) {
+  scene.background.lerpColors(C_STUDIO, C_COLD, S.cold); scene.fog.color.copy(scene.background);
+  ground.material.color.setRGB(1 + S.cold * .5, 1 + S.cold * 1.1, 1 + S.cold * 1.9); rimL.intensity = 1.5 + S.cold * 1.6; keyL.intensity = 2.3 - S.cold * .7;
+  M.gold.color.lerpColors(C_GOLD, C_FROST, S.frost); M.gold.metalness = lerp(.9, .15, S.frost); M.gold.roughness = lerp(.42, .9, S.frost);
+  M.sSlat.color.lerpColors(C_SLAT, C_FROST, S.frost * .16);
+  M.heater.emissiveIntensity = Math.max(S.cold, S.frost) * 1.6;
+  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost);
+  fanA += dt * S.fan * PI * 2; fanRot.rotation.z = -fanA; crankA += dt * S.comp * PI * 2; crank.rotation.y = crankA;
+  updSnow(now, S.snow); updAir(now, S.air, .35 + S.fan * .13, S.cool);
+  fRef.upd(now, S.ref, .055 + S.comp * .006, S.cool ? PATH.cool : PATH.heat); fWat.upd(now, S.wat, .1, S.cool ? PATH.wCool : PATH.wHeat); fCmp.upd(now, S.demo * .55, .55, PATH.cmp);
+  shadow.material.opacity = .9 * (1 - clamp(S.E * 1.5)) * S.shr;
+  updSparks(dt);
+  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar(.3 + k * 1.5); ring.material.opacity = (1 - k) * .8; } else ring.material.opacity = 0;
+}
+
+// ───────── camera ─────────
+const KEYS = [], rig = { t: V(), az: 0, el: 0, w: 2, h: 1.5 }, _a = V(), _b = V(), _o = V();
+const K = (t, g, az, el, w, h, off) => KEYS.push({ t, g, az: rad(az), el: rad(el), w, h, off: off || [0, 0, 0] });
+K(0, -1, 27, 5, 2.2, 1.9, [0, .24, 0]); K(2.3, -1, 34, 7, 1.9, 1.7, [0, .2, 0]); K(3.25, -1, 40, 13, 3.8, 3.0);
+for (const g of GROUPS) {
+  const W = g.t1 - g.t0, z = g.size * 2.3 * g.zoom;
+  if (g.key === 'shell') { K(31.5, -1, 385, 12, 1.95, 1.5); K(33.6, -1, 345, 9, 1.5, 1.35, [-.12, 0, 0]); K(35.4, -1, 392, 9, 1.8, 1.42); continue; }
+  if (g.keys) for (const [f, az, el, zm, oy] of g.keys) K(g.t0 + f * W, g.i, az, el, z * zm, z * zm, [0, oy, 0]);
+  else { K(g.t0 + .45, g.i, g.az, g.el, z, z); K(g.t0 + .58 * W, g.i, g.az + 16, g.el, z * 1.05, z * 1.05); }
+  K(g.t1 - .6, -1, (g.keys ? g.keys[g.keys.length - 1][1] : g.az) + 14, 13, 1.8, 1.4);
+}
+K(36.3, -1, 392, 9, 1.8, 1.45); K(38.4, -1, 418, 11, 1.2, 1.05, [.2, 0, 0]); K(40.6, -1, 428, 8, .8, .82, [.34, -.06, 0]); K(42.8, -1, 332, 9, 2.1, 1.6); K(44.6, -1, 298, 10, 1.25, 1.12, [-.35, 0, -.05]); K(47.3, -1, 392, 8, 1.8, 1.45); K(49.5, -1, 398, 8, 1.8, 1.45);
+function keyTarget(k, out) { if (k.g < 0) out.copy(MC); else { const g = GROUPS[k.g]; out.copy(g.node.position).add(g.c); } return out.add(_o.set(k.off[0], k.off[1], k.off[2])); }
+function camFilm(t) {
+  let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1].t <= t) i++;
+  const a = KEYS[i], b = KEYS[i + 1], u = sm(a.t, b.t, t);
+  keyTarget(a, _a); keyTarget(b, _b); rig.t.lerpVectors(_a, _b, u); rig.az = lerp(a.az, b.az, u) + Math.sin(t * .6) * .02; rig.el = lerp(a.el, b.el, u); rig.w = lerp(a.w, b.w, u); rig.h = lerp(a.h, b.h, u);
+  let sh = 0; for (const g of GROUPS) if (t > g.tb && g.stage.lengthSq() > 0) sh = Math.max(sh, Math.exp(-(t - g.tb) * 9));
+  if (t > 2.35 && t < T_ASM) sh = Math.max(sh, Math.exp(-(t - 2.35) * 5));
+  rig.t.x += Math.sin(t * 97) * .007 * sh; rig.t.y += Math.cos(t * 83) * .007 * sh;
+}
+function placeCam(r) {
+  const f = Math.tan(rad(camera.fov / 2)), d = Math.max(r.h / 2 / f, r.w / 2 / (f * camera.aspect)) * 1.1;
+  camera.position.set(r.t.x + d * Math.sin(r.az) * Math.cos(r.el), r.t.y + d * Math.sin(r.el), r.t.z + d * Math.cos(r.az) * Math.cos(r.el)); camera.lookAt(r.t);
+  return d;
+}
+
+// ───────── didascalie ─────────
+const CAPS = [];
+GROUPS.forEach(g => CAPS.push({ t: g.t0, n: String(g.i + 1).padStart(2, '0'), a: g.name, b: g.spec }));
+CAPS.push({ t: 36, n: '09', a: 'In funzione', b: 'Il ventilatore aspira l\'aria esterna attraverso la batteria: è da lì che arriva il calore.' },
+  { t: 38.6, n: '09', a: 'Il giro del propano', b: 'Il compressore scalda il gas, lo scambiatore a piastre passa quel calore all\'acqua di casa.' },
+  { t: 41.2, n: '09', a: 'Fino a −25 °C', b: 'Anche con il gelo fuori l\'acqua di mandata può arrivare a 80 °C.' },
+  { t: 43.6, n: '09', a: 'Sbrinamento automatico', b: 'Quando la batteria si copre di brina la macchina la scioglie da sola.' },
+  { t: 46.2, n: '', a: 'Unical UHP 120', b: '12 kW · classe A+++ · COP 4,90 con aria a 7 °C e acqua a 35 °C · propano R290' });
+const el = { cap: $('cap'), num: $('num'), name: $('name'), spec: $('spec'), tick: $('tick'), count: $('count').firstElementChild, hook: $('hook'), hk1: $('hk1'), hk2: $('hk2'), read: $('read'), rOut: $('rOut').lastElementChild, rWat: $('rWat').lastElementChild, flash: $('flash'), bottom: $('bottom'), segs: $('segs') };
+const SEGS = GROUPS.map(g => [g.t0, g.t1]).concat([[T_RUN, T_END]]);
+SEGS.forEach(s => { const i = document.createElement('i'); i.style.flex = String(s[1] - s[0]); i.appendChild(document.createElement('b')); el.segs.appendChild(i); });
+let capI = -2, lastCount = -1, lastOut = null, lastWat = null, hookK = -1;
+const fmtT = v => (v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' °C';
+function setCap(n, a, b) { el.num.textContent = n; el.name.textContent = a; el.spec.textContent = b; el.tick.textContent = ''; el.cap.classList.remove('in'); void el.cap.offsetWidth; el.cap.classList.add('in'); }
+function hud(t) {
+  let i = -1; for (let k = 0; k < CAPS.length; k++) if (CAPS[k].t <= t) i = k;
+  if (i !== capI) { capI = i; if (i >= 0) setCap(CAPS[i].n, CAPS[i].a, CAPS[i].b); }
+  el.cap.style.opacity = t < T_ASM ? 0 : 1;
+  const hk = t < 1.55 ? 0 : t < T_ASM - .25 ? 1 : 2;
+  if (hk !== hookK) { hookK = hk; el.hk1.textContent = hk === 0 ? '−25 °C' : '80 °C'; el.hk1.style.color = hk === 0 ? 'var(--ice)' : 'var(--heat)'; el.hk2.textContent = hk === 0 ? 'fuori' : 'l\'acqua per la casa'; }
+  el.hook.style.opacity = hk === 2 ? 0 : hk === 0 ? sm(.1, .5, t) * (1 - sm(1.35, 1.55, t)) : sm(1.55, 1.85, t) * (1 - sm(2.9, 3.2, t));
+  el.flash.style.opacity = Math.max(0, 1 - Math.abs(t - T_ASM) / .22) * .9;
+  const n = t < T_ASM ? PIECES.length : placed; if (n !== lastCount) { lastCount = n; el.count.textContent = n; }
+  SEGS.forEach((s, k) => { el.segs.children[k].firstChild.style.transform = `scaleX(${clamp((t - s[0]) / (s[1] - s[0]))})`; });
+  readout();
+}
+function readout() { el.read.classList.toggle('on', S.read > .5); const o = fmtT(S.outT), w = fmtT(S.watT); if (o !== lastOut) el.rOut.textContent = lastOut = o; if (w !== lastWat) el.rWat.textContent = lastWat = w; }
+onStart = p => { el.tick.textContent = p.n; el.tick.classList.remove('in'); void el.tick.offsetWidth; el.tick.classList.add('in'); };
+let sfx = null;                       // riempito dal modulo dei comandi quando l'audio è attivo
+const _w = V();
+onLand = p => { _w.copy(p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
+
+// ───────── linea del tempo del filmato ─────────
+function filmState(t, emit) {
+  if (t < T_ASM) {
+    const E = t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05));
+    Object.assign(S, { cold: 1, snow: 1, xray: 0, fan: 3, comp: 0, air: 0, ref: 0, wat: 0, frost: .5, E, shr: 1 - sm(3.18, 3.47, t), read: 0, outT: -25, watT: 80, demo: 0 });
+    apply(T_RUN, S.E, S.shr, false);
+  } else if (t < T_RUN) {
+    const c = 1 - sm(T_ASM, 4.7, t);
+    Object.assign(S, { cold: c, snow: c, xray: 0, fan: 0, comp: t > 8 && t < 12.8 ? 2.2 * sm(8, 8.8, t) * (1 - sm(12, 12.8, t)) : 0, air: 0, ref: 0, wat: 0, frost: 0, E: 0, shr: 1, read: 0, outT: 7, watT: 35, demo: sm(9.9, 10.3, t) * (1 - sm(11.3, 11.6, t)) });
+    apply(t, 0, 1, emit);
+    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, g.c.z); if (sfx) sfx('dock'); }
+  } else {
+    const r = t - T_RUN, x = sm(.3, 1.5, r) * (1 - sm(9.7, 10.9, r)), cold = sm(4.6, 6.4, r);
+    Object.assign(S, { cold, snow: cold, xray: x, fan: 6 * sm(.2, 2, r), comp: 3 * sm(.6, 2.2, r), air: sm(.8, 2, r), ref: sm(1.6, 2.6, r) * x, wat: sm(2, 3, r) * x, frost: sm(5.6, 7.4, r) * (1 - sm(7.9, 9.5, r)), E: 0, shr: 1, read: r > 1 ? 1 : 0,
+      outT: lerp(7, -25, sm(4.8, 7.4, r)), watT: lerp(35, 80, sm(2.6, 7.4, r)), demo: 0 });
+    apply(T_RUN, 0, 1, false);
+  }
+}
+
+// ───────── ciclo di disegno ─────────
+// Si parte da una schermata d'inizio: il film comincia solo quando chi guarda lo chiede.
+const setBody = c => { document.body.className = c; };
+let mode = 'film', started = false, playing = false, Tm = 0, now = 0, last = performance.now(), frames = 0, slow = 0, freeTick = null;
+function draw() { if (HQ && composer) composer.render(); else renderer.render(scene, camera); }
+function frame(ts) {
+  requestAnimationFrame(frame);
+  let dt = Math.min(.05, (ts - last) / 1000); last = ts; if (document.hidden) return; now += dt;
+  if (mode === 'film') {
+    if (playing) Tm += dt;
+    if (Tm >= T_END) { enterFree(); }
+    else { filmState(Tm, playing); camFilm(Tm); if (!started) { rig.az += Math.sin(now * .22) * .12; rig.w *= 1.06; rig.h *= 1.06; } hud(Tm); placeCam(rig); }
+  }
+  if (mode === 'free' && freeTick) freeTick(dt);
+  applyLook(now, playing || mode === 'free' || !started ? dt : 0); draw();
+  if (++frames > 20 && frames < 140) { if (dt > .04) slow++; if (frames === 139) { if (slow > 70 && HQ) { HQ = false; renderer.setPixelRatio(1); resize(); ptSizes(); } else if (slow > 24) { renderer.setPixelRatio(Math.min(renderer.getPixelRatio(), 1.25)); resize(); ptSizes(); } } }
+}
+// modalità libera: senza il modulo dei comandi resta un modello che gira piano
+const free = { az: rad(32), el: rad(9), zoom: 1, t: MC.clone(), auto: true };
+function enterFree() {
+  const wasFree = mode === 'free'; mode = 'free'; started = true; playing = false; Tm = T_END; filmState(T_END - .001, false); hud(T_END - .001);
+  Object.assign(S, { xray: 0, air: 1, fan: 6, comp: 3, ref: 0, wat: 0, cold: 0, snow: 0, frost: 0, outT: 7, watT: 35, read: 1 });
+  free.az = rig.az % (PI * 2); free.el = rig.el; free.zoom = 1; free.t.copy(MC); free.auto = true;
+  setBody('free'); if (!wasFree) { const t = $('toast'); t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); }
+  if (typeof uiEnter === 'function') uiEnter(); else freeTick = dt => { free.az += dt * .12; rig.t.copy(free.t); rig.az = free.az; rig.el = free.el; rig.w = 1.8; rig.h = 1.45; placeCam(rig); };
+}
+function startFilm(t = 0) { const wasFree = mode === 'free'; mode = 'film'; started = true; playing = true; Tm = t; capI = -2; for (const p of PIECES) p.st = -1; lastE = -1; setBody('film'); $('bPlay').textContent = 'Pausa'; if (wasFree && typeof uiLeave === 'function') uiLeave(); }
+$('bPlay').onclick = () => { playing = !playing; $('bPlay').textContent = playing ? 'Pausa' : 'Riprendi'; };
+$('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $('bExplore').onclick = () => enterFree();
+
+resize(); mkComposer(); resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
+queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
+// per le prove: tempo, esplosione e vista comandabili da fuori
+window.__uhp = { air, fRef, fWat, snow, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
+  setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length, groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END };
+requestAnimationFrame(frame);
+
+
+// ───────── modalità libera: sei strumenti, uno alla volta ─────────
+const U = { tool: 'touch', E: 0, Ecur: 0, lens: false, lensAuto: true, lx: -1, ly: -1, ride: false, ru: 0, rinit: true, on: true, silent: false, power: false, outT: 7, sel: -1, selK: 0, frostT: 0, defrost: false, snd: false };
+const IMS = []; machine.traverse(o => { if (o.isInstancedMesh) IMS.push(o); });
+const comet = pushed(points(36, .04), .03); comet.visible = false; machine.add(comet); const camP = V(), camL = V();
+const ray = new THREE.Raycaster(), ptr = new Map(), _n = new THREE.Vector2(), _t = V(), _d = V();
+const RIDE = [[0, 'Dal compressore esce gas caldo, ad alta pressione'], [2, 'Scambiatore a piastre: il calore passa all\'acqua di casa'], [3, 'Il gas, ceduto il calore, è diventato liquido'], [4, 'Valvola di espansione: si raffredda di colpo'], [5, 'Batteria: riprende calore dall\'aria esterna'], [6, 'Torna al compressore'], [8, 'Compressore: le due camere lo schiacciano di nuovo']];
+const SHORT = { base: 'Basamento', comp: 'Compressore', coil: 'Batteria', fan: 'Ventilatore', hyd: 'Scambiatore', ref: 'Circuito del gas', el: 'Quadri elettrici', shell: 'Involucro' };
+const press = (b, v) => b.setAttribute('aria-pressed', v ? 'true' : 'false');
+const fill = i => i.style.setProperty('--p', ((i.value - i.min) / (i.max - i.min) * 100) + '%');
+const setE = v => { U.E = v / 100; $('sE').value = v; $('oE').textContent = Math.round(v) + '%'; fill($('sE')); };
+
+// audio sintetizzato: piccoli scatti all'arrivo dei pezzi, ventilatore e compressore in funzione
+let AC = null, humF = null, humC = null, lastS = 0;
+function audioOn(v) {
+  U.snd = v; press($('bSnd'), v); press($('bSnd2'), v);
+  if (!v) { sfx = null; if (AC) AC.suspend(); return; }
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)(); const out = AC.createGain(); out.gain.value = .5; out.connect(AC.destination); AC.out = out;
+      const nb = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const ns = AC.createBufferSource(); ns.buffer = nb; ns.loop = true; const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 420; bp.Q.value = .6; humF = AC.createGain(); humF.gain.value = 0; ns.connect(bp).connect(humF).connect(out); ns.start(); humF.bp = bp;
+      const os = AC.createOscillator(); os.type = 'sawtooth'; os.frequency.value = 55; const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 190; humC = AC.createGain(); humC.gain.value = 0; os.connect(lp).connect(humC).connect(out); os.start(); humC.os = os;
+    }
+    AC.resume();
+    sfx = k => {
+      const t = AC.currentTime; if (t - lastS < (k === 'fin' ? .05 : .02)) return; lastS = t;
+      const blip = (f, dur, g, type = 'triangle', at = 0) => { const o = AC.createOscillator(), a = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t + at); o.frequency.exponentialRampToValueAtTime(f * .5, t + at + dur); a.gain.setValueAtTime(g, t + at); a.gain.exponentialRampToValueAtTime(.0008, t + at + dur); o.connect(a).connect(AC.out); o.start(t + at); o.stop(t + at + dur + .02); };
+      if (k === 'fin' || k === 'tick') blip(2200 + Math.random() * 1600, .03, .05);
+      else if (k === 'screw') { blip(1500, .025, .07, 'square'); blip(1700, .025, .06, 'square', .05); blip(1900, .03, .06, 'square', .1); }
+      else if (k === 'dock') { blip(90, .35, .5, 'sine'); blip(320, .12, .12, 'triangle'); }
+      else { blip(620 + Math.random() * 500, .07, .13); blip(2400, .02, .04, 'square'); }
+    };
+  } catch (e) { U.snd = false; sfx = null; press($('bSnd'), false); press($('bSnd2'), false); }
+}
+function audioTick() { if (!AC || !U.snd) return; const t = AC.currentTime, vis = mode === 'film' ? (!started ? 0 : Tm < T_ASM ? .5 : Tm > T_RUN ? 1 : 0) : 1; humF.gain.setTargetAtTime(Math.min(.2, S.fan * .028) * vis, t, .15); humF.bp.frequency.setTargetAtTime(240 + S.fan * 60, t, .2); humC.gain.setTargetAtTime(Math.min(.09, S.comp * .025) * vis, t, .15); humC.os.frequency.setTargetAtTime(38 + S.comp * 9, t, .2); }
+
+// scheda del pezzo
+function closeCard() { U.sel = -1; $('cardIn').hidden = true; $('howTouchRow').hidden = false; for (const c of $('chips').children) press(c, false); }
+function openCard(i) {
+  const g = GROUPS[i]; U.sel = i; free.auto = false;
+  $('cK').textContent = `Gruppo ${i + 1} di ${GROUPS.length} · ${g.pieces.length} pezzi`; $('cT').textContent = g.name; $('cE').textContent = g.info.e; $('cS').textContent = g.info.s;
+  $('cardIn').hidden = false; $('howTouchRow').hidden = true; [...$('chips').children].forEach((c, k) => { press(c, k === i); if (k === i) c.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); });
+}
+function pick(x, y) {
+  const r = canvas.getBoundingClientRect(); _n.set((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1); ray.setFromCamera(_n, camera);
+  for (const im of IMS) im.boundingSphere = null;
+  for (const h of ray.intersectObject(machine, true)) { const o = h.object; if (o.isPoints || o.userData.g === undefined || !o.visible) continue; if (S.xray > .5 && XRM.includes(o.material)) continue; return o.userData.g; }
+  return -1;
+}
+function setLens(on) { U.lens = on; $('lens').style.display = on ? 'block' : 'none'; if (on) { U.lensAuto = true; } else LENS.value.z = 0; }
+function setRide(on) {
+  U.ride = on; GROUPS.find(g => g.key === 'el').node.visible = !on; for (const m of RIDE_HIDE) m.visible = !on;
+  if (on) { U.ru = 0; U.rinit = true; camera.fov = 44; camera.updateProjectionMatrix(); ptSizes(); $('bRideGo').textContent = 'Ferma'; }
+  else { comet.visible = false; resize(); ptSizes(); $('bRideGo').textContent = 'Rifai il giro'; }
+}
+function remoteLcd() {
+  press($('kPw'), U.on); $('kPw').textContent = U.on ? 'Accesa' : 'Spenta'; press($('kHeat'), !S.cool); press($('kCool'), S.cool); press($('kSil'), U.silent); press($('kPow'), U.power);
+  $('lState').textContent = !U.on ? 'Spenta: ventilatore e compressore si fermano.'
+    : (S.cool ? 'Raffrescamento: il giro del gas si inverte e l\'acqua esce fredda, a 18 °C.' : 'Riscaldamento: acqua per la casa a 35 °C.') + (U.defrost ? ' Sta sbrinando la batteria.' : U.silent ? ' Silent: gira più piano e fa meno rumore.' : U.power ? ' Powerful: massima potenza.' : '');
+}
+function meteoHint() {
+  const v = U.outT;
+  $('mHint').textContent = v <= -20 ? 'La UHP lavora fino a −25 °C di aria esterna.' : v < 2 && !S.cool ? 'Sotto zero la batteria si copre di brina: la macchina la scioglie da sola, a intervalli.'
+    : Math.abs(v - 7) <= 1 && !S.cool ? 'Dato di scheda: con aria a 7 °C e acqua a 35 °C rende 4,90 volte la corrente che consuma (COP, UHP 120).' : Math.abs(v - 35) <= 1 && S.cool ? 'Dato di scheda: con aria a 35 °C e acqua a 18 °C l\'EER è 4,50 (UHP 120).' : v >= 28 && !S.cool ? 'Fa caldo: con lo strumento Accendi puoi passarla a Freddo.' : v >= 28 ? 'In estate la stessa macchina raffresca la casa.' : 'Prova a scendere sotto zero.';
+}
+function setTool(t) {
+  if (U.tool === 'expl' && t !== 'expl') setE(0);
+  if (U.tool === 'xray' && t !== 'xray') setLens(false);
+  if (U.ride && t !== 'ride') setRide(false);
+  if (t !== 'touch') closeCard();
+  U.tool = t; free.auto = false;
+  for (const b of $('tabs').children) b.setAttribute('aria-selected', b.dataset.tool === t ? 'true' : 'false');
+  for (const [k, id] of [['touch', 'pTouch'], ['expl', 'pExpl'], ['xray', 'pXray'], ['ride', 'pRide'], ['rem', 'pRem'], ['meteo', 'pMeteo']]) $(id).hidden = k !== t;
+  if (t === 'expl') setE(55);                                   // ogni strumento si mostra da solo appena scelto
+  if (t === 'xray') setLens(true);
+  if (t === 'ride') setRide(true);
+  if (t === 'rem') remoteLcd();
+  if (t === 'meteo') meteoHint();
+}
+
+function uiTick(dt) {
+  U.Ecur += (U.E - U.Ecur) * Math.min(1, dt * 4.5); if (Math.abs(U.E - U.Ecur) < .0005) U.Ecur = U.E;
+  U.selK += ((U.sel >= 0 ? 1 : 0) - U.selK) * Math.min(1, dt * 5);
+  apply(T_RUN, U.Ecur, 1, false);
+  if (U.sel >= 0 && U.selK > .001) { const g = GROUPS[U.sel]; _d.copy(g.ex); if (_d.lengthSq() < .01) _d.set(0, 0, 0); else _d.normalize(); g.node.position.addScaledVector(_d, .22 * U.selK * (1 - U.Ecur)); }
+  // macchina: comando e meteo
+  const run = U.on ? 1 : 0, k = U.silent ? .55 : U.power ? 1.4 : 1, cold = sm(5, -8, U.outT), wasDef = U.defrost;
+  if (!S.cool && U.on && U.outT < 2) { U.frostT += dt; const c = U.frostT % 15; U.defrost = c > 10.5; S.frost += ((U.defrost ? 0 : clamp(c / 9) * (.45 + .55 * cold)) - S.frost) * Math.min(1, dt * (U.defrost ? 1.1 : 2)); }
+  else { U.frostT = 0; U.defrost = false; S.frost += (0 - S.frost) * Math.min(1, dt * 1.5); }
+  if (wasDef !== U.defrost && U.tool === 'rem') remoteLcd();
+  const ease = (key, v, r = 1.6) => { S[key] += (v - S[key]) * Math.min(1, dt * r); };
+  ease('fan', run * (U.defrost ? 0 : 6 * k * (1 + .2 * cold))); ease('comp', run * 3 * k); ease('cold', cold); ease('snow', sm(2, -6, U.outT));
+  const inner = U.sel >= 0 && GROUPS[U.sel].key !== 'shell', inside = U.lens || U.ride || inner;
+  ease('xray', U.ride ? 1 : inner ? .92 : 0, 4); ease('ghost', U.ride ? 1 : 0, 3);
+  const calm = 1 - clamp(U.Ecur * 4);
+  ease('air', run * calm * (U.defrost || U.ride ? 0 : 1)); ease('ref', run * calm * (inside ? 1 : 0), 3); ease('wat', run * calm * (inside && !U.ride ? 1 : 0), 3);   // nel giro si segue solo il gas
+  S.outT = U.outT; S.watT = S.cool ? 18 : 35; S.read = 1; readout();
+  const r = stage.getBoundingClientRect(), dockH = $('dock').offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height));
+  // camera
+  if (U.ride) {
+    const pa = S.cool ? PATH.cool : PATH.heat; { const q = pa.curve.getPointAt(Math.min(.999, U.ru)); U.ru += dt * (.04 + .075 * sm(.2, .05, q.x)); }   // nella batteria il percorso è lungo e ripetitivo: lì corre di più
+    if (U.ru >= 1) { setRide(false); $('rT').textContent = 'Giro finito: è sempre lo stesso gas, non si consuma.'; $('rP').style.width = '100%'; }
+    else {
+      // camera da inseguimento: sta mezzo metro davanti al punto che corre nei tubi e lo segue con un po' di ritardo
+      // nel vano tecnico la camera sta dallo stesso lato del punto rispetto al compressore, così il compressore non lo copre
+      const p = pa.curve.getPointAt(U.ru), inFan = sm(.2, .05, p.x); _d.set(lerp(p.x - .265, (p.x - .1) * .2, inFan), 0, lerp(p.z + .155, p.z + .7, inFan)).normalize(); _t.copy(p).addScaledVector(_d, .64 + .5 * inFan); _t.y = lerp(p.y, .56, .4) + .05 + .14 * inFan;
+      if (U.rinit) { camP.copy(_t); camL.copy(p); U.rinit = false; } else { camP.lerp(_t, Math.min(1, dt * 2)); camL.lerp(p, Math.min(1, dt * 5)); }
+      camera.position.copy(camP); camera.lookAt(camL.x, camL.y - fr * .3, camL.z);
+      const cp = comet.geometry.attributes.position, cc = comet.geometry.attributes.color; comet.visible = true;
+      for (let i = 0; i < 36; i++) { const u = (U.ru - i * .0011 + 1) % 1, f = u * (pa.S - 1), a = f | 0, b2 = Math.min(pa.S - 1, a + 1), t = f - a, kk = (1 - i / 36) * 1.6;
+        cp.setXYZ(i, lerp(pa.P[a * 3], pa.P[b2 * 3], t), lerp(pa.P[a * 3 + 1], pa.P[b2 * 3 + 1], t), lerp(pa.P[a * 3 + 2], pa.P[b2 * 3 + 2], t)); cc.setXYZ(i, (pa.C[a * 3] + .5) * kk, (pa.C[a * 3 + 1] + .5) * kk, (pa.C[a * 3 + 2] + .5) * kk); }
+      cp.needsUpdate = cc.needsUpdate = true;
+      let s = 0; for (let i = 0; i < pa.marks.length; i++) if (pa.marks[i] <= U.ru) s = i; let txt = RIDE[0][1]; for (const [m, tx] of RIDE) if (m <= s) txt = tx;
+      txt = S.cool ? 'In raffrescamento il giro si inverte: il calore esce dalla batteria.' : txt; if ($('rT').textContent !== txt) $('rT').textContent = txt; $('rP').style.width = (U.ru * 100).toFixed(1) + '%';
+    }
+  }
+  if (!U.ride) {
+    if (free.auto) free.az += dt * .1;
+    const g = U.sel >= 0 ? GROUPS[U.sel] : null; _t.copy(g ? _d.copy(g.node.position).add(g.c) : MC); free.t.lerp(_t, Math.min(1, dt * 4));
+    const zs = g && g.key !== 'shell' && g.key !== 'base' ? Math.max(.42, g.size * 1.6) : 1 + U.Ecur * .75;
+    // la barra degli strumenti copre il fondo: alzo il modello di conseguenza
+    rig.az = free.az; rig.el = free.el; rig.w += (1.8 * zs * free.zoom - rig.w) * Math.min(1, dt * 4); rig.h += (1.45 * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
+  }
+  // lente: finché nessuno la tocca passa da sola sulla macchina, per far capire cosa fa
+  if (U.lens) {
+    const R = Math.min(r.width, r.height - dockH) * .2, pr = renderer.getPixelRatio(), L = $('lens'), cy = (r.height - dockH) * .52;
+    if (U.lensAuto) { U.lx = r.width * (.5 + .2 * Math.sin(now * .8)); U.ly = cy + (r.height - dockH) * .1 * Math.sin(now * 1.3); }
+    LENS.value.set(U.lx * pr, (r.height - U.ly) * pr, R * pr); L.style.width = L.style.height = R * 2 + 'px'; L.style.transform = `translate(${U.lx - R}px, ${U.ly - R}px)`;
+  }
+  audioTick();
+}
+function uiEnter() {
+  freeTick = uiTick; U.Ecur = 0; setE(0); U.outT = 7; U.on = true; U.silent = U.power = false; S.cool = false; $('sT').value = 7; fill($('sT')); $('oT').textContent = fmtT(7); rig.w = 1.8; rig.h = 1.45;
+  setTool('touch'); free.auto = true;
+  [...$('tabs').children].forEach((b, i) => { b.classList.remove('pulse'); setTimeout(() => { b.classList.add('pulse'); }, 1500 + i * 130); });
+}
+function uiLeave() { if (U.lens) setLens(false); if (U.ride) setRide(false); closeCard(); setE(0); S.cool = false; S.ghost = 0; resize(); ptSizes(); freeTick = null; }
+
+function initUI() {
+  $('nP').textContent = PIECES.length;
+  $('howTouch').textContent = COARSE ? 'Trascina per girarla, pizzica per avvicinarti. Tocca un pezzo per sapere cos\'è.' : 'Trascina per girarla, rotella per avvicinarti. Clicca un pezzo per sapere cos\'è.';
+  $('howX').textContent = (COARSE ? 'Muovi il dito' : 'Muovi il mouse') + ' sulla macchina: dentro il cerchio la vedi lavorare.';
+  GROUPS.forEach((g, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = SHORT[g.key]; b.setAttribute('aria-pressed', 'false'); b.onclick = () => (U.sel === i ? closeCard() : openCard(i)); $('chips').appendChild(b); });
+  // orbita, zoom, tocco
+  let down = null, pinch = 0;
+  const lensTo = e => { const r = stage.getBoundingClientRect(); U.lensAuto = false; U.lx = e.clientX - r.left; U.ly = e.clientY - r.top - (e.pointerType === 'mouse' ? 0 : Math.min(r.width, r.height) * .17); };   // col dito la lente sta sopra, per non coprirla
+  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
+  stage.addEventListener('pointermove', e => {
+    if (mode !== 'free') return;
+    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
+    const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY; if (down) down.far += Math.abs(dx) + Math.abs(dy);
+    if (U.ride) return;
+    if (ptr.size === 2) { const a = [...ptr.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (pinch > 0) free.zoom = clamp(free.zoom * pinch / d, .35, 1.9); pinch = d; free.auto = false; }
+    else { free.az -= dx * .007; free.el = clamp(free.el + dy * .005, rad(-4), rad(62)); free.auto = false; }
+  });
+  const up = e => {
+    if (!ptr.has(e.pointerId)) return; ptr.delete(e.pointerId); pinch = 0;
+    if (down && down.far < 8 && performance.now() - down.t < 450 && (U.tool === 'touch' || U.tool === 'rem' || U.tool === 'meteo')) { const g = pick(e.clientX, e.clientY); if (g >= 0 && g !== U.sel) { if (U.tool !== 'touch') setTool('touch'); openCard(g); } else if (U.tool === 'touch') closeCard(); }
+    if (ptr.size === 0) down = null;
+  };
+  stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+  stage.addEventListener('wheel', e => { if (mode !== 'free' || U.ride || e.target.closest('#dock')) return; e.preventDefault(); free.zoom = clamp(free.zoom * Math.exp(e.deltaY * .0012), .35, 1.9); free.auto = false; }, { passive: false });
+  // strumenti
+  for (const b of $('tabs').children) b.onclick = () => setTool(b.dataset.tool);
+  $('sE').addEventListener('input', e => setE(+e.target.value));
+  $('sT').addEventListener('input', e => { U.outT = +e.target.value; $('oT').textContent = fmtT(U.outT); fill(e.target); meteoHint(); });
+  $('bRideGo').onclick = () => setRide(!U.ride);
+  $('bSnd').onclick = $('bSnd2').onclick = () => audioOn(!U.snd); $('bFilm').onclick = () => startFilm(0);
+  $('kPw').onclick = () => { U.on = !U.on; remoteLcd(); }; $('kHeat').onclick = () => { S.cool = false; remoteLcd(); }; $('kCool').onclick = () => { S.cool = true; remoteLcd(); };
+  $('kSil').onclick = () => { U.silent = !U.silent; if (U.silent) U.power = false; remoteLcd(); }; $('kPow').onclick = () => { U.power = !U.power; if (U.power) U.silent = false; remoteLcd(); };
+  window.__ui = { U, setTool, openCard, pick, uiTick };
+}
+
+</script>
+</body>
+</html>
