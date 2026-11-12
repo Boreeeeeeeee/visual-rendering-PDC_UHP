@@ -167,13 +167,23 @@
       "valore": null,
       "unita": null,
       "fonte": "MU p.18"
+    },
+    {
+      "voce": "Ambiente asciutto e ben ventilato, lontano da fonti d'acqua (rubinetti, scarichi), su una superficie solida e piana, non accessibile ai bambini; all'interno o all'esterno",
+      "valore": null,
+      "unita": null,
+      "fonte": "MU p.8 (§2.4)"
     }
   ],
   "mancante": [
-    "Taglia da mostrare (5, 10 o 15 kWh in una colonna, oppure con D-Box)",
     "Altezze dell'impilato: la guida rapida dà 770 mm per due moduli; la figura 4-2 del manuale riporta 920, 1130 e 1340 mm accanto a 5, 10 e 15 kWh e non torna con moduli da 360 mm. Altezza della base e del D-Box non scritte",
     "Peso del modulo: 56 kg in tabella, 50 kg nel testo",
     "Interno del modulo (celle, BMS): non documentato, sarebbe ricostruito",
     "Colore dell'involucro (dalla guida rapida: bianco)"
-  ]
+  ],
+  "impianto_casa": {
+    "taglia": "SUM BL15P (tre moduli)",
+    "posto": "mansarda, a pavimento contro la parete di fondo",
+    "nota": "deciso da Bore il 12 novembre 2026; non in lavanderia per l'umidità"
+  }
 }

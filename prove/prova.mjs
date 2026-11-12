@@ -65,7 +65,7 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   // acqua calda nella giornata della Casa
   await ora(7.3); let c = await st(); ok(c.doccia === 1 && c.caldo < 1 && (await page.textContent('#cAcs')).startsWith('Doccia'), 'ore 7:18, doccia: esce acqua calda');
   await ora(9); c = await st(); ok(c.ricarica && (await page.textContent('#cAcs')).includes('ricarica'), 'dopo la doccia il serbatoio si ricarica');
-  await ora(15); ok((await page.textContent('#cAcs')).includes('pronta'), 'a metà giornata acqua calda pronta'); await sleep(400); await foto('casa_acs');
+  await ora(5); ok((await page.textContent('#cAcs')).includes('pronta'), 'prima dell\'alba acqua calda pronta'); await ora(15); await sleep(400); await foto('casa_acs');
   // HP 300PSDX: dalla Casa alla pagina completa, film e strumenti
   await page.locator('.tag').nth(1).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'acs', "l'etichetta dell'HP 300PSDX apre il prodotto"); ok(page.url().endsWith('#acs'), 'indirizzo #acs');
   ok(await fino(async () => await fr.locator('#kDoccia').count() > 0, 20000), "la pagina dell'HP 300PSDX si carica");

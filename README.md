@@ -15,7 +15,7 @@ Tre scene, un solo indirizzo:
 |---|---|
 | `#home` (o niente) | Home: i prodotti su un piatto girevole |
 | `#casa` | Casa in sezione, con il cursore "Una giornata in casa" |
-| `#uhp`, `#acs` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX |
+| `#uhp`, `#acs`, `#fv` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX, `fv` = moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL |
 
 Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto. La pagina completa di un prodotto è un file a sé (`uhp/index.html`): si carica in un riquadro solo quando si entra nel prodotto e si scarica uscendo, così sul telefono la memoria torna libera.
 
@@ -28,6 +28,7 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 | `src/app/` | Home, Casa e passaggio tra le scene: `shell.html` (pagina e stile), `a_base.js`, `b_home.js`, `c_casa.js`, `d_app.js`, `og.jpg`. |
 | `src/prodotti/<id>/` | Un prodotto: `leggero.js` (livello leggero e registrazione nel sito), `shell.html` e i file `?_*.js` della pagina completa. |
 | `src/comune/logo.js` | Logo Unical vettoriale, preso dai PDF dei manuali. |
+| `src/comune/kit.js` | Base comune alle pagine complete dei prodotti (tranne la UHP, che ha il suo motore): resa, scena, materiali, motore del montaggio. |
 | `src/dati/` | Una scheda dati per prodotto, con documento e pagina di provenienza per ogni valore. |
 | `build.py` | Unisce i sorgenti. Solo Python 3, nessuna installazione. |
 | `prove/prova.mjs` | Prova automatica con Chrome senza finestra a 390×780, 844×390 e 1280×720. |

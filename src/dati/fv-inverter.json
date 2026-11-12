@@ -282,9 +282,23 @@
     }
   ],
   "mancante": [
-    "Taglia da mostrare (4000, 5000 o 6000)",
     "Distanze minime attorno all'inverter: sono nella guida rapida, da rileggere ad alta risoluzione alla tappa 3",
     "Interno: il manuale vieta di aprire il pannello e non lo mostra; il montaggio pezzo per pezzo sarebbe tutto ricostruito",
     "Colore esatto dell'involucro (dalle foto: bianco)"
+  ],
+  "impianto_casa": {
+    "taglia": "ZOE1-6000",
+    "posto": "mansarda, parete di fondo in muratura",
+    "nota": "deciso da Bore il 12 novembre 2026"
+  },
+  "installazione": [
+    {
+      "voce": "Luogo protetto da sole diretto, pioggia e neve, ben ventilato; superficie di montaggio non infiammabile e robusta; verticale o inclinato all'indietro al massimo di 15°",
+      "fonte": "MU p.31-32"
+    },
+    {
+      "voce": "Cavo tra batteria e inverter idealmente entro 3 m e comunque sotto i 5 m",
+      "fonte": "MU p.45"
+    }
   ]
 }

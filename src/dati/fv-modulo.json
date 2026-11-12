@@ -346,14 +346,21 @@
       "fonte": "MI p.12 (§5.5.2)"
     },
     {
+      "voce": "Posizione dei morsetti sul lato lungo (metodo C) per il modulo ULSA-48HD con telaio B30: S = 400 ± 50 mm; carico di prova +5400 / -2400 Pa",
+      "fonte": "MI p.14 tabella"
+    },
+    {
       "voce": "Garanzia: 25 anni sul prodotto, 30 anni sul rendimento (almeno 87,4%)",
       "fonte": "SC p.1"
     }
   ],
   "mancante": [
     "Sigla del modulo: la scheda dice SSA-48HD-460N, il manuale ULSA-48HD: quale va sulla targa?",
-    "Struttura di fissaggio e inclinazione sul tetto: non sono prodotti di questi documenti, vanno decise con Bore",
-    "Numero di moduli dell'impianto da mostrare",
     "Refusi della scheda da non riportare a schermo: temperatura di esercizio scritta '40 °C ÷ +85 °C' (sulla targa del manuale è -40 °C), 'carico meccanico posteriore-posteriore'"
-  ]
+  ],
+  "impianto_casa": {
+    "moduli": 14,
+    "potenza_kWp": 6.44,
+    "nota": "deciso da Bore il 12 novembre 2026: 14 x 460 W; sette moduli per falda, una stringa per MPPT; fissaggio con profili e accessori per tetti residenziali (generici nel modello)"
+  }
 }
