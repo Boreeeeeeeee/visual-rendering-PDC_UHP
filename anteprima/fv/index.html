@@ -72,7 +72,7 @@
   <div id="dock">
     <div id="panel">
       <section data-tool="tocca"><p id="pTocca">Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.</p><div class="riga" id="nomi"></div></section>
-      <section data-tool="smonta"><p>Sposta il cursore: i cinque gruppi si separano e tornano a posto.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
+      <section data-tool="smonta"><p>Sposta il cursore: prima si staccano i gruppi, poi ogni pezzo dal suo vicino, fino alle singole celle.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
       <section data-tool="dentro"><p>Involucri trasparenti. Nel modulo: vetro, celle, vetro. Nell'inverter: schede, condensatori, induttanze, relè e ventola. Nella batteria: sedici celle in fila, barre di rame e scheda di controllo. <small>L'interno di inverter e batteria è uno schema di principio.</small></p></section>
       <section data-tool="sole"><p id="pSole"></p><input type="range" id="sS" min="0" max="1" step="0.01" value="0.8" aria-label="Quanto sole"><div id="barra" aria-label="Carica della batteria"><i id="bSoc"></i></div></section>
     </div>
@@ -95,6 +95,7 @@ const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ───────── base comune alle pagine dei prodotti (non della UHP, che ha il suo motore) ─────────
 // Resa, scena da studio, materiali, piano di sezione e motore del montaggio: gruppo() apre un gruppo, P() gli aggiunge un pezzo che arriva in volo.
@@ -138,7 +139,8 @@ const radiale = (o, az) => { o.rotation.order = 'YXZ'; o.rotation.set(PI / 2, az
 const root = new THREE.Group(); scene.add(root);
 const G = []; let cur;
 function gruppo(nome, facile, tecnico, t0, t1, vista, esp) { cur = { nome, facile, tecnico, t0, t1, vista, esp: V(...esp), pezzi: [] }; G.push(cur); }
-function P(o, da = [0, .7, 0], rit = 0) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), rit }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
+// liv = quanto si allontana il pezzo nello strumento Smonta (0 resta vicino, 1 va lontano); se manca vale l'ordine di arrivo
+function P(o, da = [0, .7, 0], rit = 0, liv = rit) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), dir: V(...da).normalize(), rit, liv }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
 
 
 // ───────── Fotovoltaico Unical · pagina completa: film di installazione e strumenti ─────────
@@ -167,8 +169,12 @@ const N = V(0, 1, 0).applyQuaternion(tetto.quaternion).toArray().map(x => x * .9
 const ZP = [-.481, .481];                                                            // i due profili: a 400 mm dai lati corti del modulo (881 - 400)
 // Involucri che lo strumento "Dentro" rende trasparenti
 const COP = std({ color: 0xeef0f1, roughness: .32, metalness: .05, transparent: true, opacity: 1 }), PCB = std({ color: 0x1f6b45, roughness: .6 }), RAME = std({ color: 0xc47a45, roughness: .35, metalness: .9 }), NERO = std({ color: 0x15171a, roughness: .5, metalness: .3 });
-const INOX = std({ color: 0xa7adb2, roughness: .3, metalness: .9 }), VETRO = std({ color: 0xa9cfe2, roughness: .05, metalness: 0, transparent: true, opacity: .2, depthWrite: false });
+const INOX = std({ color: 0xa7adb2, roughness: .3, metalness: .9 }), VETRO = std({ color: 0x7f9fb3, roughness: .05, metalness: 0, transparent: true, opacity: .1, depthWrite: false });
 const estruso = (pts, lungo) => { const s = new THREE.Shape(); pts.forEach(([a, b], i) => i ? s.lineTo(a, b) : s.moveTo(a, b)); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: lungo, bevelEnabled: false }); g.translate(0, 0, -lungo / 2); g.rotateY(PI / 2); return g; };   // profilo disegnato in sezione (z, y), estruso lungo x
+// pezzi dettagliati fatti di più solidi fusi in un oggetto solo, colorati per vertice: tanto dettaglio, poche chiamate di disegno
+const VC = std({ vertexColors: true, roughness: .45, metalness: .25 });
+const pez = (g, hex, x = 0, y = 0, z = 0, rx = 0, rz = 0) => { g = g.index ? g.toNonIndexed() : g.clone(); if (rx) g.rotateX(rx); if (rz) g.rotateZ(rz); g.translate(x, y, z); const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) c.toArray(a, i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
+const fuso = (...gs) => mergeGeometries(gs), sei = [0, 1, 2, 3, 4, 5];
 // 1 ─ ganci e profili
 gruppo('Ganci e profili', 'Prima i ganci, fissati alla struttura del tetto e fatti passare tra le tegole. Poi due profili di alluminio per ogni fila di moduli.', 'Accessori per tetti residenziali · due profili per fila, a 400 mm dai lati corti dei moduli: è lì che il manuale vuole i morsetti (S = 400 ± 50 mm)', 2, 7, { az: -38, el: 26, d: 5.0, x: -1.5, y: 1.0 }, [0, .5, .35]);
 const gGancio = estruso([[.1, 0], [.02, 0], [.02, .049], [-.03, .049], [-.03, .055], [.026, .055], [.026, .006], [.1, .006]], .035);
@@ -177,13 +183,16 @@ for (const z of ZP) for (const [i, x] of [-1.05, -.35, .35, 1.05].entries()) P(s
 for (const z of ZP) { P(sulTetto(mesh(gProfilo, AL, 0, .055, z)), N, z > 0 ? .85 : .7); for (const x of [-1.302, 1.302]) P(sulTetto(mesh(box(.004, .04, .04), NERO, x, .075, z)), N, .95); }
 // 2 ─ moduli: il primo si compone strato per strato, come nell'elenco dei componenti del manuale (§3, Informazioni generali); il secondo arriva già finito
 gruppo('Moduli', 'Un modulo è un panino: vetro, pellicola, celle, pellicola, vetro, chiusi in un telaio di alluminio. Sono bifacciali: prendono luce anche da dietro.', 'MULTIVOLT 460 BF · 460 W · 96 mezze celle N-Type 6 × 16 · doppio vetro da 2 mm · 1762 × 1134 × 30 mm · 24,5 kg · scatole di giunzione IP68 con 3 diodi · almeno quattro morsetti per modulo · nella casa sono 14: 6,44 kWp', 7, 15, { az: -34, el: 36, d: 4.2, x: -1.7, y: 1.1 }, [0, 1.05, .7]);
-const telaio = std({ color: 0x15171a, roughness: .5, metalness: .6 }), celle = std({ map: tCel, roughness: .18, metalness: .35, side: THREE.DoubleSide }), YM = .11, XA = -.577, su = k => N.map(v => v * k);
-P(sulTetto(mesh(box(1.114, .002, 1.742), VETRO, XA, YM - .003, 0)), su(1.0), 0);                                    // vetro posteriore
-P(sulTetto(mesh(box(1.10, .0012, 1.73), celle, XA, YM, 0)), su(1.5), .12);                                           // celle tra due pellicole incapsulanti
-P(sulTetto(mesh(box(1.114, .002, 1.742), VETRO, XA, YM + .003, 0)), su(2.0), .24);                                   // vetro anteriore
-for (const s of [-1, 1]) { P(sulTetto(mesh(box(.012, .03, 1.762), telaio, XA + s * .561, YM, 0)), N.map((v, i) => v * .6 + (i ? 0 : s * .5)), .36); P(sulTetto(mesh(box(1.11, .03, .012), telaio, XA, YM, s * .875)), su(.8), .4); }
-for (const x of [-.3, 0, .3]) P(sulTetto(mesh(box(.07, .014, .05), NERO, XA + x, YM - .012, 0)), su(-.5), .5);            // tre scatole di giunzione sul retro
-P(sulTetto(mesh(box(1.134, .03, 1.762), [telaio, telaio, std({ map: tCel, roughness: .18, metalness: .35 }), telaio, telaio, telaio], .577, YM, 0)), N, .62);
+const telaio = std({ color: 0x15171a, roughness: .5, metalness: .6 }), celle = std({ map: tCel, roughness: .2, metalness: .35, side: THREE.DoubleSide }), YM = .11, su = k => N.map(v => v * k);
+const gScatola = fuso(pez(box(.07, .014, .05), 0x15171a), pez(cyl(.004, .14, 6), 0x15171a, .1, 0, 0, 0, PI / 2), pez(cyl(.007, .03, 8), 0x2a2d31, .18, 0, 0, 0, PI / 2));     // scatola di giunzione con cavo e connettore
+function modulo(XA, r0, k) {      // i due moduli sono identici: stessi strati; il secondo si compone più in fretta
+  P(sulTetto(mesh(box(1.114, .002, 1.742), VETRO, XA, YM - .003, 0)), su(1.0), r0, 0);                                    // vetro posteriore
+  P(sulTetto(mesh(box(1.10, .0012, 1.73), celle, XA, YM, 0)), su(1.5), r0 + .12 * k, .16);                                 // celle tra due pellicole incapsulanti
+  P(sulTetto(mesh(box(1.114, .002, 1.742), VETRO, XA, YM + .003, 0)), su(2.0), r0 + .24 * k, .32);                         // vetro anteriore
+  for (const q of [-1, 1]) { P(sulTetto(mesh(box(.012, .03, 1.762), telaio, XA + q * .561, YM, 0)), [q * .5, .1, 0], r0 + .36 * k, .5); P(sulTetto(mesh(box(1.11, .03, .012), telaio, XA, YM, q * .875)), [0, .1 - q * .25, q * .45], r0 + .4 * k, .5); }
+  for (const x of [-.3, 0, .3]) P(sulTetto(mesh(gScatola, VC, XA + x, YM - .012, 0)), su(-.5), r0 + .5 * k, .25);         // tre scatole di giunzione sul retro
+}
+modulo(-.577, 0, 1); modulo(.577, .5, .5);
 const morsetto = (x, z, fine) => { const g = new THREE.Group(); g.add(mesh(box(fine ? .03 : .044, .005, .06), AL, fine ? -Math.sign(x) * .008 : 0, .018, 0)); if (fine) g.add(mesh(box(.005, .034, .06), AL, Math.sign(x) * .0075, .002, 0)); g.add(mesh(cyl(.005, .03, 8), INOX, fine ? Math.sign(x) * .0005 : 0, .006, 0)); g.add(mesh(cyl(.008, .006, 6), INOX, fine ? Math.sign(x) * .0005 : 0, .024, 0)); g.position.set(x, YM, z); return sulTetto(g); };
 for (const z of ZP) for (const [i, x] of [-1.152, 0, 1.152].entries()) P(morsetto(x, z, x !== 0), N, .8 + i * .05);
 // la parete in muratura con inverter e batteria
@@ -195,14 +204,24 @@ const IX = 1.95, IY = 1.55, Z0 = ZW + .047, dz = z => [0, 0, z];
 P(mesh(box(.46, .1, .012), GR, IX, IY + .12, ZW + .006), dz(1), 0);                                                           // staffa, fori a 400 mm
 for (const x of [-.2, .2]) { const v = mesh(cyl(.008, .02, 8), NERO, IX + x, IY + .12, ZW + .016); v.rotation.x = PI / 2; P(v, dz(.8), .06); }
 { const g = new THREE.Group(); g.add(mesh(box(.5, .42, .006), GR, 0, 0, .041)); for (let i = -7; i <= 7; i++) g.add(mesh(box(.005, .40, .026), GR, i * .032, 0, .025)); g.add(mesh(box(.16, .12, .03), NERO, .13, -.12, .024)); g.position.set(IX, IY, ZW); P(g, dz(1.1), .12); }   // radiatore e modulo di induttanza
-P(mesh(box(.44, .30, .004), PCB, IX, IY + .05, Z0 + .008), dz(1.2), .24);                                                     // scheda di potenza
-for (let i = 0; i < 6; i++) { const c = mesh(cyl(.017, .045, 16), NERO, IX - .17 + (i % 3) * .042, IY + .15 - (i / 3 | 0) * .042, Z0 + .033); c.rotation.x = PI / 2; P(c, dz(1.2), .32 + i * .015); }   // condensatori
-P(mesh(box(.13, .05, .022), std({ color: 0x24282c, roughness: .4, metalness: .6 }), IX + .02, IY + .12, Z0 + .021), dz(1.2), .42);          // stadio di potenza
-for (let i = 0; i < 3; i++) P(mesh(new THREE.TorusGeometry(.026, .012, 10, 20), RAME, IX + .11 + (i % 2) * .07, IY + .05 - (i > 1 ? .065 : 0) + (i === 1 ? -.065 : 0), Z0 + .022), dz(1.2), .48 + i * .02);   // induttanze
-for (let i = 0; i < 4; i++) P(mesh(box(.022, .03, .022), std({ color: 0x2456a6, roughness: .5 }), IX + .08 + i * .03, IY - .07, Z0 + .021), dz(1.2), .56 + i * .012);    // relè delle uscite verso rete e BACK-UP
-{ const f = new THREE.Group(); f.add(mesh(box(.07, .07, .016), NERO)); const h = mesh(cyl(.028, .018, 16), GR); h.rotation.x = PI / 2; f.add(h); f.position.set(IX - .15, IY - .04, Z0 + .018); P(f, dz(1.2), .62); }   // ventola interna
-P(mesh(box(.045, .055, .05), NERO, IX - .12, IY - .155, Z0 + .03), dz(1.2), .66);                                             // interruttore CC
-P(mesh(box(.17, .11, .003), std({ color: 0x1d4f7a, roughness: .6 }), IX, IY - .12, Z0 + .085), dz(1.2), .72);               // scheda di controllo, dietro lo schermo
+const I = (g, m, x, y, z, rit) => P(mesh(g, m, IX + x, IY + y, Z0 + z), dz(1.2), rit), ax = o => { o.rotation.x = PI / 2; return o; };
+I(fuso(pez(box(.52, .43, .004), 0x8f969b), pez(box(.52, .012, .05), 0x8f969b, 0, .209, .027), pez(box(.52, .012, .05), 0x8f969b, 0, -.209, .027), pez(box(.012, .43, .05), 0x8f969b, .254, 0, .027), pez(box(.012, .43, .05), 0x8f969b, -.254, 0, .027)), VC, 0, 0, .002, .2);   // vasca in alluminio
+I(fuso(pez(box(.44, .3, .003), 0x1f6b45), pez(box(.4, .004, .0035), 0xc9a227, 0, -.13, .001), pez(box(.004, .26, .0035), 0xc9a227, -.2, 0, .001), pez(box(.3, .003, .0035), 0xc9a227, .04, .02, .001)), VC, 0, .05, .008, .26);   // scheda di potenza con le piste
+const gCond = fuso(pez(cyl(.017, .042, 16), 0x1b1d20), pez(cyl(.0155, .003, 16), 0xcfd3d6, 0, .022, 0), pez(cyl(.0173, .01, 16), 0x7d858c, 0, -.01, 0));
+for (let i = 0; i < 8; i++) ax(I(gCond, VC, -.185 + (i % 4) * .04, .16 - (i / 4 | 0) * .04, .032, .3 + i * .008));       // otto condensatori
+I(fuso(pez(box(.2, .05, .012), 0xb9bec2), ...sei.map(i => pez(box(.018, .024, .006), 0x15171a, -.08 + i * .032, 0, .009)), ...sei.map(i => pez(box(.012, .008, .002), 0xcfd3d6, -.08 + i * .032, .017, .006))), VC, .09, .15, .016, .4);   // stadio di potenza: sei transistor su una barra di alluminio
+const gInd = fuso(pez(new THREE.TorusGeometry(.03, .013, 10, 24), 0xc47a45), pez(cyl(.044, .004, 20), 0x2a2d31, 0, 0, -.015, PI / 2), pez(cyl(.012, .02, 12), 0x3a3f44, 0, 0, 0, PI / 2));
+[[.02, .06], [.1, .06], [.18, .06], [.18, -.02]].forEach(([x, y], i) => I(gInd, VC, x, y, .025, .46 + i * .015));           // induttanze
+I(fuso(...[0, 1, 2].map(i => pez(box(.03, .034, .018), 0xe2b93b, i * .036, 0, 0)), pez(new THREE.TorusGeometry(.016, .008, 8, 16), 0x3d7a4a, .125, 0, 0)), VC, -.19, .045, .02, .53);   // filtro: condensatori gialli e bobina
+I(fuso(...[0, 1, 2, 3].map(i => pez(box(.024, .03, .022), 0x2456a6, i * .03, 0, 0)), ...[0, 1, 2, 3].map(i => pez(box(.02, .012, .001), 0xe9ebec, i * .03, 0, .0116))), VC, .08, -.085, .021, .57);   // relè delle uscite verso rete e BACK-UP
+I(fuso(pez(box(.07, .07, .016), 0x15171a), pez(cyl(.031, .017, 20), 0x2a2d31, 0, 0, 0, PI / 2)), VC, -.15, -.045, .018, .61);                                                                             // ventola interna
+const pale = I(fuso(pez(cyl(.012, .012, 12), 0x8f969b, 0, 0, 0, PI / 2), ...[0, 1, 2, 3, 4].map(i => { const g = pez(box(.022, .009, .002), 0x8f969b, .018, 0, .004); g.rotateZ(i * PI * 2 / 5); return g; })), VC, -.15, -.045, .024, .62);
+I(fuso(pez(box(.045, .055, .05), 0x15171a), pez(cyl(.016, .012, 16), 0xc0392b, 0, 0, .031, PI / 2), pez(box(.006, .026, .004), 0xe9ebec, 0, 0, .039)), VC, -.12, -.16, .03, .65);                         // interruttore CC con la manopola
+I(fuso(pez(box(.1, .03, .025), 0x2e8b57), ...[0, 1, 2, 3].map(i => pez(cyl(.005, .004, 8), 0xcfd3d6, -.036 + i * .024, 0, .014, PI / 2))), VC, .15, -.165, .02, .68);                                      // morsettiera delle uscite in alternata
+I(fuso(pez(box(.008, .19, .003), 0xc47a45), pez(box(.008, .19, .003), 0xc47a45, .02, 0, 0)), VC, .215, -.03, .014, .7);                                                                                       // barre di rame
+I(fuso(pez(box(.17, .11, .003), 0x1d4f7a), pez(box(.03, .03, .004), 0x15171a, -.03, .01, .003), pez(box(.028, .02, .005), 0xcfd3d6, .05, .03, .004), pez(box(.05, .008, .006), 0xe9ebec, 0, -.045, .004)), VC, 0, -.12, .085, .74);   // scheda di controllo
+I(pez(box(.04, .07, .001), 0xb9bec2), VC, 0, -.1, .11, .77);                                                                                                                                                  // cavo piatto verso lo schermo
+I(fuso(pez(box(.53, .006, .004), 0x0c0c0d, 0, .218, 0), pez(box(.53, .006, .004), 0x0c0c0d, 0, -.218, 0), pez(box(.006, .44, .004), 0x0c0c0d, .262, 0, 0), pez(box(.006, .44, .004), 0x0c0c0d, -.262, 0, 0)), VC, 0, 0, .054, .82);   // guarnizione
 { const g = new THREE.Group();     // terminali sul lato inferiore, da sinistra: batteria +/-, interruttore CC, FV1 e FV2, COM, WiFi, rete, BACK-UP (manuale p.22)
   [[-.22, 0x1b1d20], [-.18, 0xc0392b], [-.12, 0xb3261e], [-.06, 0x1b1d20], [-.02, 0x1b1d20], [.05, 0x30353a], [.1, 0xdfe3e6], [.16, 0x30353a], [.22, 0x30353a]].forEach(([x, c]) => { g.add(mesh(cyl(.012, .028, 12), std({ color: c, roughness: .5 }), x, 0, 0)); g.add(mesh(cyl(.015, .008, 6), GR, x, .012, 0)); });
   g.position.set(IX, IY - .238, Z0 + .07); P(g, [0, -.5, .4], .8); }
@@ -213,20 +232,31 @@ P(mesh(box(.17, .11, .003), std({ color: 0x1d4f7a, roughness: .6 }), IX, IY - .1
 // 4 ─ batteria. Documentati: tre moduli su una base, staffe a L, pannello laterale sopra le porte, interruttore automatico, porte BMS, etichetta con 4 tacche (p.13-14).
 //     Ricavato: 16 celle in serie, perché 51,2 V di tensione nominale diviso i 3,2 V di una cella LFP fa 16. Schema di principio: forma e disposizione di celle, barre e scheda.
 gruppo('Batteria', 'Tiene da parte l\'energia del giorno per la sera. In ogni modulo: sedici celle al litio-ferro-fosfato in fila, unite da barre di rame, e una scheda che le sorveglia una per una.', 'SUM BL15P · tre moduli LFP da 51,2 V · IP66 · interruttore automatico e porte BMS sul fianco · a pavimento con staffe a parete · interno: schema di principio (16 celle ricavate da 51,2 V)', 24, 33, { az: -18, el: 8, d: 2.3, x: .95, y: .55 }, [-.25, 0, .8]);
-const gCella = box(.034, .25, .12), mCella = std({ color: 0x2c63c4, roughness: .45, metalness: .2 });
 const BX = .95, BZ = ZW + .02 + .09, tLed = cv(32, 128, () => {}), ledM = new THREE.MeshBasicMaterial({ map: tLed }), Y1 = .05 + .18;
 function tacche(soc) { const k = Math.round(clamp(soc) * 4), c = tLed.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 32, 128); for (let i = 0; i < 4; i++) { c.fillStyle = i < k ? '#7dff9a' : '#27302b'; c.fillRect(8, 78 - i * 20, 16, 12); } c.fillStyle = '#7fd0ff'; c.beginPath(); c.arc(16, 108, 6, 0, 7); c.fill(); tLed.needsUpdate = true; }
 P(mesh(rbox(.65, .05, .18, .01), GR, BX, .025, BZ), dz(1), 0);
-P(mesh(box(.62, .33, .006), AL, BX, Y1, BZ - .082), dz(1.1), .08);                                                           // fondo del primo modulo
-for (let i = 0; i < 16; i++) P(mesh(gCella, mCella, BX - .281 + i * .0375, Y1 - .03, BZ - .015), [0, .5, 1.0], .14 + i * .012);   // 16 celle
-{ const im = new THREE.InstancedMesh(box(.03, .005, .03), RAME, 15), m4 = new THREE.Matrix4(); for (let i = 0; i < 15; i++) { m4.makeTranslation(BX - .262 + i * .0375, Y1 + .098, BZ - .015 + (i % 2 ? .03 : -.03)); im.setMatrixAt(i, m4); } P(im, [0, .4, .8], .4); }   // barre di rame tra le celle
-{ const g = new THREE.Group(); g.add(mesh(box(.5, .045, .004), PCB)); for (const x of [-.18, -.06, .08, .19]) g.add(mesh(box(.03, .02, .006), NERO, x, 0, .004)); g.position.set(BX - .04, Y1 + .135, BZ + .03); P(g, [0, .4, .9], .46); }    // scheda BMS
-{ const g = new THREE.Group(); g.add(mesh(box(.03, .075, .05), NERO)); g.add(mesh(box(.012, .02, .012), std({ color: 0x3fbf6a, roughness: .5 }), .018, 0, 0)); for (const [y, c] of [[-.07, 0xe67e22], [-.11, 0x1b1d20]]) { const t = mesh(cyl(.011, .03, 12), std({ color: c, roughness: .5 }), .008, y, 0); t.rotation.z = PI / 2; g.add(t); } g.position.set(BX + .3, Y1 + .09, BZ); P(g, [.6, 0, .4], .52); }   // interruttore automatico e connettori BAT+/BAT-
+const Bm = (g, m, x, y, z, da, rit, liv) => P(mesh(g, m, BX + x, Y1 + y, BZ + z), da, rit, liv), ARA = std({ color: 0xe08a2a, roughness: .6 });
+// una cella prismatica: involucro blu con fascia, coperchio, i due poli (alluminio e rame) e la valvola di sfogo
+const gCella = fuso(pez(rbox(.034, .236, .12, .004), 0x2f66c9, 0, -.004, 0), pez(box(.0345, .06, .1205), 0xe9ebec, 0, -.03, 0), pez(box(.031, .006, .116), 0x2a2d31, 0, .117, 0), pez(cyl(.008, .008, 12), 0xd9dde0, 0, .124, .036), pez(cyl(.008, .008, 12), 0xc47a45, 0, .124, -.036), pez(box(.012, .002, .022), 0x9aa0a5, 0, .121, 0));
+const gBarra = fuso(pez(box(.03, .004, .022), 0xc47a45), pez(cyl(.006, .004, 6), 0xcfd3d6, -.011, .004, 0), pez(cyl(.006, .004, 6), 0xcfd3d6, .011, .004, 0));
+const gBms = fuso(pez(box(.5, .05, .003), 0x1f6b45), ...[-.18, -.06, .08].map(x => pez(box(.03, .02, .005), 0x15171a, x, 0, .004)), pez(box(.05, .03, .012), 0xb9bec2, .18, 0, .007), pez(box(.02, .012, .008), 0xe9ebec, -.23, .01, .005), pez(box(.02, .012, .008), 0xe9ebec, .01, -.012, .005));
+const gInt = fuso(pez(box(.03, .075, .05), 0x1b1d20), pez(box(.012, .02, .012), 0x3fbf6a, .018, .005, 0), pez(cyl(.011, .03, 12), 0xe67e22, .008, -.07, 0, 0, PI / 2), pez(cyl(.011, .03, 12), 0x1b1d20, .008, -.105, 0, 0, PI / 2), pez(box(.012, .014, .016), 0x8f969b, .012, .06, .012), pez(box(.012, .014, .016), 0x8f969b, .012, .06, -.012));
 const etichetta = () => mesh(new THREE.PlaneGeometry(.028, .11), ledM, 0, 0, .0906);
-function interno() { const g = new THREE.Group(), c = new THREE.InstancedMesh(gCella, mCella, 16), b = new THREE.InstancedMesh(box(.03, .005, .03), RAME, 15), m4 = new THREE.Matrix4();     // gli altri due moduli sono uguali al primo
-  for (let i = 0; i < 16; i++) { m4.makeTranslation(-.281 + i * .0375, -.03, -.015); c.setMatrixAt(i, m4); if (i < 15) { m4.makeTranslation(-.262 + i * .0375, .098, -.015 + (i % 2 ? .03 : -.03)); b.setMatrixAt(i, m4); } }
-  g.add(c, b, mesh(box(.5, .045, .004), PCB, -.04, .135, .03), mesh(box(.03, .075, .05), NERO, .3, .09, 0)); return g; }
-for (let i = 0; i < 3; i++) { const g = new THREE.Group(); g.add(mesh(rbox(.65, .355, .18, .014), COP)); g.add(etichetta()); if (i) g.add(interno()); g.add(mesh(box(.012, .3, .14), std({ color: 0xd3d6d8, roughness: .6 }), .331, 0, 0)); g.position.set(BX, Y1 + i * .36, BZ); P(g, [0, i ? .6 : .2, 1.3], i ? .66 + i * .08 : .6); }
+function pacco(k) {      // un modulo batteria: nel primo le celle entrano una per una, negli altri due arrivano in blocco. Dentro sono uguali.
+  const y0 = k * .36, r0 = k ? .5 + k * .12 : .06, da = [0, .5, 1.0], m4 = new THREE.Matrix4(), r = d => r0 + (k ? d * .25 : d);
+  Bm(box(.62, .33, .006), AL, 0, y0, -.082, dz(1.1), r0, .02);                                                                    // fondo
+  if (!k) for (let i = 0; i < 16; i++) Bm(gCella, VC, -.281 + i * .0375, y0 - .03, -.015, da, r(.06 + i * .012), .3).rotation.y = i % 2 ? PI : 0;   // 16 celle, una dritta e una girata
+  else { const im = new THREE.InstancedMesh(gCella, VC, 16); for (let i = 0; i < 16; i++) { m4.makeRotationY(i % 2 ? PI : 0).setPosition(-.281 + i * .0375, 0, 0); im.setMatrixAt(i, m4); } im.position.set(BX, Y1 + y0 - .03, BZ - .015); P(im, da, r(.06), .3); }
+  for (const q of [-1, 1]) Bm(box(.012, .25, .125), AL, q * .305, y0 - .03, -.015, [q * .5, 0, .6], r(.28), .38);              // piastre di testa
+  for (const y of [-.09, .03]) Bm(box(.63, .012, .002), INOX, 0, y0 + y, .046, da, r(.3), .44);                                 // fasce che tengono strette le celle
+  { const im = new THREE.InstancedMesh(gBarra, VC, 15); for (let i = 0; i < 15; i++) { m4.makeTranslation(-.262 + i * .0375, 0, i % 2 ? .036 : -.036); im.setMatrixAt(i, m4); } im.position.set(BX, Y1 + y0 + .1, BZ - .015); P(im, [0, .4, .8], r(.34), .52); }   // barre di rame imbullonate
+  Bm(box(.56, .002, .012), ARA, 0, y0 + .104, -.015, [0, .4, .8], r(.38), .58);                                                 // cavetto piatto che misura ogni cella
+  Bm(gBms, VC, -.04, y0 + .135, .03, [0, .4, .9], r(.42), .66);                                                                  // scheda BMS
+  Bm(gInt, VC, .3, y0 + .09, 0, [.6, 0, .4], r(.46), .72);                                                                       // interruttore automatico, connettori BAT+/BAT- e porte
+  for (const [q, m] of [[-1, ARA], [1, NERO]]) P(mesh(tubo([V(BX + q * .29, Y1 + y0 + .1, BZ - .05), V(BX + q * .27, Y1 + y0 + .155, BZ - .06), V(BX + .2, Y1 + y0 + .16 - (q > 0 ? .02 : 0), BZ - .055), V(BX + .295, Y1 + y0 + .12, BZ - .02)], .005), m), [0, .4, .8], r(.48), .6);   // cavi di potenza
+  const g = new THREE.Group(); g.add(mesh(rbox(.65, .355, .18, .014), COP)); g.add(etichetta()); g.add(mesh(box(.012, .3, .14), std({ color: 0xd3d6d8, roughness: .6 }), .331, 0, 0)); g.position.set(BX, Y1 + y0, BZ); P(g, [0, k ? .6 : .2, 1.3], r(.52), 1);
+}
+for (let k = 0; k < 3; k++) pacco(k);
 for (const x of [-.25, .25]) P(mesh(box(.04, .05, .11), GR, BX + x, 1.13 + .025, ZW + .055), [0, .4, .5], .92);                // staffe a L in cima
 // 5 ─ cavi
 gruppo('Cavi', 'Due stringhe di moduli scendono all\'inverter, una per ingresso. Un cavo corto lo unisce alla batteria.', 'Due stringhe, una per MPPT · batteria collegata sul fianco, a meno di 3 m dall\'inverter · uscite verso la casa e verso la rete', 33, 37, { az: -6, el: 16, d: 7.4, x: .1, y: 1.0 }, [0, 0, .25]);
@@ -250,8 +280,8 @@ let stretto = false, ultSoc = -1;
 function posa(now, dt) {
   const film = U.mode === 'film', t = film ? U.t : FINE;
   for (const g of G) for (const p of g.pezzi) { const dur = (g.t1 - g.t0) * .42, k = film ? Math.max(1 - sm(1.2, 2.0, t), clamp((t - (g.t0 + p.rit * (g.t1 - g.t0 - dur))) / dur)) : 1;
-    p.o.visible = k > 0; p.o.position.copy(p.home).addScaledVector(p.da, 1 - eoc(k)).addScaledVector(g.esp, U.e); }
-  U.dentro = lerp(U.dentro, film ? 0 : U.dentroTo, 1 - Math.exp(-dt * 6)); COP.opacity = lerp(1, .1, U.dentro); COP.depthWrite = U.dentro < .5;
+    p.o.visible = k > 0; p.o.position.copy(p.home).addScaledVector(p.da, 1 - eoc(k)).addScaledVector(g.esp, U.e).addScaledVector(p.dir, (.04 + .46 * p.liv) * U.e); }   // Smonta separa i gruppi e, dentro ogni gruppo, ogni pezzo
+  U.dentro = lerp(U.dentro, film ? 0 : U.dentroTo, 1 - Math.exp(-dt * 6)); COP.opacity = lerp(1, .1, U.dentro) * lerp(1, .45, sm(0, .3, U.e)); COP.depthWrite = COP.opacity > .9; pale.rotation.z -= dt * 12 * (E.sole > .02 ? 1 : 0);
   if (film) { E.sole = t < FINE_M ? 0 : lerp(.95, 0, sm(FINE_M + 3.2, FINE_M + 5.5, t)); if (t < FINE_M) E.soc = .45; }
   const vivo = !film || t > FINE_M ? 1 : 0; energia(dt * vivo);
   const F = { fv: E.sole * vivo, bat: E.bat * vivo, casa: CASA * vivo, rete: E.rete * vivo };
