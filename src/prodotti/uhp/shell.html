@@ -31,6 +31,8 @@
   #brandrow { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap }
   .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase }
   .brand span { color: var(--green) }
+  .back { position: relative; z-index: 60; pointer-events: auto; display: inline-block; margin-right: 12px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(13,18,22,.7); color: var(--ink); font-size: .78em; letter-spacing: .06em; text-decoration: none; vertical-align: middle }
+  .back:hover, .back:focus-visible { border-color: var(--green) }
   .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em }
   #segs { display: flex; gap: 4px; height: 3px }
   #segs i { background: var(--line); overflow: hidden; border-radius: 2px; min-width: 5px }
@@ -154,7 +156,7 @@
   <canvas id="gl" aria-label="Pompa di calore Unical UHP 120 che si monta pezzo per pezzo"></canvas>
   <div id="hud">
     <header id="top">
-      <div id="brandrow"><div class="brand">UHP <span>120</span></div><div class="sub">Unical · monoblocco R290 · 1280 × 500 × 1040 mm</div></div>
+      <div id="brandrow"><div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>UHP <span>120</span></div><div class="sub">Unical · monoblocco R290 · 1280 × 500 × 1040 mm</div></div>
       <div id="segs"></div>
       <div id="read"><div id="rOut"><small>Aria fuori</small><b>7 °C</b></div><div id="rWat"><small>Acqua di casa</small><b>35 °C</b></div></div>
     </header>

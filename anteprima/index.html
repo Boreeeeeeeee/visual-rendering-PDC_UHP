@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Casa Unical</title>
+<meta name="description" content="I prodotti Unical dentro una casa: guardali lavorare lungo una giornata, poi aprili e smontali pezzo per pezzo. A cura di Borelli Impianti.">
+<meta property="og:title" content="Casa Unical">
+<meta property="og:description" content="I prodotti Unical dentro una casa: guardali lavorare lungo una giornata, poi aprili e smontali pezzo per pezzo.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/anteprima/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0b0f13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
+</script>
+<style>
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #a9b4b1; --line: rgba(255,255,255,.18); --green: #a9bd8f; --heat: #ff9a4d; --ice: #8fd3ff; --bg: #0b0f13; --panel: rgba(13,18,22,.82);
+    --pad: clamp(12px, 2.4vmin, 28px); --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
+  * { box-sizing: border-box }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent }
+  #stage { position: fixed; inset: 0; overflow: hidden }
+  #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab }
+  button { font: inherit; color: inherit }
+  .btn, .big { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel);
+    font: 600 15px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(8px) }
+  .big { background: var(--green); color: #10140f; border-color: transparent; font-size: 17px; min-height: 52px; padding: 0 24px }
+  .big:disabled { background: var(--panel); color: var(--dim); border-color: var(--line); cursor: default }
+  .btn:hover, .btn:focus-visible { border-color: var(--green) } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
+
+  #top { position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none }
+  #logo { width: clamp(84px, 13vmin, 124px); line-height: 0; filter: drop-shadow(0 1px 6px rgba(0,0,0,.35)) } #logo svg { width: 100%; height: auto }
+  #by { font: 600 clamp(12px, 1.7vmin, 15px)/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; text-align: right; text-shadow: 0 1px 8px rgba(0,0,0,.6) } #by span { color: var(--green) }
+
+  .scena { position: absolute; inset: 0; display: none; pointer-events: none }
+  body[data-scena=home] #home, body[data-scena=casa] #casa { display: block }
+
+  /* Home */
+  #hInfo { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px var(--pad) max(var(--pad), env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+    background: linear-gradient(transparent, rgba(5,8,10,.92) 46%) }
+  #hNum { font: 600 13px/1 var(--display); letter-spacing: .2em; color: var(--green) }
+  #hName { margin: 0; font: 700 clamp(38px, 8vmin, 64px)/.95 var(--display); letter-spacing: .04em; text-transform: uppercase }
+  #hLine { margin: 0; color: var(--dim); font-size: clamp(14px, 2vmin, 17px); min-height: 1.3em }
+  #hRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px }
+  .credit { margin: 4px 0 0; font-size: 12px; color: var(--dim) }
+  .freccia { position: absolute; top: 44%; width: 46px; height: 46px; padding: 0; font-size: 26px; letter-spacing: 0 } #bPrev { left: var(--pad) } #bNext { right: var(--pad) }
+  #hHint { position: absolute; left: 0; right: 0; top: calc(var(--pad) + 62px); text-align: center; font: 500 13px/1.3 var(--body); color: var(--dim); letter-spacing: .04em; text-shadow: 0 1px 8px #000 }
+
+  /* Casa */
+  #cTop { position: absolute; left: var(--pad); right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
+  #cCap { pointer-events: auto; max-width: 560px; padding: 12px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center }
+  #cHour { font: 700 clamp(30px, 6vmin, 44px)/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; grid-row: span 2 }
+  #cStato { justify-self: start; font: 600 12px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
+  #cStato[data-m=c] { background: var(--heat); color: #1b0f05 } #cStato[data-m=f] { background: var(--ice); color: #05121b }
+  #cText { margin: 0; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; min-height: 2.7em }
+  #cPanel { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 640px); pointer-events: auto; padding: 12px 14px 10px; border-radius: 16px;
+    background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 10px }
+  #cPanel h2 { margin: 0; font: 600 13px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
+  #cRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden }
+  .seg button, #bPlay { min-height: 44px; padding: 0 16px; border: 0; background: transparent; font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
+  .seg button[aria-pressed=true] { background: var(--green); color: #10140f }
+  #bPlay { border: 1px solid var(--line); border-radius: 999px; min-width: 92px }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer; --f: 30% }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--f), rgba(255,255,255,.2) var(--f)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.2) } input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--green) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
+  input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
+  #ore { display: flex; justify-content: space-between; font: 500 11px/1 var(--body); color: var(--dim); font-variant-numeric: tabular-nums; margin-top: -6px }
+  #tag { position: absolute; left: 0; top: 0; pointer-events: auto; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--green); color: #10140f; font: 700 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+    box-shadow: 0 6px 22px rgba(0,0,0,.45); white-space: nowrap }
+  #tag::after { content: ""; position: absolute; left: 50%; top: 100%; width: 2px; height: 14px; background: var(--green); transform: translateX(-50%) }
+
+  #prod { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg) } #prod[hidden] { display: none }
+  body[data-scena=prodotto] #top { display: none }
+  body[data-scena=casa] #top { background: linear-gradient(rgba(5,8,10,.72), transparent) }
+  #veil { position: absolute; inset: 0; background: var(--bg); opacity: 1; pointer-events: none; transition: opacity .38s ease }
+  body.pronto #veil { opacity: 0 } body.pronto #veil.on { opacity: 1; pointer-events: auto }
+  @media (max-height: 460px) { #hName { font-size: 30px } #hInfo { gap: 5px; padding-top: 16px } #hNum, .credit, #hHint, #ore, #cPanel h2 { display: none } .big, .btn { min-height: 42px }
+    #cTop { top: var(--pad); left: calc(var(--pad) + 110px); right: calc(var(--pad) + 130px); flex-direction: row; align-items: center } #cCap { padding: 6px 12px; flex: 1; max-width: 520px } #cHour { font-size: 24px } #cText { min-height: 0; font-size: 12px; line-height: 1.25 }
+    #cPanel { flex-direction: row; align-items: center; padding: 6px 10px; gap: 12px; width: min(calc(100% - 2 * var(--pad)), 760px) } #cRow { flex-wrap: nowrap } .seg button, #bPlay { min-height: 40px; padding: 0 12px } }
+  @media (max-width: 480px) { .freccia { top: 36% } }
+  body.solo .freccia, body.solo #hNum { display: none }
+  /* fotogramma per l'anteprima del link (og.jpg): si attiva da script con la classe "og" */
+  #ogT { display: none; position: absolute; left: 44px; bottom: 40px; right: 44px; text-shadow: 0 2px 18px rgba(0,0,0,.7) } #ogT b { display: block; font: 700 92px/.95 var(--display); letter-spacing: .03em; text-transform: uppercase } #ogT span { display: block; margin-top: 12px; font: 500 30px/1.2 var(--body) }
+  body.og .scena, body.og #by { display: none !important } body.og #ogT { display: block } body.og #logo { width: 190px } body.og #top { padding: 36px 44px }
+  body.og #stage::after { content: ""; position: absolute; inset: 45% 0 0 0; background: linear-gradient(transparent, rgba(5,8,10,.85)); pointer-events: none } body.og #ogT { z-index: 2 }
+  @media (prefers-reduced-motion: reduce) { #veil { transition: none } }
+</style>
+</head>
+<body data-scena="">
+<div id="stage">
+  <canvas id="gl" aria-label="Casa Unical: i prodotti Unical in tre dimensioni"></canvas>
+  <header id="top"><div id="logo"></div><div id="by">Casa Unical<br><span>Borelli Impianti</span></div></header>
+
+  <section id="home" class="scena" aria-label="I prodotti">
+    <p id="hHint">Trascina per girare · tocca il prodotto per aprirlo</p>
+    <button class="btn freccia" id="bPrev" type="button" aria-label="Prodotto precedente">&#8249;</button>
+    <button class="btn freccia" id="bNext" type="button" aria-label="Prodotto successivo">&#8250;</button>
+    <div id="hInfo">
+      <div id="hNum">01 / 01</div>
+      <h1 id="hName">UHP 120</h1>
+      <p id="hLine"></p>
+      <div id="hRow"><button class="big" id="bOpen" type="button">Apri</button><button class="btn" id="bCasa" type="button">Entra nella casa</button></div>
+      <p class="credit">Animazione dimostrativa di Borelli Impianti, ricostruita dai manuali Unical.</p>
+    </div>
+  </section>
+
+  <section id="casa" class="scena" aria-label="La casa">
+    <div id="cTop">
+      <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
+      <div id="cCap"><b id="cHour">07:00</b><span id="cStato">A riposo</span><p id="cText"></p></div>
+    </div>
+    <button id="tag" type="button">UHP 120</button>
+    <div id="cPanel">
+      <div id="cRow"><h2>Una giornata in casa</h2><div class="seg"><button id="bInv" type="button" aria-pressed="true">Inverno</button><button id="bEst" type="button" aria-pressed="false">Estate</button></div><button id="bPlay" type="button" aria-pressed="true">Pausa</button></div>
+      <input type="range" id="sDay" min="0" max="24" step="0.05" value="7" aria-label="Ora del giorno">
+      <div id="ore"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+    </div>
+  </section>
+
+  <div id="ogT"><b>Casa Unical</b><span>I prodotti Unical al lavoro dentro una casa. A cura di Borelli Impianti.</span></div>
+  <iframe id="prod" title="Prodotto" hidden allow="autoplay; fullscreen"></iframe>
+  <div id="veil"></div>
+</div>
+<script type="module">
+// ───────── logo Unical ─────────
+// Tracciato vettoriale preso dai PDF Unical (scheda MULTIVOLT 460 BF, cod. 00341524, p.2), usato con il via libera di Bore (12 novembre 2026).
+// Coordinate riportate a un riquadro 1022,7 x 302,7; rosso del logo #e30613.
+const UNICAL_LOGO = { w: 1022.7, h: 302.7, color: '#e30613', d: 'M 885 220.8 C 885 246.7 865.9 259.1 840.8 261.6 C 825.9 263 802.3 255.5 802.3 236 C 802.3 212.9 822.9 201.2 844.1 197.6 C 867.7 194 879.3 198.1 885 193.7 Z M 943.4 139.1 C 943.4 87 885.1 80.1 854.5 79.2 C 819.8 78.1 770.7 88.8 757.5 154.8 L 807.9 154.8 C 811.6 136.7 822.3 117 852.7 118.8 C 872.5 119.8 885 126.7 885 148.7 C 885 160.6 876.5 162.9 867.5 164.1 L 816.1 171.4 C 779.8 176.6 750.5 199.3 750.5 240.7 C 750.5 284.5 798.4 302.7 830.9 300 C 863.2 297.3 876.2 287.9 889.3 274.8 C 889.8 284.2 888.4 289 892.8 295.1 L 947 295.1 C 947 295.1 945.6 293.3 944.7 291.2 C 943 287.3 943.5 274.9 943.4 259.1 Z M 943.4 139.1 M 439.4 151.1 C 439.4 105.5 407.8 81.8 367.2 81.8 C 327.8 81.8 312.3 105.2 304.8 117.6 L 304.1 117.6 L 304.1 83.9 L 251.8 83.9 L 251.8 295.1 L 307.9 295.1 L 307.9 171.6 C 307.9 143.3 324.7 128.8 346.2 128.8 C 379.1 128.8 381.8 154.8 381.8 170 L 381.8 295.1 L 439.4 295.1 Z M 439.4 151.1 M 688.4 222 C 688.4 231.8 676.6 259.9 646 260.5 C 596.6 261.6 593.7 211.8 594.2 189 C 594.8 163.2 598.8 119.7 642.6 118.8 C 674.6 118.2 682.8 139.9 687.1 154.8 L 738.8 154.8 C 734.4 102 682.8 79.1 645.6 79.1 C 577 79.1 538 133.8 539.6 198 C 540.8 242.1 569.5 301 643.1 300.2 C 720.9 299.5 738 243.6 740 222 Z M 688.4 222 M 113.8 300.5 C 53.5 300.5 0 270.8 0 200.6 L 0 0 L 60.2 0 L 60.2 196.7 C 60.2 235 78.8 249.7 110.5 250.5 C 112.2 250.6 115.5 250.6 117.1 250.5 C 148.8 249.7 167.5 235 167.5 196.6 C 167.5 147.5 167.5 0 167.5 0 L 227.7 0 L 227.7 200.6 C 227.7 270.8 174.1 300.5 113.8 300.5 M 518.6 47.7 L 463.5 47.7 L 463.5 0 L 518.6 0 Z M 518.6 47.7 M 518.6 295.1 L 463.5 295.1 L 463.5 83.9 L 518.6 83.9 Z M 518.6 295.1 M 1022.7 295.1 L 967.6 295.1 L 967.6 0 L 1022.7 0 Z M 1022.7 295.1' };
+// Disegna il logo su un canvas 2D con l'angolo in alto a sinistra in (x, y) e la larghezza data.
+function drawUnicalLogo(g, x, y, width, color) {
+  const k = width / UNICAL_LOGO.w; g.save(); g.translate(x, y); g.scale(k, k); g.fillStyle = color || UNICAL_LOGO.color; g.fill(new Path2D(UNICAL_LOGO.d), 'evenodd'); g.restore();
+}
+const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${UNICAL_LOGO.w} ${UNICAL_LOGO.h}" role="img" aria-label="Unical"><path fill="${color || UNICAL_LOGO.color}" fill-rule="evenodd" d="${UNICAL_LOGO.d}"/></svg>`;
+
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+// ───────── base del sito: utilità, resa, registro dei prodotti ─────────
+const $ = id => document.getElementById(id);
+const PI = Math.PI, rad = d => d * PI / 180;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
+const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+try { await Promise.race([Promise.all([document.fonts.load('700 40px "Barlow Condensed"'), document.fonts.load('600 20px Barlow')]), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+
+const canvas = $('gl'), stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const COARSE = matchMedia('(pointer: coarse)').matches;      // telefono o tablet
+let PR = Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2);   // rapporto pixel: scende da solo se la resa è lenta
+renderer.setPixelRatio(PR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+const ENV = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture;
+const ANTEPRIMA = /\/anteprima\//.test(location.pathname) || /[?&]segnaposti/.test(location.search);   // i segnaposti compaiono solo qui
+
+// texture disegnate su canvas
+function cv(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+const rep = (t, x, y) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(x, y); return t; };
+const std = o => new THREE.MeshStandardMaterial(o);
+const mesh = (g, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); return o; };
+const box = (w, h, d) => new THREE.BoxGeometry(w, h, d), rbox = (w, h, d, r = .01) => new RoundedBoxGeometry(w, h, d, 2, r);
+const cyl = (r, h, n = 24) => new THREE.CylinderGeometry(r, r, h, n);
+
+// pavimento da studio con griglia, come nella pagina della UHP
+const T_GRID = rep(cv(256, 256, (g, w, h) => { g.fillStyle = '#0c1115'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(150,190,220,.20)'; g.lineWidth = 2; g.strokeRect(0, 0, w, h); }), 40, 40);
+
+// ───────── registro dei prodotti ─────────
+// Ogni prodotto si registra con: id, nome, riga (una frase), pagina (cartella della pagina completa, o null se non è ancora fatto),
+// costruisci() -> { group, tick(dt, carico, freddo) } per il livello leggero, e i dati per il suo posto nella casa.
+const PRODOTTI = [];
+const registra = def => PRODOTTI.push(def);
+
+// ───────── UHP 120 · livello leggero per Home e Casa ─────────
+// Stesse quote del modello completo (c_build.js, dal manuale 00341518 §5.5.2): larghezza 1280, profondità 450, altezza 1040 + piedi,
+// interasse piedi 784, attacchi acqua G 1" sul retro a 72 mm dal fondo. Pochi pezzi: il dettaglio vero sta nella pagina del prodotto.
+registra({
+  id: 'uhp', nome: 'UHP 120', riga: 'Pompa di calore aria-acqua a propano R290', apri: 'Apri la UHP 120', pagina: 'uhp/',
+  alto: 1.08,
+  costruisci() {
+    const g = new THREE.Group();
+    const Wd = 1.28, Dp = .45, Y0 = .036, YB = .081, YT = 1.076, XL = -.64, XR = .64, ZB = -.225, ZF = .225, XP = .19, HP = YT - .03 - YB, YC = YB + HP / 2;
+    const dark = std({ color: 0x2a2d31, roughness: .55, metalness: .25 }), green = std({ color: 0x4d613d, roughness: .58, metalness: .02 });
+    const guard = std({ color: 0x15171a, roughness: .5, metalness: .5 }), rubber = std({ color: 0x0c0c0d, roughness: .95 });
+    // piedi (interasse 784 mm) e fondo
+    for (const x of [-.392, .392]) g.add(mesh(rbox(.09, Y0 + .02, Dp + .04, .008), rubber, x, (Y0 + .02) / 2, 0));
+    g.add(mesh(box(Wd, YB - Y0, Dp), dark, 0, (Y0 + YB) / 2, 0));
+    // corpo: fianco destro, schiena del vano tecnico, coperchio
+    const tSide = cv(256, 512, (c, w, h) => { c.fillStyle = '#2a2d31'; c.fillRect(0, 0, w, h); c.strokeStyle = '#1b1d20'; c.lineWidth = 5; c.beginPath(); c.roundRect(26, 40, w - 52, h - 80, 26); c.stroke();
+      c.fillStyle = '#e9ece9'; c.fillRect(70, 120, 46, 40); c.fillStyle = '#111315'; c.fillRect(96, 330, 34, 46); });
+    g.add(mesh(box(.012, HP, Dp), [std({ map: tSide, roughness: .55, metalness: .25 }), dark, dark, dark, dark, dark], XR - .006, YC, 0));
+    g.add(mesh(box(XR - XP, HP, .01), dark, (XP + XR) / 2, YC, ZB + .005));
+    g.add(mesh(rbox(Wd + .006, .03, Dp + .006, .008), dark, 0, YT - .015, 0));
+    // batteria alettata dietro e sul fianco sinistro, dietro la griglia di protezione
+    const tFin = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#6d5a2c'; c.fillRect(0, 0, w, h); c.fillStyle = '#3a3018'; for (let x = 0; x < w; x += 8) c.fillRect(x, 0, 3, h); c.fillStyle = '#15171a'; c.fillRect(0, 0, w, 3); c.fillRect(0, 0, 2, h); }), 22, 5);
+    const fin = std({ map: tFin, roughness: .6, metalness: .3 });
+    g.add(mesh(box(XP - XL, HP, .008), fin, (XL + XP) / 2, YC, ZB + .004));
+    const tFin2 = tFin.clone(); tFin2.repeat.set(11, 5); tFin2.needsUpdate = true;
+    const finL = mesh(box(.008, HP, Dp - .01), std({ map: tFin2, roughness: .6, metalness: .3 }), XL + .004, YC, 0); g.add(finL);
+    // frontale sinistro: cornice verde, vano scuro, ventilatore e lamelle verticali
+    const FAN = { x: -.215, y: .565, r: .30 };
+    g.add(mesh(box(XP - XL - .02, HP - .02, .01), std({ color: 0x15191a, roughness: .9 }), (XL + XP) / 2, YC, ZF - .12));
+    g.add(mesh(new THREE.TorusGeometry(FAN.r + .012, .012, 8, 40), guard, FAN.x, FAN.y, ZF - .07));
+    const fan = new THREE.Group(); fan.position.set(FAN.x, FAN.y, ZF - .075);
+    const blade = new THREE.Shape(); blade.moveTo(.05, -.02); blade.quadraticCurveTo(.2, -.13, FAN.r - .01, -.02); blade.quadraticCurveTo(.22, .1, .05, .04); blade.closePath();
+    const bg = new THREE.ShapeGeometry(blade, 8), bm = std({ color: 0x3f4a33, roughness: .5, metalness: .1, side: THREE.DoubleSide });
+    for (let i = 0; i < 3; i++) { const b = new THREE.Mesh(bg, bm); b.rotation.z = i * PI * 2 / 3; fan.add(b); }
+    const hub = mesh(cyl(.06, .05, 20), guard); hub.rotation.x = PI / 2; fan.add(hub); g.add(fan);
+    const N = 46, lam = new THREE.InstancedMesh(box(.008, HP - .03, .014), green, N), m4 = new THREE.Matrix4();
+    for (let i = 0; i < N; i++) { m4.makeTranslation(XL + .03 + i * (XP - XL - .05) / (N - 1), YC, ZF - .008); lam.setMatrixAt(i, m4); } g.add(lam);
+    g.add(mesh(box(.03, HP, .03), green, XL + .015, YC, ZF - .015));
+    for (const y of [YB + .012, YT - .042]) g.add(mesh(box(XP - XL, .024, .03), green, (XL + XP) / 2, y, ZF - .015));
+    // frontale destro con il logo in verticale
+    g.add(mesh(rbox(XR - XP, HP, .012, .004), green, (XP + XR) / 2, YC, ZF - .006));
+    const tLogo = cv(256, 1100, (c, w, h) => { c.clearRect(0, 0, w, h); c.translate(w / 2, h / 2); c.rotate(-PI / 2); drawUnicalLogo(c, -338, -100, 676, '#33383d'); });
+    g.add(mesh(new THREE.PlaneGeometry(.17, .73), std({ map: tLogo, transparent: true, roughness: .6, polygonOffset: true, polygonOffsetFactor: -2 }), .5, YC, ZF + .0008));
+    // retro: attacchi acqua G 1" e tre passacavi
+    const brass = std({ color: 0xb08a3c, roughness: .35, metalness: .8 });
+    for (const x of [.559, .465]) { const a = mesh(cyl(.017, .05, 16), brass, x, Y0 + .072, ZB - .02); a.rotation.x = PI / 2; g.add(a); }
+    for (const y of [.5, .56, .62]) { const a = mesh(cyl(.014, .022, 12), guard, .6, y, ZB - .008); a.rotation.x = PI / 2; g.add(a); }
+    let ang = 0;
+    return { group: g, attacchi: { mandata: V(.465, Y0 + .072, ZB - .045), ritorno: V(.559, Y0 + .072, ZB - .045) }, bocca: V(FAN.x, FAN.y, ZF),
+      tick(dt, carico = .4) { ang += dt * (1.2 + 9 * carico) * (carico > .02 ? 1 : 0); fan.rotation.z = -ang; } };
+  },
+});
+
+// ───────── Home: i prodotti su un piatto girevole ─────────
+const Home = (() => {
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0f13); scene.fog = new THREE.Fog(0x0b0f13, 5.2, 10.5);
+  scene.environment = ENV; scene.environmentIntensity = .7;
+  const camera = new THREE.PerspectiveCamera(30, 1, .05, 60);
+  const key = new THREE.SpotLight(0xffffff, 60, 12, rad(26), .7, 1.6); key.position.set(1.6, 4.4, 5.6); scene.add(key, key.target);
+  const rim = new THREE.DirectionalLight(0x9fd0ff, .9); rim.position.set(-3, 2.5, -3.5); scene.add(rim);
+  scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, .32));
+  const floor = mesh(new THREE.PlaneGeometry(80, 80), std({ map: T_GRID, roughness: .7, metalness: .2 }), 0, -.062, 0); floor.rotation.x = -PI / 2; scene.add(floor);
+
+  // voci del cerchio: i prodotti fatti, più (solo in anteprima) i segnaposti neutri di quelli in arrivo
+  const voci = PRODOTTI.map(p => ({ ...p, fatto: true }));
+  if (ANTEPRIMA) {
+    // Sagome neutre per provare il movimento. Le misure di ACS e modulo FV vengono dalle schede dati; le altre tre sono generiche.
+    const sag = (nome, riga, alto, forma) => voci.push({ id: null, nome, riga, alto, fatto: false, costruisci: () => ({ group: forma(), tick() {} }) });
+    const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
+    const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
+    sag('Acqua calda', 'HP 300PSDX · in arrivo con la tappa 2', 1.99, () => solido(cyl(.3, 1.99, 28), .995));
+    sag('Fotovoltaico', 'MULTIVOLT, ZOE1 e SUM BL · in arrivo con la tappa 3', 1.5, () => { const g = solido(box(1.134, 1.762, .03), .881); g.children.forEach(o => { o.rotation.x = -rad(28); o.position.set(0, .79, 0); }); return g; });
+    sag('Ibrida', 'In arrivo con la tappa 4', .9, () => solido(box(.5, .9, .4), .45));
+    sag('Ventilconvettori', 'In arrivo con la tappa 5', .6, () => solido(box(1.0, .58, .2), .29));
+    sag('Climatizzatori', 'In arrivo con la tappa 6', .6, () => solido(box(.85, .3, .22), .45));
+  }
+  const n = voci.length, R = n > 1 ? 2.15 : 0, passo = PI * 2 / n;
+  const piatto = new THREE.Group(); scene.add(piatto);
+  const disco = mesh(cyl(R + 1.25, .06, 72), std({ color: 0x12181d, roughness: .5, metalness: .6 }), 0, -.03, 0); piatto.add(disco);
+  const anello = mesh(new THREE.TorusGeometry(R + 1.25, .012, 8, 96), new THREE.MeshBasicMaterial({ color: 0xa9bd8f }), 0, .002, 0); anello.rotation.x = PI / 2; piatto.add(anello);
+  voci.forEach((v, i) => {
+    v.ist = v.costruisci(); const a = i * passo, slot = new THREE.Group();
+    slot.position.set(Math.sin(a) * R, 0, Math.cos(a) * R); slot.rotation.y = a; slot.add(v.ist.group); piatto.add(slot); v.slot = slot;
+    v.ist.group.traverse(o => { o.userData.voce = i; });
+  });
+
+  let rot = 0, vel = 0, meta = null, sel = 0, presa = false, t0 = 0, aperto = () => {}, mostra = () => {};
+  const idx = () => ((Math.round(-rot / passo) % n) + n) % n;
+  function vaiA(i) { let d = -i * passo - rot; d = ((d + PI) % (PI * 2) + PI * 2) % (PI * 2) - PI; meta = Math.abs(d) > 1e-4 ? rot + d : null; }   // già in posizione: niente da fare
+  function resize(w, h) {
+    camera.aspect = w / h; const stretto = w < h; camera.fov = stretto ? 40 : 30; camera.updateProjectionMatrix();
+    basso = h < 460; vf = rad(camera.fov) / 2; hf = Math.atan(Math.tan(vf) * camera.aspect); key.target.position.set(0, .5, R); inquadra(1);
+  }
+  // la camera si adatta all'altezza del prodotto davanti, che resta nella fascia libera sopra i testi
+  let vf = .26, hf = .4, cd = 5, cy = .2, basso = false;
+  function inquadra(k) { const A = voci[sel].alto || 1, d = Math.max(A / ((basso ? .62 : .80) * Math.tan(vf)), 1.5 / (1.62 * Math.tan(hf))), y = A / 2 - (basso ? .40 : .22) * d * Math.tan(vf);
+    cd = lerp(cd, d, k); cy = lerp(cy, y, k); camera.position.set(0, cy + .2 * cd, R + .98 * cd); camera.lookAt(0, cy, R); }
+  function tick(dt, now) {
+    inquadra(1 - Math.exp(-dt * 3));
+    if (!presa) {
+      if (meta !== null) { rot = lerp(rot, meta, 1 - Math.exp(-dt * 7)); if (Math.abs(meta - rot) < .0008) { rot = meta; meta = null; } vel = 0; }
+      else if (Math.abs(vel) > .25) { rot += vel * dt; vel *= Math.exp(-dt * 2.6); }
+      else { vel = 0; vaiA(idx()); }
+    }
+    piatto.rotation.y = rot;
+    const s = idx(); if (s !== sel) { sel = s; mostra(voci[sel], sel); }
+    voci.forEach((v, i) => { const davanti = i === sel && meta === null && !presa;   // quello davanti si fa guardare: oscilla piano
+      const want = davanti ? rad(-28) + Math.sin((now - t0) * .5) * rad(16) : rad(-28); v.ist.group.rotation.y = lerp(v.ist.group.rotation.y, want, 1 - Math.exp(-dt * 3)); v.ist.tick(dt, i === sel ? .35 : 0); });
+  }
+  // gesti: trascina per girare, prosegue per inerzia, si ferma sul più vicino; tocco = apri o porta davanti
+  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let px = 0, pt = 0, mosso = 0, giu = null;
+  function down(e) { presa = true; meta = null; vel = 0; px = e.clientX; pt = performance.now(); mosso = 0; giu = [e.clientX, e.clientY]; }
+  function move(e) { if (!presa) return; const dx = e.clientX - px, now = performance.now(), k = 2.4 / Math.max(320, stage.clientWidth);
+    rot += dx * k; mosso += Math.abs(dx); const dtm = Math.max(8, now - pt) / 1000; vel = lerp(vel, dx * k / dtm, .5); px = e.clientX; pt = now; }
+  function up(e) { if (!presa) return; presa = false; if (performance.now() - pt > 120) vel = 0;
+    if (mosso < 8 && giu) { const r = canvas.getBoundingClientRect(); ptr.set((giu[0] - r.left) / r.width * 2 - 1, -(giu[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera);
+      const hit = ray.intersectObjects(voci.map(v => v.ist.group), true)[0]; if (hit) { const i = hit.object.userData.voce; if (i === sel) { if (voci[i].fatto) aperto(voci[i]); } else vaiA(i); } } }
+  return { scene, camera, voci, resize, tick, down, move, up,
+    entra() { t0 = performance.now() / 1000; mostra(voci[sel], sel); },
+    gira(d) { vaiA(((idx() + d) % n + n) % n); }, vaiA, get sel() { return sel; },
+    su(f, g) { aperto = f; mostra = g; }, stato: () => ({ rot, vel, sel, meta }) };
+})();
+
+// ───────── Casa: casa in sezione, il generatore al suo posto, una giornata dalle 0 alle 24 ─────────
+// La casa, gli arredi, l'impianto a pavimento e il percorso dei tubi sono una scenografia generica, non prodotti Unical.
+// La giornata è qualitativa: nessun valore a schermo oltre all'ora. Orari di alba e tramonto e andamento del carico sono indicativi.
+const Casa = (() => {
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0f13); scene.fog = new THREE.Fog(0x0b0f13, 38, 115);
+  scene.environment = ENV; scene.environmentIntensity = .35;
+  const camera = new THREE.PerspectiveCamera(30, 1, .1, 200);
+  const sun = new THREE.DirectionalLight(0xffffff, 2); scene.add(sun, sun.target);
+  const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x2a2a26, .5); scene.add(hemi);
+  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.5, P1 = .3, P2 = 1.6;   // metri
+
+  // materiali: i tagli (pareti, solaio e tetto sezionati) hanno un colore a parte, come in un disegno in sezione
+  const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xd8d2c4, roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
+  const sez = m => [m, m, m, m, cut, m];   // faccia +z = taglio
+  const g = new THREE.Group(); scene.add(g);
+  const add = (geo, mat, x, y, z, parent = g) => { const o = mesh(geo, mat, x, y, z); parent.add(o); return o; };
+
+  // terreno, solaio, pareti
+  const ground = add(new THREE.CircleGeometry(130, 48), std({ color: 0x5c7a45, roughness: 1 }), 0, 0, 0); ground.rotation.x = -PI / 2;
+  add(box(2 * HW, FY + .3, 2 * HD), sez(slab), 0, (FY - .3) / 2, 0);
+  const tWood = rep(cv(128, 128, (c, w, h) => { c.fillStyle = '#b08f66'; c.fillRect(0, 0, w, h); const r = rng(9); for (let y = 0; y < h; y += 16) { c.fillStyle = `rgba(70,45,20,${.10 + r() * .16})`; c.fillRect(0, y, w, 15); c.fillStyle = 'rgba(40,25,10,.5)'; c.fillRect(0, y + 15, w, 1); c.fillRect(r() * w, y, 1, 16); } }), 3, 5);
+  const tTile = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#aab1b3'; c.fillRect(0, 0, w, h); c.strokeStyle = '#7d8587'; c.lineWidth = 2; c.strokeRect(0, 0, w, h); }), 4, 14);
+  const fLiv = std({ map: tWood, roughness: .7, emissive: 0x000000 }), fBag = std({ map: tTile, roughness: .5, emissive: 0x000000 });
+  const fl = (x0, x1, m) => { const o = add(new THREE.PlaneGeometry(x1 - x0, 2 * HD - TW), m, (x0 + x1) / 2, FY + .002, TW / 2); o.rotation.x = -PI / 2; return o; };
+  fl(-HW + TW, P1, fLiv); fl(P1, HW - TW, fBag);
+  add(box(2 * HW, WH, TW), wall, 0, FY + WH / 2, -HD + TW / 2);
+  for (const s of [-1, 1]) add(box(TW, WH, 2 * HD), sez(wall), s * (HW - TW / 2), FY + WH / 2, 0);
+  for (const x of [P1, P2]) add(box(.1, WH, 2 * HD - 2.0), sez(wall), x, FY + WH / 2, -1.0);
+  // timpano posteriore e tetto a due falde con il colmo dal fronte al retro: il fronte è tagliato, le falde restano
+  const tri = new THREE.Shape(); tri.moveTo(-HW, 0); tri.lineTo(HW, 0); tri.lineTo(0, RH); tri.closePath();
+  add(new THREE.ExtrudeGeometry(tri, { depth: TW, bevelEnabled: false }), wall, 0, FY + WH, -HD);
+  const tRoof = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#4a3f3a'; c.fillRect(0, 0, w, h); c.fillStyle = '#3a312d'; for (let x = 0; x < w; x += 16) c.fillRect(x, 0, 2, h); c.fillRect(0, 0, w, 3); }), 10, 12);
+  const roofM = std({ map: tRoof, roughness: .85 }), SPORTO = .4, ang = Math.atan(RH / HW), LF = (HW + SPORTO) / Math.cos(ang);
+  const falde = [-1, 1].map(s => { const o = add(box(LF, .12, 2 * HD + .3), [roofM, roofM, roofM, std({ color: 0x9c8468, roughness: .9 }), cut, roofM], s * (HW + SPORTO) / 2, FY + WH + RH - Math.tan(ang) * (HW + SPORTO) / 2 + .07, -.15); o.rotation.z = -s * ang; return o; });
+
+  // arredi essenziali, solo per far leggere le stanze
+  const soft = std({ color: 0x5d6f7c, roughness: .95 }), legno = std({ color: 0x6b5238, roughness: .7 }), bianco = std({ color: 0xf1f1ee, roughness: .4 }), nero = std({ color: 0x17191b, roughness: .5 });
+  add(rbox(1.9, .38, .8, .06), soft, -1.6, FY + .24, -HD + TW + .5); add(rbox(1.9, .5, .2, .06), soft, -1.6, FY + .6, -HD + TW + .16);
+  for (const x of [-2.5, -.7]) add(rbox(.18, .5, .8, .05), soft, x, FY + .35, -HD + TW + .5);
+  const rug = add(new THREE.PlaneGeometry(2.2, 1.3), std({ color: 0x8c3f32, roughness: 1 }), -1.6, FY + .006, .1); rug.rotation.x = -PI / 2;
+  add(rbox(1.0, .06, .55, .02), legno, -1.6, FY + .36, .1); for (const [x, z] of [[-2, -.1], [-1.2, -.1], [-2, .3], [-1.2, .3]]) add(cyl(.02, .34, 8), nero, x, FY + .17, z);
+  add(box(.04, .62, 1.05), nero, -HW + TW + .03, FY + 1.35, .9);    // televisore sulla parete sinistra
+  const vetro = new THREE.MeshBasicMaterial({ color: 0x9cc4e4 });
+  const finestra = (x, w, h, y) => { add(box(w + .12, h + .12, .03), bianco, x, y, -HD + TW + .012); add(box(w, h, .02), vetro, x, y, -HD + TW + .026); add(box(.04, h, .03), bianco, x, y, -HD + TW + .03); };
+  finestra(-1.3, 1.5, 1.2, FY + 1.6); finestra(.95, .6, .6, FY + 1.9);
+  add(rbox(.85, .06, .85, .02), bianco, .95, FY + .03, -HD + TW + .45);      // piatto doccia
+  add(box(.02, 1.9, .85), new THREE.MeshStandardMaterial({ color: 0xbfe0ee, transparent: true, opacity: .28, roughness: .1 }), 1.38, FY + .98, -HD + TW + .45);
+  add(cyl(.012, 1.9, 8), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .62, FY + 1.05, -HD + TW + .1); add(cyl(.09, .02, 16), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .72, FY + 2.0, -HD + TW + .2);
+  add(rbox(.5, .14, .4, .03), bianco, P1 + .3, FY + .85, .5); add(box(.42, .7, .32), legno, P1 + .28, FY + .43, .5);     // lavabo
+  // luci di casa: lampade a sospensione, accese quando fuori è buio e la casa è sveglia
+  const lampM = new THREE.MeshBasicMaterial({ color: 0x40382a });
+  const lampade = [[-1.6, .1, 9], [.95, .3, 3.5], [2.3, .2, 3.5]].map(([x, z, i]) => { add(cyl(.006, .7, 6), nero, x, FY + WH - .15, z); add(new THREE.SphereGeometry(.1, 16, 12), lampM, x, FY + WH - .55, z);
+    const l = new THREE.PointLight(0xffd9a0, 0, 7, 1.6); l.position.set(x, FY + WH - .6, z); l.userData.max = i; g.add(l); return l; });
+
+  // posto del generatore: fuori, a terra accanto alla parete destra, rivolto verso chi guarda. Qui va la UHP; alla tappa 4 lo stesso posto ospita l'ibrida.
+  const POSTO = { pos: V(HW + 1.15, .08, 1.55), yaw: rad(-14) };
+  add(rbox(1.7, .08, .8, .02), slab, POSTO.pos.x, .04, POSTO.pos.z).rotation.y = POSTO.yaw;
+  const gen = PRODOTTI.find(p => p.id === 'uhp'), ist = gen.costruisci();
+  ist.group.position.copy(POSTO.pos); ist.group.rotation.y = POSTO.yaw; g.add(ist.group); ist.group.updateMatrixWorld(true);
+  ist.group.traverse(o => { o.userData.prodotto = gen.id; });
+
+  // tubi: dal retro della macchina alla parete, su fino al collettore, poi le serpentine a pavimento
+  const tFlow = cv(64, 8, (c, w, h) => { const gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#8c8c8c'); gr.addColorStop(.5, '#ffffff'); gr.addColorStop(.6, '#8c8c8c'); gr.addColorStop(1, '#8c8c8c'); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
+  const tubi = [];
+  function tubo(pts, r, verso, ramo) {
+    const c = new THREE.CurvePath(); for (let i = 1; i < pts.length; i++) c.add(new THREE.LineCurve3(pts[i - 1], pts[i])); const len = c.getLength(), tx = tFlow.clone(); tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(Math.max(1, len / .32), 1); tx.needsUpdate = true;
+    const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, Math.max(8, Math.round(len * 16)), r, 6), m, 0, 0, 0); tubi.push({ m, tx, verso, ramo });
+  }
+  const aM = ist.group.localToWorld(ist.attacchi.mandata.clone()), aR = ist.group.localToWorld(ist.attacchi.ritorno.clone());
+  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: 2.3, y: FY + .85 };
+  [[aM, 1, 'mandata', 0], [aR, -1, 'ritorno', .09]].forEach(([a, verso, ramo, dz]) => {
+    const b = a.clone().addScaledVector(dietro, .28 + dz), zc = b.z;
+    tubo([a, b, V(HW + .25, a.y, zc), V(XI - dz, a.y, zc), V(XI - dz, a.y, ZI + dz), V(COL.x + .18 - dz * 2, a.y, ZI + dz), V(COL.x + .18 - dz * 2, COL.y - .2, ZI + dz)], .026, verso, ramo);
+  });
+  add(rbox(.6, .46, .1, .015), std({ color: 0xc7ccd0, roughness: .4, metalness: .5 }), COL.x, COL.y, ZI);     // collettore dell'impianto (generico)
+  function serpentina(x0, x1, z0, z1, passo, entra) { const p = entra.slice(); let dir = 1; for (let x = x1; x >= x0 - .001; x -= passo) { p.push(V(x, FY + .014, dir > 0 ? z1 : z0), V(x, FY + .014, dir > 0 ? z0 : z1)); dir = -dir; } return p; }
+  const yp = FY + .014, giu = x => [V(x, COL.y - .2, ZI + .02), V(x, yp, ZI + .02)];
+  tubo(serpentina(-HW + TW + .25, P1 - .25, -HD + TW + .3, HD - .3, .34, [...giu(COL.x - .08), V(COL.x - .08, yp, HD - .3)]), .013, 1, 'mandata');
+  tubo(serpentina(P1 + .22, P2 - .2, -HD + TW + 1.1, HD - .8, .3, [...giu(COL.x - .2), V(COL.x - .2, yp, HD - .55), V(P2 - .2, yp, HD - .55)]), .013, 1, 'mandata');
+  // aria che attraversa la macchina, visibile quando lavora
+  const NA = 36, aPos = new Float32Array(NA * 3), aSeed = Array.from({ length: NA }, (_, i) => [rng(i + 3)(), rng(i + 40)(), rng(i + 77)()]);
+  const aria = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(aPos, 3)), new THREE.PointsMaterial({ size: .05, transparent: true, opacity: 0, depthWrite: false, color: 0xbfe6ff }));
+  ist.group.add(aria);
+
+  // sole in cielo
+  const sole = add(new THREE.SphereGeometry(1.5, 20, 14), new THREE.MeshBasicMaterial({ color: 0xfff1c9, fog: false }), 0, 0, 0);
+
+  // ───────── la giornata ─────────
+  const S = { t: 7, estate: false, play: true, carico: 0, toccato: false };
+  const C = (h) => new THREE.Color(h), NOTTE = C(0x070b12), ALBA = C(0x6a5a6e), GI = C(0x86a5bf), GE = C(0x6aa6dc), tmp = C(0), CALDO = C(0xff7a2a), FREDDO = C(0x3fa9ff);
+  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85) };
+  const FASI = {
+    inverno: [[0, 'Notte. Fuori fa freddo: la pompa di calore lavora piano e tiene la casa in temperatura.'], [5, 'Mattino presto. Prende calore dall\'aria fredda e lo passa all\'acqua dell\'impianto: la casa è calda prima della sveglia.'],
+      [9, 'Giorno. Con il sole la casa chiede meno calore e la macchina rallenta.'], [16, 'Sera. Fuori torna il freddo e la casa si riempie: lavora di più.'], [22, 'Notte. Rallenta e mantiene.']],
+    estate: [[0, 'Notte. La casa è fresca: la pompa di calore riposa.'], [9, 'Il sole scalda la casa: parte il raffrescamento.'],
+      [13, 'Pomeriggio. Lavora al contrario: toglie calore alla casa e lo porta fuori.'], [19, 'Sera. Fuori rinfresca e la macchina rallenta.'], [23, 'Notte. Si ferma.']],
+  };
+  const camp = (t, a, b, lo, hi) => lo + (hi - lo) * sm(a, a + 1.5, t) * (1 - sm(b, b + 1.5, t));   // rampa morbida tra due orari
+  function carico(t, estate) {
+    if (estate) return Math.max(camp(t, 9, 19, 0, .85), camp(t, 12, 22, 0, .45));
+    return clamp(.42 + camp(t, 4.5, 8.5, 0, .5) + camp(t, 16, 21.5, 0, .42) - camp(t, 10.5, 14.5, 0, .2));
+  }
+  const fase = (t, estate) => { const f = FASI[estate ? 'estate' : 'inverno']; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
+  let onStato = () => {};
+  function applica() {
+    const { t, estate } = S, alba = estate ? 5.6 : 7.7, tram = estate ? 21 : 16.8, k = clamp((t - alba) / (tram - alba)), su = t > alba && t < tram ? Math.sin(k * PI) : 0;
+    const giorno = sm(0, .22, su), crep = sm(0, .1, su) * (1 - sm(.12, .4, su));
+    const phi = k * PI, hMax = estate ? 1 : .42;
+    sole.position.set(-Math.cos(phi) * 34, 3 + su * hMax * 30, 14 - 30 * (1 - su * .25)); sole.visible = su > 0; sole.material.color.setHSL(.11, 1, .6 + .3 * giorno);
+    sun.position.copy(sole.position).setZ(16); sun.intensity = 2.6 * giorno; sun.color.setHSL(.09, .5 + .4 * crep, .92 - .2 * crep);
+    scene.background.copy(NOTTE).lerp(ALBA, crep).lerp(estate ? GE : GI, giorno); scene.fog.color.copy(scene.background); hemi.intensity = .22 + .55 * giorno; hemi.color.copy(scene.background).lerp(tmp.set(0xffffff), .5);
+    ground.material.color.set(estate ? 0x5c7a45 : 0x66705a); vetro.color.copy(scene.background).lerp(tmp.set(0xffffff), .25 * giorno);
+    const sveglia = t > 6 && t < 23.4, luci = (1 - giorno) * (sveglia ? 1 : 0);
+    lampade.forEach(l => { l.intensity = l.userData.max * luci; }); lampM.color.setHSL(.1, .8, .12 + .7 * luci);
+    S.carico = carico(t, estate);
+    const tinta = estate ? FREDDO : CALDO; fLiv.emissive.copy(tinta).multiplyScalar(.10 * S.carico); fBag.emissive.copy(tinta).multiplyScalar(.10 * S.carico);
+    for (const tb of tubi) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico));
+    aria.material.opacity = .55 * sm(.02, .3, S.carico); aria.material.color.set(estate ? 0xffc9a0 : 0xbfe6ff);
+    onStato(S, fase(t, estate));
+  }
+  // camera a orbita limitata: trascina per girare, pizzica o rotella per avvicinarti
+  const cam = { az: rad(-7), el: rad(20), zoom: 1, dist: 20, tgt: V(.75, 1.2, 0) }; let W = 1, H = 1;
+  function resize(w, h) { W = w; H = h; camera.aspect = w / h; camera.fov = w < h ? 40 : 30; camera.updateProjectionMatrix();
+    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.5 : 5.3) / Math.tan(hf), (basso ? 5.0 : 4.3) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 1.6 : basso ? 1.35 : 1.0, 0); if (stretto && !mossaCam) cam.el = rad(27); }
+  function posaCamera() { const d = cam.dist * cam.zoom, ce = Math.cos(cam.el); camera.position.set(cam.tgt.x + Math.sin(cam.az) * ce * d, cam.tgt.y + Math.sin(cam.el) * d, cam.tgt.z + Math.cos(cam.az) * ce * d); camera.lookAt(cam.tgt); }
+  const etich = V(); let onEtichetta = () => {}, mossaCam = false;
+  function tick(dt, now) {
+    if (S.play) { S.t = (S.t + dt * .8) % 24; applica(); }
+    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (S.carico > .02 ? .5 + 1.6 * S.carico : 0);
+    ist.tick(dt, S.carico);
+    if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = ist.bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = ist.bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = ist.bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
+    posaCamera();
+    etich.copy(POSTO.pos).setY(1.5).project(camera); onEtichetta((etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1);
+  }
+  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), dita = new Map(); let mosso = 0, pinch = 0, onApri = () => {};
+  function down(e) { dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; }
+  function move(e) { const p = dita.get(e.pointerId); if (!p) return;
+    if (dita.size === 1) { const dx = e.clientX - p[0], dy = e.clientY - p[1]; mosso += Math.abs(dx) + Math.abs(dy); mossaCam = true; cam.az = clamp(cam.az - dx * .005, rad(-32), rad(42)); cam.el = clamp(cam.el + dy * .004, rad(5), rad(42)); }
+    dita.set(e.pointerId, [e.clientX, e.clientY]);
+    if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) cam.zoom = clamp(cam.zoom * pinch / d, .32, 1.25); pinch = d; mosso += 20; } }
+  function up(e) { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
+    if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObject(ist.group, true)[0]; if (hit) onApri(gen); } }
+  function wheel(e) { cam.zoom = clamp(cam.zoom * Math.exp(e.deltaY * .0012), .32, 1.25); }
+  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, generatore: gen,
+    entra() { applica(); }, ora(t) { S.t = clamp(t, 0, 24) % 24; applica(); }, stagione(estate) { S.estate = !!estate; applica(); }, play(v) { S.play = !!v; applica(); },
+    su(apri, stato, etichetta) { onApri = apri; onStato = stato; onEtichetta = etichetta; } };
+})();
+
+// ───────── il sito: tre scene (Home, Casa, Prodotto), indirizzi con il cancelletto, ciclo di disegno ─────────
+// #home (o niente) = cerchio dei prodotti · #casa = la casa · #<id prodotto> = pagina completa del prodotto, caricata solo quando serve.
+$('logo').innerHTML = unicalLogoSvg();
+const SCENE = { home: Home, casa: Casa };
+let attiva = null, nome = '', ultima = 'home', inCorso = false;
+const velo = $('veil'), prod = $('prod');
+const attendi = ms => new Promise(r => setTimeout(r, ms));
+const prodotto = id => PRODOTTI.find(p => p.id === id && p.pagina);
+
+function resize() { const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight); renderer.setSize(w, h, false); Home.resize(w, h); Casa.resize(w, h); }
+addEventListener('resize', resize); new ResizeObserver(resize).observe(stage); resize();
+
+async function vai(dest, subito) {
+  if (dest === nome || inCorso) return; inCorso = true;
+  const p = prodotto(dest);
+  if (!SCENE[dest] && !p) dest = 'home';
+  if (!subito) { velo.classList.add('on'); await attendi(380); }
+  document.body.dataset.scena = p ? 'prodotto' : dest; nome = dest;
+  if (p) {              // il livello completo vive in una pagina a sé: si carica ora e si scarica uscendo, così la memoria torna libera
+    attiva = null; prod.hidden = false; await new Promise(r => { prod.onload = r; prod.src = p.pagina; setTimeout(r, 6000); });
+    document.title = p.nome + ' · Casa Unical';
+  } else {
+    if (!prod.hidden) { prod.hidden = true; prod.removeAttribute('src'); prod.src = 'about:blank'; }
+    attiva = SCENE[dest]; ultima = dest; attiva.entra(); last = 0; document.title = dest === 'casa' ? 'La casa · Casa Unical' : 'Casa Unical';
+  }
+  velo.classList.remove('on'); inCorso = false;
+  const h = location.hash.slice(1); if (h !== nome && !(h === '' && nome === 'home')) rotta();   // l'indirizzo è cambiato durante il passaggio
+}
+function rotta() {
+  let h = location.hash.slice(1).toLowerCase();
+  if (h === 'indietro') { history.replaceState(null, '', '#' + ultima); h = ultima; }
+  vai(h || 'home', !nome);
+}
+addEventListener('hashchange', rotta);
+const apri = h => { if (location.hash.slice(1) === h) rotta(); else location.hash = h; };
+
+// Home
+if (Home.voci.length < 2) { document.body.classList.add('solo'); $('hHint').textContent = 'Tocca il prodotto per aprirlo'; }
+const fmtN = i => String(i + 1).padStart(2, '0') + ' / ' + String(Home.voci.length).padStart(2, '0');
+Home.su(v => apri(v.id), (v, i) => {
+  $('hNum').textContent = fmtN(i); $('hName').textContent = v.nome; $('hLine').textContent = v.riga;
+  const b = $('bOpen'); b.disabled = !v.fatto; b.firstChild.textContent = v.fatto ? (v.apri || 'Apri') : 'In arrivo';
+});
+$('bOpen').onclick = () => { const v = Home.voci[Home.sel]; if (v.fatto) apri(v.id); };
+$('bCasa').onclick = () => apri('casa'); $('bPrev').onclick = () => Home.gira(-1); $('bNext').onclick = () => Home.gira(1);
+addEventListener('keydown', e => { if (nome !== 'home') return; if (e.key === 'ArrowLeft') Home.gira(-1); if (e.key === 'ArrowRight') Home.gira(1); if (e.key === 'Enter') $('bOpen').click(); });
+
+// Casa
+const sDay = $('sDay'), hh = t => { const m = Math.round(t * 60) % 1440; return String(m / 60 | 0).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+const tag = $('tag'); tag.textContent = Casa.generatore.nome + ' ›'; tag.onclick = () => apri(Casa.generatore.id);
+Casa.su(p => apri(p.id), (S, testo) => {
+  $('cHour').textContent = hh(S.t); $('cText').textContent = testo; sDay.value = S.t; sDay.style.setProperty('--f', (S.t / 24 * 100) + '%');
+  $('bInv').setAttribute('aria-pressed', !S.estate); $('bEst').setAttribute('aria-pressed', S.estate); $('bPlay').setAttribute('aria-pressed', S.play); $('bPlay').textContent = S.play ? 'Pausa' : 'Avvia';
+  $('cStato').textContent = S.carico < .03 ? 'A riposo' : (S.estate ? 'Raffresca' : 'Riscalda'); $('cStato').dataset.m = S.carico < .03 ? 'off' : (S.estate ? 'f' : 'c');
+}, (x, y, vis) => { tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`; tag.style.visibility = vis ? 'visible' : 'hidden'; });
+sDay.addEventListener('input', () => { const v = +sDay.value; Casa.play(false); Casa.ora(v); });   // il valore si legge prima: fermare la giornata riscrive il cursore
+$('bPlay').onclick = () => Casa.play(!Casa.S.play); $('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
+$('bHome').onclick = () => apri('home');
+
+// gesti sulla scena attiva
+canvas.addEventListener('pointerdown', e => { if (!attiva) return; canvas.setPointerCapture(e.pointerId); attiva.down(e); });
+canvas.addEventListener('pointermove', e => attiva && attiva.move(e));
+for (const ev of ['pointerup', 'pointercancel']) canvas.addEventListener(ev, e => attiva && attiva.up(e));
+canvas.addEventListener('wheel', e => { if (attiva && attiva.wheel) { e.preventDefault(); attiva.wheel(e); } }, { passive: false });
+
+// ciclo di disegno: fermo mentre è aperto un prodotto; se la resa è lenta il rapporto pixel scende da solo
+let last = 0, lenti = 0, veloci = 0;
+function frame(ts) {
+  requestAnimationFrame(frame);
+  if (!attiva || document.hidden) { last = 0; return; }
+  const now = ts / 1000, dt = last ? Math.min(.05, now - last) : 0, grezzo = last ? now - last : 0; last = now;
+  attiva.tick(dt, now); renderer.render(attiva.scene, attiva.camera);
+  if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1);
+}
+// per le prove automatiche
+window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, carico: +Casa.S.carico.toFixed(3) }),
+  passo(n = 1, dt = 1 / 30) { for (let i = 0; i < n; i++) { last += dt; attiva && attiva.tick(dt, last); } attiva && renderer.render(attiva.scene, attiva.camera); } };
+rotta(); document.body.classList.add('pronto'); requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>

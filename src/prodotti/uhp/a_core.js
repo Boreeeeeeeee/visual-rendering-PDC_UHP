@@ -76,13 +76,13 @@ T.pcb = cv(512, 512, (g, w, h) => {
   g.fillStyle = '#e9efe9'; g.font = '600 13px sans-serif'; ['CN23', 'CN24', 'CN43', 'XT1', 'SW2', 'RS-485', 'DC FAN', 'EXV', 'IPM'].forEach((s, i) => g.fillText(s, 18 + (i % 3) * 170, 30 + (i / 3 | 0) * 160));
 });
 T.plate = cv(512, 300, (g, w, h) => { // targhetta: solo dati della scheda UHP 120
-  g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); g.fillStyle = '#16191b'; g.font = '800 46px Barlow, Arial, sans-serif'; g.fillText('Unical', 22, 56);
+  g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); drawUnicalLogo(g, 22, 22, 128); g.fillStyle = '#16191b';
   g.font = '700 30px Barlow, Arial, sans-serif'; g.fillText('UHP 120', 330, 54); g.fillRect(22, 72, w - 44, 3); g.font = '500 23px Barlow, Arial, sans-serif';
   [['Refrigerante', 'R290 · 1,35 kg'], ['Alimentazione', '230 V ~ 50 Hz'], ['Potenza max assorbita', '7 kW'], ['Corrente max', '45,15 A'], ['Acqua', 'max 80 °C · 3 bar'], ['Peso', '154 kg']].forEach((r, i) => { g.fillText(r[0], 22, 108 + i * 32); g.fillText(r[1], 300, 108 + i * 32); });
 });
 T.flame = cv(256, 256, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#f2c230'; g.strokeStyle = '#141414'; g.lineWidth = 14; g.lineJoin = 'round'; g.beginPath(); g.moveTo(128, 22); g.lineTo(238, 214); g.lineTo(18, 214); g.closePath(); g.fill(); g.stroke();
   g.fillStyle = '#141414'; g.beginPath(); g.moveTo(128, 78); g.bezierCurveTo(176, 126, 168, 186, 128, 190); g.bezierCurveTo(84, 186, 84, 140, 108, 118); g.bezierCurveTo(112, 138, 124, 132, 128, 78); g.fill(); g.font = '700 26px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('R290', 128, 248); });
-T.letter = cv(256, 1100, (g, w, h) => { g.clearRect(0, 0, w, h); g.save(); g.translate(w / 2, h / 2); g.rotate(-PI / 2); g.fillStyle = '#33383d'; g.font = '800 250px Barlow, "Helvetica Neue", Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('Unical', 0, 14, h - 40); g.restore(); });
+T.letter = cv(256, 1100, (g, w, h) => { g.clearRect(0, 0, w, h); g.save(); g.translate(w / 2, h / 2); g.rotate(-PI / 2); drawUnicalLogo(g, -338, -100, 676, '#33383d'); g.restore(); });
 T.vessel = cv(256, 256, (g, w, h) => { g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(40, 60, 176, 120); g.fillStyle = '#1b1e20'; g.font = '700 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('5 L', 128, 118); g.font = '500 26px Barlow, Arial, sans-serif'; g.fillText('precarica 1 bar', 128, 158); });
 T.io = s => cv(128, 64, (g, w, h) => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); g.fillStyle = '#16191b'; g.font = '800 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText(s, 64, 48); });
 T.glow = cv(64, 64, (g) => { const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.55)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); });
