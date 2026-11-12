@@ -97,6 +97,7 @@ const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ───────── base comune alle pagine dei prodotti (non della UHP, che ha il suo motore) ─────────
 // Resa, scena da studio, materiali, piano di sezione e motore del montaggio: gruppo() apre un gruppo, P() gli aggiunge un pezzo che arriva in volo.
@@ -140,7 +141,8 @@ const radiale = (o, az) => { o.rotation.order = 'YXZ'; o.rotation.set(PI / 2, az
 const root = new THREE.Group(); scene.add(root);
 const G = []; let cur;
 function gruppo(nome, facile, tecnico, t0, t1, vista, esp) { cur = { nome, facile, tecnico, t0, t1, vista, esp: V(...esp), pezzi: [] }; G.push(cur); }
-function P(o, da = [0, .7, 0], rit = 0) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), rit }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
+// liv = quanto si allontana il pezzo nello strumento Smonta (0 resta vicino, 1 va lontano); se manca vale l'ordine di arrivo
+function P(o, da = [0, .7, 0], rit = 0, liv = rit) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), dir: V(...da).normalize(), rit, liv }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
 
 
 // ───────── HP 300PSDX · pagina completa: film di montaggio e strumenti ─────────
