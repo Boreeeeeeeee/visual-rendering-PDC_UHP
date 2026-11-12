@@ -91,13 +91,14 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await page.locator('.tag').nth(2).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'fv', "l'etichetta del fotovoltaico apre il prodotto");
   ok(await fino(async () => await fr.locator('#sS').count() > 0, 20000), 'la pagina del fotovoltaico si carica');
   const fv = q => fr.locator('body').evaluate((_, q) => (0, eval)(q), q); await fino(async () => !!(await fv('!!window.__fv'))); await sleep(800); await foto('fv_inizio');
-  ok((await fv('window.__fv.seek(10); window.__fv.stato()')).mode === 'film', 'il film del fotovoltaico parte'); await sleep(300); await foto('fv_film');
+  ok((await fv('window.__fv.seek(21.5); window.__fv.stato()')).mode === 'film', 'il film del fotovoltaico parte'); await sleep(300); await foto('fv_film');
   let f = await fv("window.__fv.libero(false); window.__fv.setTool('sole'); { const s = document.getElementById('sS'); s.value = 1; s.dispatchEvent(new Event('input')); } window.__fv.avanti(3); window.__fv.stato()");
   ok(f.mode === 'free' && f.bat > 0 && f.soc > .45, 'Sole: con il sole la batteria si carica'); await sleep(300); await foto('fv_sole');
   f = await fv('window.__fv.avanti(60); window.__fv.stato()'); ok(f.soc === 1 && f.bat === 0 && f.rete > 0, 'batteria piena: il resto va in rete');
   f = await fv("{ const s = document.getElementById('sS'); s.value = 0; s.dispatchEvent(new Event('input')); } window.__fv.avanti(2); window.__fv.stato()"); ok(f.bat < 0 && Math.abs(f.rete) < 1e-6, 'senza sole la batteria alimenta la casa');
   f = await fv('window.__fv.avanti(120); window.__fv.stato()'); ok(f.soc <= .101 && f.bat === 0 && f.rete < 0, 'alla scarica minima si prende dalla rete');
   f = await fv("window.__fv.setTool('smonta'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.e > .4, 'Smonta separa i gruppi del fotovoltaico');
+  f = await fv("window.__fv.setTool('dentro'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.dentro > .95 && f.e < .05 && f.pezzi > 80, 'Dentro rende trasparenti gli involucri'); await sleep(300); await foto('fv_dentro');
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
   // indirizzi diretti
   for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }

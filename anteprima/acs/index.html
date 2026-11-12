@@ -96,6 +96,7 @@ const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 // ───────── base comune alle pagine dei prodotti (non della UHP, che ha il suo motore) ─────────
 // Resa, scena da studio, materiali, piano di sezione e motore del montaggio: gruppo() apre un gruppo, P() gli aggiunge un pezzo che arriva in volo.
@@ -130,7 +131,7 @@ const M = {
   magnesio: std({ color: 0x8f9499, roughness: .7, metalness: .4 }), res: std({ color: 0x6b5a4a, roughness: .5, metalness: .6, emissive: 0xff3a10, emissiveIntensity: 0 }),
 };
 const mesh = (g, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); return o; };
-const cyl = (r, h, n = 24, open = false) => new THREE.CylinderGeometry(r, r, h, n, 1, open), box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+const cyl = (r, h, n = 24, open = false) => new THREE.CylinderGeometry(r, r, h, n, 1, open), box = (w, h, d) => new THREE.BoxGeometry(w, h, d), rbox = (w, h, d, r = .01) => new RoundedBoxGeometry(w, h, d, 2, r);
 const tubo = (pts, r, n = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', .3), Math.max(12, pts.length * 6), r, n);
 const elica = (r, y0, y1, giri, k = 14) => { const p = []; for (let i = 0; i <= giri * k; i++) { const a = i / k * PI * 2; p.push(V(Math.sin(a) * r, lerp(y0, y1, i / (giri * k)), Math.cos(a) * r)); } return p; };
 const radiale = (o, az) => { o.rotation.order = 'YXZ'; o.rotation.set(PI / 2, az, 0); return o; };   // asse del cilindro verso l'esterno all'azimut dato
