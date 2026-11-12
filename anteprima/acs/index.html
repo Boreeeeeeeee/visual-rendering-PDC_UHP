@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HP 300PSDX pezzo per pezzo</title>
+<meta name="description" content="Lo scaldacqua a pompa di calore Unical HP 300PSDX che si monta pezzo per pezzo. Guarda il film, poi taglialo a metà, apri la doccia, accendi il sole.">
+<meta property="og:title" content="HP 300PSDX pezzo per pezzo">
+<meta property="og:description" content="Guarda lo scaldacqua a pompa di calore montarsi, poi provalo tu: taglialo a metà, apri la doccia, accendi il sole.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/anteprima/acs/../og.jpg">
+<meta name="theme-color" content="#0b0f13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
+</script>
+<style>
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
+  * { box-sizing: border-box } html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent }
+  #stage { position: fixed; inset: 0 } #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none }
+  button { font: inherit; color: inherit }
+  .btn { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
+  .btn[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
+  #top { position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; flex-wrap: wrap }
+  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase } .brand span { color: var(--green) }
+  .back { position: relative; z-index: 60; pointer-events: auto; display: inline-block; margin-right: 12px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(13,18,22,.7); color: var(--ink); font-size: .78em; letter-spacing: .06em; text-decoration: none; vertical-align: middle }
+  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em } body.free .sub { display: none }
+  #bFilm { display: none } body.free #bFilm { display: inline-flex }
+  #set { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 46px); font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) } #set b { display: block; margin-top: 4px; font-size: 30px; letter-spacing: .02em; color: var(--heat) }
+  body.start #set, body.film #set { display: none }
+  #cap { position: absolute; left: var(--pad); right: var(--pad); bottom: max(var(--pad), env(safe-area-inset-bottom)); display: none; gap: 14px; align-items: flex-end; pointer-events: none; text-shadow: 0 2px 14px #000 } body.film #cap { display: flex }
+  #num { font: 700 clamp(44px, 9vmin, 76px)/.85 var(--display); color: var(--green) } #cap h2 { margin: 0; font: 700 clamp(22px, 4.4vmin, 34px)/1 var(--display); letter-spacing: .05em; text-transform: uppercase } #cap p { margin: 4px 0 0; max-width: 46ch; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; color: var(--ink) }
+  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 52px) var(--pad) calc(var(--pad) + 8px); background: linear-gradient(90deg, rgba(5,8,10,.82), rgba(5,8,10,.1) 70%) } body.start #start { display: flex }
+  #start small { font: 600 13px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--green) } #start h1 { margin: 8px 0; font: 700 clamp(34px, 7.6vmin, 60px)/.95 var(--display); letter-spacing: .03em; text-transform: uppercase; max-width: 9em } #start p { margin: 0; max-width: 34ch; color: var(--ink) }
+  .go { display: flex; flex-direction: column; gap: 10px; width: min(100%, 380px) } .big { pointer-events: auto; display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 22px; border: 0; border-radius: 16px; background: var(--green); color: #10140f; font: 700 20px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; text-align: left }
+  .big svg { width: 22px; height: 22px; fill: currentColor } .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
+  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; white-space: nowrap }
+  #toast.on { animation: toast 2.4s ease both } @keyframes toast { 0% { opacity: 0 } 12%, 78% { opacity: 1 } 100% { opacity: 0 } }
+  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px max(8px, env(safe-area-inset-bottom)); display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) } body.free #dock { display: flex }
+  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px) }
+  #panel section { display: none; flex-direction: column; gap: 10px } #panel section.on { display: flex } #panel p { margin: 0; font-size: 14px; line-height: 1.35 } #panel p small { color: var(--dim) }
+  .riga { display: flex; flex-wrap: wrap; gap: 8px } .riga .btn { min-height: 40px; padding: 0 13px; font-size: 13px }
+  #tabs { pointer-events: auto; display: flex; gap: 6px; width: min(100%, 640px) } .tab { flex: 1; min-height: 52px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer }
+  .tab[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent }
+  #barra { height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); overflow: hidden } #barra i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff6a3c, #ffb15c); transition: width .2s linear }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) } input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0 } input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
+  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 40px) } #start h1 { font-size: 28px } .tab { min-height: 40px } #panel { padding: 8px 12px } #panel p { font-size: 12.5px } .big { min-height: 48px } #set { display: none } #dock { flex-direction: row; align-items: flex-end; justify-content: center } #tabs { width: auto; flex: 0 0 auto } .tab { padding: 0 10px } }
+</style>
+</head>
+<body class="start">
+<div id="stage">
+  <canvas id="gl" aria-label="Scaldacqua a pompa di calore Unical HP 300PSDX che si monta pezzo per pezzo"></canvas>
+  <header id="top">
+    <div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>HP <span>300PSDX</span></div>
+    <div class="sub">Unical · scaldacqua a pompa di calore · 300 l · R290</div>
+    <button class="btn" id="bFilm" type="button">Film</button>
+  </header>
+  <div id="set">Set acqua<b id="oSet">55 °C</b></div>
+  <div id="cap"><div id="num">01</div><div><h2 id="name"></h2><p id="spec"></p></div></div>
+  <div id="start">
+    <div><small>Scaldacqua a pompa di calore Unical HP 300PSDX</small><h1>Guardalo montarsi pezzo per pezzo</h1><p>Poi provalo tu: smontalo, taglialo a metà, apri la doccia, accendi il sole.</p></div>
+    <div class="go">
+      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>40 secondi</span></div></button>
+      <button class="btn" id="bExplore" type="button">Salta il film e provalo subito</button>
+    </div>
+  </div>
+  <div id="toast">Ora provalo tu</div>
+  <div id="dock">
+    <div id="panel">
+      <section data-tool="tocca"><p id="pTocca">Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.</p><div class="riga" id="nomi"></div></section>
+      <section data-tool="smonta"><p>Sposta il cursore: i sei gruppi si separano e tornano a posto.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
+      <section data-tool="sezione"><p>Tagliato a metà. Dentro: serbatoio in acciaio inox Duplex, serpentino da 1,2 m² in basso, condensatore in alluminio avvolto all'esterno del serbatoio, 50 mm di poliuretano. Sopra, la pompa di calore.</p></section>
+      <section data-tool="doccia"><div class="riga"><button class="btn" id="kDoccia" type="button" aria-pressed="false">Apri la doccia</button></div><div id="barra" aria-label="Acqua calda nel serbatoio"><i id="bCaldo"></i></div><p id="pDoccia"></p></section>
+      <section data-tool="modi"><div class="riga"><button class="btn" id="kFv" type="button" aria-pressed="false">Sole sul tetto</button><button class="btn" id="kAnti" type="button" aria-pressed="false">Antilegionella</button><button class="btn" id="kRes" type="button" aria-pressed="false">Resistenza</button></div><p id="pModi"></p></section>
+    </div>
+    <div id="tabs">
+      <button class="tab" data-tool="tocca" type="button">Tocca</button><button class="tab" data-tool="smonta" type="button">Smonta</button><button class="tab" data-tool="sezione" type="button">Sezione</button><button class="tab" data-tool="doccia" type="button">Doccia</button><button class="tab" data-tool="modi" type="button">Modi</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+// ───────── logo Unical ─────────
+// Tracciato vettoriale preso dai PDF Unical (scheda MULTIVOLT 460 BF, cod. 00341524, p.2), usato con il via libera di Bore (12 novembre 2026).
+// Coordinate riportate a un riquadro 1022,7 x 302,7; rosso del logo #e30613.
+const UNICAL_LOGO = { w: 1022.7, h: 302.7, color: '#e30613', d: 'M 885 220.8 C 885 246.7 865.9 259.1 840.8 261.6 C 825.9 263 802.3 255.5 802.3 236 C 802.3 212.9 822.9 201.2 844.1 197.6 C 867.7 194 879.3 198.1 885 193.7 Z M 943.4 139.1 C 943.4 87 885.1 80.1 854.5 79.2 C 819.8 78.1 770.7 88.8 757.5 154.8 L 807.9 154.8 C 811.6 136.7 822.3 117 852.7 118.8 C 872.5 119.8 885 126.7 885 148.7 C 885 160.6 876.5 162.9 867.5 164.1 L 816.1 171.4 C 779.8 176.6 750.5 199.3 750.5 240.7 C 750.5 284.5 798.4 302.7 830.9 300 C 863.2 297.3 876.2 287.9 889.3 274.8 C 889.8 284.2 888.4 289 892.8 295.1 L 947 295.1 C 947 295.1 945.6 293.3 944.7 291.2 C 943 287.3 943.5 274.9 943.4 259.1 Z M 943.4 139.1 M 439.4 151.1 C 439.4 105.5 407.8 81.8 367.2 81.8 C 327.8 81.8 312.3 105.2 304.8 117.6 L 304.1 117.6 L 304.1 83.9 L 251.8 83.9 L 251.8 295.1 L 307.9 295.1 L 307.9 171.6 C 307.9 143.3 324.7 128.8 346.2 128.8 C 379.1 128.8 381.8 154.8 381.8 170 L 381.8 295.1 L 439.4 295.1 Z M 439.4 151.1 M 688.4 222 C 688.4 231.8 676.6 259.9 646 260.5 C 596.6 261.6 593.7 211.8 594.2 189 C 594.8 163.2 598.8 119.7 642.6 118.8 C 674.6 118.2 682.8 139.9 687.1 154.8 L 738.8 154.8 C 734.4 102 682.8 79.1 645.6 79.1 C 577 79.1 538 133.8 539.6 198 C 540.8 242.1 569.5 301 643.1 300.2 C 720.9 299.5 738 243.6 740 222 Z M 688.4 222 M 113.8 300.5 C 53.5 300.5 0 270.8 0 200.6 L 0 0 L 60.2 0 L 60.2 196.7 C 60.2 235 78.8 249.7 110.5 250.5 C 112.2 250.6 115.5 250.6 117.1 250.5 C 148.8 249.7 167.5 235 167.5 196.6 C 167.5 147.5 167.5 0 167.5 0 L 227.7 0 L 227.7 200.6 C 227.7 270.8 174.1 300.5 113.8 300.5 M 518.6 47.7 L 463.5 47.7 L 463.5 0 L 518.6 0 Z M 518.6 47.7 M 518.6 295.1 L 463.5 295.1 L 463.5 83.9 L 518.6 83.9 Z M 518.6 295.1 M 1022.7 295.1 L 967.6 295.1 L 967.6 0 L 1022.7 0 Z M 1022.7 295.1' };
+// Disegna il logo su un canvas 2D con l'angolo in alto a sinistra in (x, y) e la larghezza data.
+function drawUnicalLogo(g, x, y, width, color) {
+  const k = width / UNICAL_LOGO.w; g.save(); g.translate(x, y); g.scale(k, k); g.fillStyle = color || UNICAL_LOGO.color; g.fill(new Path2D(UNICAL_LOGO.d), 'evenodd'); g.restore();
+}
+const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${UNICAL_LOGO.w} ${UNICAL_LOGO.h}" role="img" aria-label="Unical"><path fill="${color || UNICAL_LOGO.color}" fill-rule="evenodd" d="${UNICAL_LOGO.d}"/></svg>`;
+
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+// ───────── HP 300PSDX · pagina completa: film di montaggio e strumenti ─────────
+// Dal manuale installatore 00340944 (p.12-15, 18, 30, 32, 37) e dal depliant 00341057: quote, altezze degli attacchi, elenco dei componenti,
+// materiali, set e temperature. Vedi src/dati/acs.json.
+// RICOSTRUITO (il manuale ha solo una vista d'insieme, p.13): disposizione dei componenti sopra il serbatoio e percorso dei tubi in rame,
+// angolo di attacchi, coperture e maniglie attorno al cilindro, estensione del condensatore lungo il serbatoio, numero di spire, interno del compressore.
+const $ = id => document.getElementById(id), PI = Math.PI, rad = d => d * PI / 180;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
+const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }, eoc = t => 1 - Math.pow(1 - t, 3);
+const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+try { await Promise.race([document.fonts.load('700 40px "Barlow Condensed"'), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+
+const canvas = $('gl'), stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const COARSE = matchMedia('(pointer: coarse)').matches; let PR = Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2); renderer.setPixelRatio(PR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1; renderer.localClippingEnabled = true;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0f13); scene.fog = new THREE.Fog(0x0b0f13, 7, 20);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture; scene.environmentIntensity = .85;
+const camera = new THREE.PerspectiveCamera(30, 1, .03, 60);
+const keyL = new THREE.DirectionalLight(0xffffff, 2.2); keyL.position.set(2.5, 4, 3.5); const rimL = new THREE.DirectionalLight(0x9fd0ff, 1.3); rimL.position.set(-3, 2.5, -3.5);
+scene.add(keyL, rimL, new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, .45));
+function cv(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
+const tGrid = cv(256, 256, (g, w, h) => { g.fillStyle = '#0c1115'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(150,190,220,.20)'; g.lineWidth = 2; g.strokeRect(0, 0, w, h); }); tGrid.wrapS = tGrid.wrapT = THREE.RepeatWrapping; tGrid.repeat.set(40, 40);
+const pav = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: tGrid, roughness: .7, metalness: .2, envMapIntensity: .15 })); pav.rotation.x = -PI / 2; scene.add(pav);
+
+// materiali; quelli "tagliabili" ricevono il piano di sezione, quelli "raggi X" diventano trasparenti in funzione
+const TAGLIO = new THREE.Plane(V(0, 0, -1), 0), std = o => new THREE.MeshStandardMaterial(o), TAGLIABILI = [], RAGGI = [];
+const tagl = (m, x = false) => { m.side = THREE.DoubleSide; TAGLIABILI.push(m); if (x) { m.userData.o = m.opacity; RAGGI.push(m); } return m; };
+const M = {
+  inox: tagl(std({ color: 0xc9cdd1, roughness: .28, metalness: .9, transparent: true, opacity: 1 })), inox2: std({ color: 0xc9cdd1, roughness: .3, metalness: .9 }),
+  allu: tagl(std({ color: 0xaeb4b8, roughness: .45, metalness: .8, emissive: 0xff5a1c, emissiveIntensity: 0 })), schiuma: tagl(std({ color: 0xe6d9a8, roughness: .95, transparent: true, opacity: 1 }), true),
+  argento: tagl(std({ color: 0xb4b8bb, roughness: .38, metalness: .75, transparent: true, opacity: 1 }), true), nero: tagl(std({ color: 0x1b1d20, roughness: .45, metalness: .1, transparent: true, opacity: 1 }), true),
+  gomma: std({ color: 0x0c0c0d, roughness: .95 }), ottone: std({ color: 0xb08a3c, roughness: .35, metalness: .8 }), rame: std({ color: 0xc47a45, roughness: .35, metalness: .9 }),
+  acciaio: std({ color: 0x7d858c, roughness: .5, metalness: .7 }), scuro: std({ color: 0x15171a, roughness: .5, metalness: .4 }), plast: std({ color: 0x3b4046, roughness: .6 }),
+  magnesio: std({ color: 0x8f9499, roughness: .7, metalness: .4 }), res: std({ color: 0x6b5a4a, roughness: .5, metalness: .6, emissive: 0xff3a10, emissiveIntensity: 0 }),
+};
+const mesh = (g, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); return o; };
+const cyl = (r, h, n = 24, open = false) => new THREE.CylinderGeometry(r, r, h, n, 1, open), box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+const tubo = (pts, r, n = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', .3), Math.max(12, pts.length * 6), r, n);
+const elica = (r, y0, y1, giri, k = 14) => { const p = []; for (let i = 0; i <= giri * k; i++) { const a = i / k * PI * 2; p.push(V(Math.sin(a) * r, lerp(y0, y1, i / (giri * k)), Math.cos(a) * r)); } return p; };
+const radiale = (o, az) => { o.rotation.order = 'YXZ'; o.rotation.set(PI / 2, az, 0); return o; };   // asse del cilindro verso l'esterno all'azimut dato
+
+// ───────── motore del montaggio ─────────
+const root = new THREE.Group(); scene.add(root);
+const G = []; let cur;
+function gruppo(nome, facile, tecnico, t0, t1, vista, esp) { cur = { nome, facile, tecnico, t0, t1, vista, esp: V(...esp), pezzi: [] }; G.push(cur); }
+function P(o, da = [0, .7, 0], rit = 0) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), rit }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
+
+const B = .035, R = .30, RT = .25, YC = B + 1.51, AT = h => B + h;    // piedini, raggio esterno, raggio del serbatoio, inizio del coperchio, altezza di un attacco
+// 1 ─ serbatoio
+gruppo('Serbatoio', 'Il cuore: trecento litri d\'acqua in un serbatoio di acciaio inossidabile.', 'Acciaio inox Duplex 2205 · 300 l · pressione massima 10 bar · anodo in magnesio contro la corrosione', 2, 7, { az: 25, el: 10, d: 5.6, y: 1.0 }, [0, 0, 0]);
+for (let i = 0; i < 3; i++) { const a = i * PI * 2 / 3 + PI / 6; P(mesh(cyl(.03, B, 12), M.gomma, Math.sin(a) * .22, B / 2, Math.cos(a) * .22), [0, -.3, 0], .0); }
+const profT = [[0, .10], [.15, .115], [.23, .17], [RT, .25], [RT, 1.32], [.23, 1.40], [.15, 1.445], [0, 1.455]].map(([r, y]) => new THREE.Vector2(r, y + B));
+P(mesh(new THREE.LatheGeometry(profT, 48), M.inox), [0, 1.6, 0], .1);
+{ const a = mesh(cyl(.011, .36, 12), M.magnesio, .13, AT(1.17), 0); a.rotation.z = PI / 2; P(a, [.8, 0, 0], .55);            // anodo in magnesio, dall'attacco a 1170
+  const az = rad(150), d = V(Math.sin(az), 0, Math.cos(az)), r = new THREE.Group();                                            // resistenza 1,5 kW, dalla copertura a 950
+  for (const s of [-.02, .02]) { const b = mesh(cyl(.006, .30, 8), M.res); b.rotation.z = PI / 2; b.position.set(-.15, s, 0); r.add(b); }
+  r.position.copy(d.clone().multiplyScalar(RT)).setY(AT(.95)); r.rotation.y = az - PI / 2; P(r, [d.x * .8, 0, d.z * .8], .75); }
+// 2 ─ serpentino
+gruppo('Serpentino', 'Una spirale in basso, dentro l\'acqua: ci passa il calore di un\'altra fonte, per esempio i pannelli solari termici.', 'AISI 316 · 1,2 m² · attacchi G 3/4 a 235 e 855 mm · per solare termico o fonte ausiliaria', 7, 11, { az: 18, el: 8, d: 3.4, y: .6 }, [0, -.75, 0]);
+{ const p = elica(.185, AT(.27), AT(.72), 9); p.unshift(V(RT + .06, AT(.235), 0), V(.2, AT(.235), .02)); p.push(V(.12, AT(.80), .12), V(.2, AT(.855), .03), V(RT + .06, AT(.855), 0));
+  P(mesh(tubo(p, .011), M.inox2), [0, -1.1, 0], .1); }
+// 3 ─ condensatore
+gruppo('Condensatore', 'Qui arriva il calore preso dall\'aria: un nastro di alluminio avvolto attorno al serbatoio scalda l\'acqua senza toccarla.', 'Alluminio a flusso parallelo, all\'esterno del serbatoio · nessun contatto con l\'acqua sanitaria · non si incrosta', 11, 15, { az: -22, el: 10, d: 3.8, y: .95 }, [-.85, 0, 0]);
+{ const o = mesh(tubo(elica(RT + .008, AT(.45), AT(1.30), 16, 16), .009, 5), M.allu); o.scale.set(1, 1, 1); P(o, [0, 1.5, 0], .1); }
+// 4 ─ isolamento e rivestimento
+gruppo('Isolamento e rivestimento', 'Il cappotto: tiene l\'acqua calda per ore. Fuori, la lamiera grigio argento con gli attacchi dell\'acqua.', 'Poliuretano espanso 50 mm · attacchi G 3/4 a 32,5 / 235 / 855 / 1270 mm, condensa G 1/2 a 1370 mm · Ø 600 mm', 15, 20, { az: 62, el: 8, d: 5.4, y: 1.0 }, [.95, 0, 0]);
+P(mesh(cyl(R - .006, YC - B - .06, 48, true), M.schiuma, 0, (YC + B) / 2, 0), [0, 1.9, 0], 0);
+P(mesh(cyl(R, YC - B, 48, true), M.argento, 0, (YC + B) / 2, 0), [0, 2.1, 0], .25);
+P(mesh(cyl(R, .012, 48), M.scuro, 0, B + .006, 0), [0, -.3, 0], .1);
+for (const [h, r, m] of [[.0325, .014, M.ottone], [.235, .014, M.ottone], [.855, .014, M.ottone], [1.17, .016, M.scuro], [1.27, .014, M.ottone], [1.37, .011, M.ottone]]) { const a = mesh(cyl(r, .05, 14), m, R + .012, AT(h), 0); a.rotation.z = PI / 2; P(a, [.5, 0, 0], .6 + h * .2); }
+for (const h of [.95, 1.15]) { const az = rad(150); P(radiale(mesh(cyl(.055, .014, 22), M.scuro, Math.sin(az) * (R + .004), AT(h), Math.cos(az) * (R + .004)), az), [Math.sin(az) * .5, 0, Math.cos(az) * .5], .8); }
+for (const az of [rad(10), rad(190)]) P(radiale(mesh(box(.09, .012, .03), M.scuro, Math.sin(az) * (R + .002), AT(.6), Math.cos(az) * (R + .002)), az), [Math.sin(az) * .4, 0, Math.cos(az) * .4], .7);   // maniglie
+// 5 ─ gruppo pompa di calore
+gruppo('Pompa di calore', 'Il motore: un ventilatore aspira l\'aria della stanza, l\'evaporatore le toglie calore, il compressore lo porta al serbatoio.', 'Compressore rotativo · evaporatore a microcanali · valvola di espansione elettronica · propano R290, 150 g · 1500 W resi con 365 W assorbiti (aria 20 °C)', 20, 27, { az: 38, el: 30, d: 2.7, y: 1.72 }, [0, .55, 0]);
+P(mesh(cyl(R - .012, .012, 48), M.acciaio, 0, YC + .006, 0), [0, .9, 0], 0);                                                      // piastra
+const Y5 = YC + .012;
+P(mesh(cyl(.06, .2, 24), M.scuro, 0, Y5 + .1, -.17), [0, .8, -.3], .15); P(mesh(cyl(.028, .15, 16), M.scuro, .1, Y5 + .075, -.2), [0, .8, -.3], .22);   // compressore e separatore
+const tEv = cv(64, 128, (g, w, h) => { g.fillStyle = '#9aa3a8'; g.fillRect(0, 0, w, h); g.fillStyle = '#5c666c'; for (let y = 0; y < h; y += 8) g.fillRect(0, y, w, 2); g.fillStyle = 'rgba(40,48,54,.5)'; for (let x = 0; x < w; x += 3) g.fillRect(x, 0, 1, h); });
+const evap = P(mesh(box(.035, .27, .30), std({ map: tEv, roughness: .5, metalness: .6, emissive: 0x2a8cff, emissiveIntensity: 0 }), .15, Y5 + .15, .02), [.7, .3, 0], .3);
+const chiocc = mesh(cyl(.095, .09, 28), M.plast, -.04, Y5 + .15, -.01); chiocc.rotation.z = PI / 2; P(chiocc, [-.6, .4, 0], .42);        // ventilatore centrifugo
+const girante = mesh(cyl(.07, .02, 12), M.scuro, .012, Y5 + .15, -.01); girante.rotation.z = PI / 2; P(girante, [-.6, .4, 0], .45);
+P(mesh(box(.11, .2, .13), M.plast, -.14, Y5 + .27, -.01), [-.6, .5, 0], .5);                                                              // canale verso l'uscita aria
+P(mesh(box(.2, .2, .06), M.acciaio, -.1, Y5 + .11, .2), [0, .5, .6], .58);                                                                // box elettrico
+P(mesh(cyl(.016, .06, 12), M.ottone, .13, Y5 + .03, -.18), [.4, .5, -.3], .68); P(mesh(cyl(.02, .035, 12), std({ color: 0x1f5fae, roughness: .5 }), .13, Y5 + .075, -.18), [.4, .5, -.3], .7);   // valvola di espansione elettronica
+P(mesh(cyl(.014, .05, 12), M.ottone, -.14, Y5 + .03, -.16), [-.4, .5, -.3], .74);                                                         // valvola a 2 vie
+P(mesh(tubo([V(0, Y5 + .2, -.17), V(-.05, Y5 + .25, -.2), V(-.12, Y5 + .12, -.22), V(-.15, Y5, -.2), V(-.17, YC - .12, -.19)], .006), M.rame), [0, .7, -.3], .8);      // mandata verso il condensatore
+P(mesh(tubo([V(.2, YC - .12, -.16), V(.17, Y5 + .02, -.18), V(.13, Y5 + .1, -.18), V(.15, Y5 + .2, -.12), V(.15, Y5 + .29, -.02)], .006), M.rame), [.3, .7, -.3], .85);  // dal condensatore alla valvola e all'evaporatore
+P(mesh(tubo([V(.15, Y5 + .02, .05), V(.1, Y5 + .03, -.1), V(.1, Y5 + .16, -.2)], .007), M.rame), [.3, .7, 0], .9);                                                      // aspirazione
+// 6 ─ coperchio
+gruppo('Coperchio', 'Il cappello nero: da un imbocco entra l\'aria, dall\'altro esce più fredda. Davanti, lo schermo per comandarlo.', 'Plastica isolata acusticamente · imbocchi aria Ø 177 mm, interasse 320 mm · schermo touch · Wi-Fi · 51 dB(A) di potenza sonora', 27, 31, { az: 20, el: 16, d: 4.4, y: 1.5 }, [0, 1.25, 0]);
+const profC = [[R, 0], [R, .06], [.296, .26], [.275, .355], [.235, .4], [.0885, .405]].map(([r, y]) => new THREE.Vector2(r, y));
+P(mesh(new THREE.LatheGeometry(profC, 48), M.nero, 0, YC, 0), [0, 1.1, 0], 0);
+const tGr = cv(64, 64, (c) => { c.fillStyle = '#0b0c0d'; c.fillRect(0, 0, 64, 64); c.strokeStyle = '#3a3d41'; c.lineWidth = 3; for (let r = 6; r < 32; r += 7) { c.beginPath(); c.arc(32, 32, r, 0, 7); c.stroke(); } });
+{ const top = mesh(new THREE.CircleGeometry(.09, 32), M.nero, 0, YC + .405, 0); top.rotation.x = -PI / 2; P(top, [0, 1.1, 0], 0); }
+for (const x of [-.16, .16]) { P(mesh(cyl(.0885, .04, 28, true), M.nero, x, YC + .425, 0), [0, 1.2, 0], .3); const d = mesh(new THREE.CircleGeometry(.086, 28), std({ map: tGr, roughness: .6, transparent: true, opacity: .9 }), x, YC + .44, 0); d.rotation.x = -PI / 2; P(d, [0, 1.2, 0], .32); }
+const tUI = cv(128, 128, (c) => { c.fillStyle = '#101214'; c.fillRect(0, 0, 128, 128); });
+const ui = mesh(new THREE.PlaneGeometry(.1, .1), new THREE.MeshBasicMaterial({ map: tUI }), 0, YC + .2, .299); ui.rotation.x = -.14; P(ui, [0, .3, .6], .6);
+function schermo(txt) { const c = tUI.image.getContext('2d'); c.fillStyle = '#101214'; c.fillRect(0, 0, 128, 128); c.fillStyle = '#9fd8ff'; c.font = '700 44px sans-serif'; c.textAlign = 'center'; c.fillText(txt, 64, 78); tUI.needsUpdate = true; }
+
+// acqua stratificata (visibile in sezione e in funzione), frecce d'acqua, aria
+const tAcqua = cv(4, 256, () => {}), acquaM = new THREE.MeshBasicMaterial({ map: tAcqua, transparent: true, opacity: .62, depthWrite: false });
+const acqua = mesh(cyl(RT - .006, 1.30, 40), acquaM, 0, B + .78, 0); acqua.renderOrder = 2; root.add(acqua);
+function disegnaAcqua(caldo, set) { const c = tAcqua.image.getContext('2d'), g = c.createLinearGradient(0, 0, 0, 256), k = clamp(caldo, .001, .999), top = set >= 70 ? '#ff2d1a' : set >= 65 ? '#ff5a1f' : '#ff8a2e';
+  g.addColorStop(0, top); g.addColorStop(Math.max(0, k - .05), top); g.addColorStop(Math.min(1, k + .05), '#2a7fd6'); g.addColorStop(1, '#1d5fb0'); c.fillStyle = g; c.fillRect(0, 0, 4, 256); tAcqua.needsUpdate = true; }
+const tFlow = cv(64, 8, (c) => { const g = c.createLinearGradient(0, 0, 64, 0); g.addColorStop(0, '#666'); g.addColorStop(.5, '#fff'); g.addColorStop(.62, '#666'); g.addColorStop(1, '#666'); c.fillStyle = g; c.fillRect(0, 0, 64, 8); }); tFlow.wrapS = THREE.RepeatWrapping; tFlow.repeat.set(3, 1);
+const freccia = (h, col) => { const tx = tFlow.clone(); tx.needsUpdate = true; const o = mesh(new THREE.TubeGeometry(new THREE.LineCurve3(V(R + .04, AT(h), 0), V(R + .4, AT(h), 0)), 4, .012, 8), new THREE.MeshBasicMaterial({ map: tx, color: col, transparent: true, opacity: 0 })); root.add(o); return o; };
+const fFredda = freccia(.0325, 0x58b8ff), fCalda = freccia(1.27, 0xff5a3c);
+const ARIA = new THREE.CatmullRomCurve3([V(.16, YC + .75, 0), V(.16, YC + .42, 0), V(.2, Y5 + .16, .02), V(.08, Y5 + .15, 0), V(-.04, Y5 + .15, -.01), V(-.15, Y5 + .3, -.01), V(-.16, YC + .45, 0), V(-.16, YC + .8, 0)]);
+const NA = 60, aPos = new Float32Array(NA * 3), aCol = new Float32Array(NA * 3), aGeo = new THREE.BufferGeometry(); aGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3)); aGeo.setAttribute('color', new THREE.BufferAttribute(aCol, 3));
+const aria = new THREE.Points(aGeo, new THREE.PointsMaterial({ size: .022, vertexColors: true, transparent: true, opacity: 0, depthWrite: false })); aria.renderOrder = 3; root.add(aria);
+
+// ───────── stato: acqua, modi, film ─────────
+// Numeri a schermo, tutti dal manuale: set di fabbrica 55 °C (p.32); 65 °C massimo con la sola pompa di calore e 70 °C con la resistenza (p.37);
+// contatto fotovoltaico che porta il set al massimo (p.32); antilegionella a 65 °C per circa 30 minuti una volta a settimana (p.30).
+const A = { caldo: 1, doccia: false, fv: false, anti: false, res: false, comp: false, set: 55 };
+const FINE_M = 31, FINE = 39;
+const U = { mode: 'start', t: 0, tool: 'tocca', e: 0, eTo: 0, sez: 0, sezTo: 0, x: 0, az: rad(25), el: rad(10), zoom: 1, auto: true };
+function passoAcqua(dt) {
+  A.set = A.res ? 70 : (A.fv || A.anti) ? 65 : 55;
+  if (A.doccia) A.caldo = Math.max(0, A.caldo - dt * .075);
+  A.comp = A.doccia ? A.caldo < .6 : A.caldo < 1; if (A.comp) A.caldo = Math.min(1, A.caldo + dt * (A.res ? .06 : .03));
+  if (A.doccia && A.caldo <= 0) A.doccia = false;
+}
+const VISTA_F = { az: 28, el: 9, d: 5.8, y: 1.0 };
+function vistaFilm(t) { let v = G[0].vista; for (let i = 0; i < G.length; i++) { const k = sm(G[i].t0 - .5, G[i].t0 + .7, t), w = G[i].vista; v = { az: lerp(v.az, w.az, k), el: lerp(v.el, w.el, k), d: lerp(v.d, w.d, k), y: lerp(v.y, w.y, k) }; }
+  const k = sm(FINE_M - .3, FINE_M + 1.2, t); return { az: lerp(v.az, VISTA_F.az, k) + (t - FINE_M > 0 ? (t - FINE_M) * 2.5 : 0), el: lerp(v.el, VISTA_F.el, k), d: lerp(v.d, VISTA_F.d, k), y: lerp(v.y, VISTA_F.y, k) }; }
+let stretto = false, lastSet = 0, lastCaldo = -1;
+function posa(now, dt) {
+  const film = U.mode === 'film', t = film ? U.t : FINE;
+  for (const g of G) for (const p of g.pezzi) { const dur = (g.t1 - g.t0) * .42, k = film ? Math.max(1 - sm(1.2, 2.0, t), clamp((t - (g.t0 + p.rit * (g.t1 - g.t0 - dur))) / dur)) : 1, e = eoc(k);   // i primi due secondi: la macchina finita, poi si apre e si rimonta
+    p.o.visible = k > 0; p.o.position.copy(p.home).addScaledVector(p.da, 1 - e).addScaledVector(g.esp, U.e); }
+  // in funzione (fine film): rivestimento ai raggi X; negli strumenti che guardano dentro: sezione
+  U.x = film ? sm(FINE_M, FINE_M + 1.2, t) : 0; U.sez = lerp(U.sez, U.sezTo, 1 - Math.exp(-dt * 6));
+  for (const m of RAGGI) { m.opacity = lerp(m.userData.o, .1, U.x); m.depthWrite = U.x < .5; }
+  M.inox.opacity = film ? lerp(1, .32, Math.max(sm(G[1].t0 - .3, G[1].t0 + .8, t))) : .32; M.inox.depthWrite = M.inox.opacity > .9;
+  TAGLIO.constant = lerp(.75, 0, U.sez); const cl = U.sez > .01 ? [TAGLIO] : null; for (const m of TAGLIABILI) m.clippingPlanes = cl;
+  const dentro = Math.max(U.x, U.sez, U.e > .15 ? 1 : 0);
+  acqua.visible = !film || t > FINE_M; acquaM.opacity = .62 * (film ? U.x : 1); acqua.position.y = B + .78 + G[0].esp.y * U.e;
+  if (film) { A.doccia = t > FINE_M + 2.2 && t < FINE_M + 5.4; if (t < FINE_M + 2.2) A.caldo = 1; }
+  if (!film || t > FINE_M) passoAcqua(dt);
+  if (Math.abs(A.caldo - lastCaldo) > .004 || A.set !== lastSet) { disegnaAcqua(A.caldo, A.set); lastCaldo = A.caldo; if (A.set !== lastSet) { lastSet = A.set; schermo(A.set + '°'); $('oSet').textContent = A.set + ' °C'; } $('bCaldo').style.width = (A.caldo * 100).toFixed(1) + '%'; }
+  const on = A.comp ? 1 : 0; M.allu.emissiveIntensity = lerp(M.allu.emissiveIntensity, on * (.5 + .2 * Math.sin(now * 5)), .1); evap.material.emissiveIntensity = lerp(evap.material.emissiveIntensity, on * .5, .1);
+  M.res.emissiveIntensity = lerp(M.res.emissiveIntensity, A.res ? 1.6 : 0, .1); if (on) girante.rotation.x += dt * 14;
+  for (const [f, v] of [[fFredda, -1], [fCalda, 1]]) { f.material.opacity = lerp(f.material.opacity, A.doccia ? 1 : 0, .15); f.material.map.offset.x -= dt * 1.6 * v; f.visible = f.material.opacity > .02; }
+  aria.material.opacity = lerp(aria.material.opacity, on * (dentro > .3 ? .9 : .0), .1);
+  if (aria.material.opacity > .02) { for (let i = 0; i < NA; i++) { const u = (now * .22 + i / NA) % 1, p = ARIA.getPoint(u), j = Math.sin(i * 12.9898) * .5; aPos[i * 3] = p.x + j * .05; aPos[i * 3 + 1] = p.y + G[4].esp.y * U.e * (u > .15 && u < .85 ? 1 : .6); aPos[i * 3 + 2] = p.z + Math.cos(i * 78.233) * .04;
+      const fr = sm(.3, .45, u); aCol[i * 3] = lerp(1, .55, fr); aCol[i * 3 + 1] = lerp(.92, .8, fr); aCol[i * 3 + 2] = lerp(.82, 1, fr); } aGeo.attributes.position.needsUpdate = true; aGeo.attributes.color.needsUpdate = true; }
+  // camera
+  let v; if (film) v = vistaFilm(t); else { if (U.auto) U.az += dt * .12; v = { az: U.az / PI * 180, el: U.el / PI * 180, d: 5.8 * U.zoom, y: 1.0 + .3 * U.e }; }
+  const d = v.d * (stretto ? 1.18 : 1), ce = Math.cos(rad(v.el)), yy = v.y - (stretto ? .0 : 0) - (U.mode === 'free' ? d * (stretto ? .075 : .05) : 0);
+  camera.position.set(Math.sin(rad(v.az)) * ce * d, yy + Math.sin(rad(v.el)) * d, Math.cos(rad(v.az)) * ce * d); camera.lookAt(0, yy, 0);
+}
+
+// ───────── interfaccia ─────────
+function resize() { const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight); renderer.setSize(w, h, false); camera.aspect = w / h; stretto = w < h; camera.fov = stretto ? 38 : 30; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); new ResizeObserver(resize).observe(stage); resize();
+const setMode = m => { U.mode = m; document.body.className = m; };
+function didascalia(t) { let i = 0; for (let k = 0; k < G.length; k++) if (t >= G[k].t0 - .3) i = k; const run = t >= FINE_M;
+  $('num').textContent = run ? '' : String(i + 1).padStart(2, '0'); $('name').textContent = t < G[0].t0 - .3 ? 'Unical HP 300PSDX' : run ? 'In funzione' : G[i].nome;
+  $('spec').textContent = t < G[0].t0 - .3 ? 'Scaldacqua a pompa di calore da 300 litri' : run ? (A.doccia ? 'Apri la doccia: l\'acqua fredda entra dal basso, quella calda esce dall\'alto.' : 'La pompa di calore prende calore dall\'aria e ricarica il serbatoio.') : G[i].facile; }
+function startFilm() { U.t = 0; U.e = U.eTo = 0; U.sezTo = 0; A.caldo = 1; A.doccia = A.fv = A.anti = A.res = false; setMode('film'); }
+function libero(annuncia) { setMode('free'); U.auto = true; U.az = rad(28); U.el = rad(10); U.zoom = 1; setTool('tocca'); if (annuncia) { const t = $('toast'); t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); } }
+const TESTI = {
+  doccia: () => A.doccia ? 'Doccia aperta. L\'acqua fredda entra dal basso (attacco a 32,5 mm), quella calda esce dall\'alto (1270 mm): finché resta lo strato caldo, la doccia è calda.' : A.comp ? 'Doccia chiusa. La pompa di calore riparte da sola e ricarica il serbatoio con il calore dell\'aria.' : 'Serbatoio pieno di acqua calda: 300 litri pronti.',
+  modi: () => A.res ? 'Resistenza elettrica da 1,5 kW: aiuta la pompa di calore e porta l\'acqua fino a 70 °C.' : A.anti ? 'Antilegionella: una volta a settimana porta tutto il serbatoio a 65 °C per circa 30 minuti.' : A.fv ? 'Contatto fotovoltaico chiuso: quando i pannelli producono, il set sale a 65 °C e l\'energia del sole resta nell\'acqua.' : 'Set di fabbrica 55 °C. Con la sola pompa di calore arriva a 65 °C. Prova i tre pulsanti.',
+};
+function aggiorna() { $('kDoccia').setAttribute('aria-pressed', A.doccia); $('kDoccia').textContent = A.doccia ? 'Chiudi la doccia' : 'Apri la doccia'; $('pDoccia').textContent = TESTI.doccia(); $('pModi').textContent = TESTI.modi();
+  $('kFv').setAttribute('aria-pressed', A.fv); $('kAnti').setAttribute('aria-pressed', A.anti); $('kRes').setAttribute('aria-pressed', A.res); }
+function setTool(n) { U.tool = n; for (const b of $('tabs').children) b.setAttribute('aria-pressed', b.dataset.tool === n); for (const s of $('panel').children) s.classList.toggle('on', s.dataset.tool === n);
+  U.eTo = n === 'smonta' ? +$('sE').value : 0; U.sezTo = (n === 'sezione' || n === 'doccia' || n === 'modi') ? 1 : 0; if (U.sezTo) { U.auto = false; U.az = rad(20); U.el = rad(8); } if (n === 'tocca') scheda(-1); aggiorna(); }
+function scheda(i) { $('pTocca').innerHTML = i < 0 ? 'Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.' : ''; if (i >= 0) { const b = document.createElement('b'), s = document.createElement('small'); b.textContent = G[i].nome + '. '; s.textContent = G[i].tecnico; $('pTocca').append(b, G[i].facile, document.createElement('br'), s); }
+  for (const b of $('nomi').children) b.setAttribute('aria-pressed', +b.dataset.i === i); }
+G.forEach((g, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.i = i; b.textContent = g.nome; b.onclick = () => scheda(i); $('nomi').appendChild(b); });
+for (const b of $('tabs').children) b.onclick = () => setTool(b.dataset.tool);
+$('sE').addEventListener('input', e => { U.eTo = +e.target.value; });
+$('kDoccia').onclick = () => { A.doccia = !A.doccia && A.caldo > .02; aggiorna(); };
+$('kFv').onclick = () => { A.fv = !A.fv; aggiorna(); }; $('kAnti').onclick = () => { A.anti = !A.anti; aggiorna(); }; $('kRes').onclick = () => { A.res = !A.res; aggiorna(); };
+$('bGo').onclick = startFilm; $('bExplore').onclick = () => libero(false); $('bFilm').onclick = startFilm;
+// gesti nella parte libera
+const dita = new Map(), ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let mosso = 0, pinch = 0;
+canvas.addEventListener('pointerdown', e => { if (U.mode !== 'free') return; canvas.setPointerCapture(e.pointerId); dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; });
+canvas.addEventListener('pointermove', e => { const p = dita.get(e.pointerId); if (!p) return;
+  if (dita.size === 1) { const dx = e.clientX - p[0], dy = e.clientY - p[1]; mosso += Math.abs(dx) + Math.abs(dy); if (mosso > 6) U.auto = false; U.az -= dx * .008; U.el = clamp(U.el + dy * .006, rad(-4), rad(62)); }
+  dita.set(e.pointerId, [e.clientX, e.clientY]);
+  if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) U.zoom = clamp(U.zoom * pinch / d, .3, 1.5); pinch = d; mosso += 20; } });
+for (const ev of ['pointerup', 'pointercancel']) canvas.addEventListener(ev, e => { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
+  if (p && mosso < 8 && U.mode === 'free') { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(root.children, true).find(h => h.object.userData.g !== undefined && h.object.visible); if (hit) { if (U.tool !== 'tocca') setTool('tocca'); scheda(hit.object.userData.g); } } });
+canvas.addEventListener('wheel', e => { if (U.mode !== 'free') return; e.preventDefault(); U.zoom = clamp(U.zoom * Math.exp(e.deltaY * .0012), .3, 1.5); U.auto = false; }, { passive: false });
+
+// ciclo di disegno
+let last = 0, lenti = 0, tAgg = 0;
+function passo(dt, now) { if (U.mode === 'film') { U.t += dt; didascalia(U.t); if (U.t >= FINE) libero(true); } U.e = lerp(U.e, U.eTo, 1 - Math.exp(-dt * 6)); posa(now, dt); if (U.mode === 'free' && now - tAgg > .25) { tAgg = now; aggiorna(); } }
+function frame(ts) { requestAnimationFrame(frame); if (document.hidden) { last = 0; return; } const now = ts / 1000, grezzo = last ? now - last : 0, dt = Math.min(.05, grezzo); last = now;
+  passo(dt, now); renderer.render(scene, camera);
+  if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1); }
+disegnaAcqua(1, 55); schermo('55°'); U.mode = 'start'; posa(0, 0);
+// per le prove automatiche
+window.__acs = { U, A, G, setTool, scheda, startFilm, libero, seek(t) { if (U.mode !== 'film') startFilm(); U.t = t; passo(0, t); renderer.render(scene, camera); }, avanti(s) { for (let i = 0; i < s * 20; i++) passo(.05, last + i * .05); renderer.render(scene, camera); },
+  stato: () => ({ mode: U.mode, tool: U.tool, t: +U.t.toFixed(2), e: +U.e.toFixed(3), sez: +U.sez.toFixed(3), caldo: +A.caldo.toFixed(3), set: A.set, doccia: A.doccia, comp: A.comp, pezzi: G.reduce((n, g) => n + g.pezzi.length, 0), calls: renderer.info.render.calls }) };
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>

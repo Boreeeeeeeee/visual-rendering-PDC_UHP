@@ -60,10 +60,31 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   ok(await page.evaluate(() => window.__casa.Casa.cam.az) !== az0, 'la casa si gira trascinando');
   const z0 = await page.evaluate(() => window.__casa.Casa.cam.zoom); await page.mouse.wheel(0, -300); await sleep(200); ok(await page.evaluate(() => window.__casa.Casa.cam.zoom) < z0, 'la rotella avvicina');
   // dalla Casa al prodotto e ritorno alla Casa
-  await page.click('#tag'); ok(await scena('prodotto'), "l'etichetta sulla macchina apre il prodotto"); await fino(async () => await fr.locator('.back').count() > 0, 15000);
+  await page.locator('.tag').first().evaluate(b => b.click()); ok(await scena('prodotto'), "l'etichetta sulla macchina apre il prodotto"); await fino(async () => await fr.locator('.back').count() > 0, 15000);
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal prodotto riporta alla Casa');
+  // acqua calda nella giornata della Casa
+  await ora(7.3); let c = await st(); ok(c.doccia === 1 && c.caldo < 1 && (await page.textContent('#cAcs')).startsWith('Doccia'), 'ore 7:18, doccia: esce acqua calda');
+  await ora(9); c = await st(); ok(c.ricarica && (await page.textContent('#cAcs')).includes('ricarica'), 'dopo la doccia il serbatoio si ricarica');
+  await ora(15); ok((await page.textContent('#cAcs')).includes('pronta'), 'a metà giornata acqua calda pronta'); await sleep(400); await foto('casa_acs');
+  // HP 300PSDX: dalla Casa alla pagina completa, film e strumenti
+  await page.locator('.tag').nth(1).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'acs', "l'etichetta dell'HP 300PSDX apre il prodotto"); ok(page.url().endsWith('#acs'), 'indirizzo #acs');
+  ok(await fino(async () => await fr.locator('#kDoccia').count() > 0, 20000), "la pagina dell'HP 300PSDX si carica");
+  const acs = f => fr.locator('body').evaluate((_, f) => (0, eval)(f), f), premi = id => fr.locator('#' + id).evaluate(b => b.click()), sa = () => acs('window.__acs.stato()');
+  await fino(async () => !!(await acs('!!window.__acs'))); await sleep(800); await foto('acs_inizio'); ok((await sa()).mode === 'start', "parte dalla schermata d'inizio");
+  await premi('bGo'); await acs('window.__acs.seek(9)'); ok((await sa()).mode === 'film', 'il film parte'); await acs('window.__acs.seek(24)'); await sleep(300); await foto('acs_film');
+  ok((await acs('window.__acs.seek(34.5); window.__acs.avanti(1); window.__acs.stato()')).caldo < .97, 'nel finale del film la doccia consuma acqua calda');   // in una sola chiamata: il film intanto va avanti da solo
+  await premi('bFilm').catch(() => {}); await acs('window.__acs.libero(false)'); ok((await sa()).mode === 'free', 'si passa alla parte libera');
+  const strum = n => fr.locator(`.tab[data-tool=${n}]`).evaluate(b => b.click());
+  await strum('smonta'); await acs('window.__acs.avanti(2)'); ok((await sa()).e > .4, 'Smonta separa i gruppi'); await sleep(300); await foto('acs_smonta');
+  await strum('sezione'); await acs('window.__acs.avanti(2)'); let a = await sa(); ok(a.sez > .95 && a.e < .05, 'Sezione taglia a metà e richiude');
+  await strum('doccia'); await premi('kDoccia'); await acs('window.__acs.avanti(4)'); a = await sa(); ok(a.doccia && a.caldo < .8 && a.caldo > .3, "Doccia: l'acqua calda scende"); await sleep(300); await foto('acs_doccia');
+  await premi('kDoccia'); await acs('window.__acs.avanti(30)'); a = await sa(); ok(!a.doccia && a.caldo === 1 && !a.comp, 'chiusa la doccia il serbatoio si ricarica e la macchina si ferma');
+  await strum('modi'); ok((await sa()).set === 55, 'set di fabbrica 55 °C'); await premi('kFv'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 65, 'contatto fotovoltaico: 65 °C'); await premi('kFv');
+  await premi('kAnti'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 65, 'antilegionella: 65 °C'); await premi('kAnti'); await premi('kRes'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 70, 'resistenza: 70 °C'); await sleep(300); await foto('acs_modi'); await premi('kRes');
+  await strum('tocca'); await fr.locator('#nomi .btn').nth(2).evaluate(b => b.click()); ok((await fr.locator('#pTocca').textContent()).includes('Condensatore'), 'la scheda del gruppo si apre');
+  await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), "il ritorno dall'HP 300PSDX riporta alla Casa");
   // indirizzi diretti
-  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
+  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
   ok(errs.length === 0, 'console senza errori: ' + errs.join(' | ')); await ctx.close();
 }
 console.log(`${fatti - falliti} controlli passati su ${fatti}`); await b.close(); srv.close(); process.exit(falliti ? 1 : 0);

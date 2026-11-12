@@ -7,7 +7,7 @@ const Casa = (() => {
   const camera = new THREE.PerspectiveCamera(30, 1, .1, 200);
   const sun = new THREE.DirectionalLight(0xffffff, 2); scene.add(sun, sun.target);
   const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x2a2a26, .5); scene.add(hemi);
-  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.5, P1 = .3, P2 = 1.6;   // metri
+  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.5, P1 = .1, P2 = 1.4;   // metri
 
   // materiali: i tagli (pareti, solaio e tetto sezionati) hanno un colore a parte, come in un disegno in sezione
   const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xd8d2c4, roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
@@ -42,14 +42,14 @@ const Casa = (() => {
   add(box(.04, .62, 1.05), nero, -HW + TW + .03, FY + 1.35, .9);    // televisore sulla parete sinistra
   const vetro = new THREE.MeshBasicMaterial({ color: 0x9cc4e4 });
   const finestra = (x, w, h, y) => { add(box(w + .12, h + .12, .03), bianco, x, y, -HD + TW + .012); add(box(w, h, .02), vetro, x, y, -HD + TW + .026); add(box(.04, h, .03), bianco, x, y, -HD + TW + .03); };
-  finestra(-1.3, 1.5, 1.2, FY + 1.6); finestra(.95, .6, .6, FY + 1.9);
-  add(rbox(.85, .06, .85, .02), bianco, .95, FY + .03, -HD + TW + .45);      // piatto doccia
-  add(box(.02, 1.9, .85), new THREE.MeshStandardMaterial({ color: 0xbfe0ee, transparent: true, opacity: .28, roughness: .1 }), 1.38, FY + .98, -HD + TW + .45);
-  add(cyl(.012, 1.9, 8), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .62, FY + 1.05, -HD + TW + .1); add(cyl(.09, .02, 16), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .72, FY + 2.0, -HD + TW + .2);
+  finestra(-1.3, 1.5, 1.2, FY + 1.6); finestra(.75, .6, .6, FY + 1.9);
+  add(rbox(.85, .06, .85, .02), bianco, .75, FY + .03, -HD + TW + .45);      // piatto doccia
+  add(box(.02, 1.9, .85), new THREE.MeshStandardMaterial({ color: 0xbfe0ee, transparent: true, opacity: .28, roughness: .1 }), 1.18, FY + .98, -HD + TW + .45);
+  add(cyl(.012, 1.9, 8), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .42, FY + 1.05, -HD + TW + .1); add(cyl(.09, .02, 16), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .52, FY + 2.0, -HD + TW + .2);
   add(rbox(.5, .14, .4, .03), bianco, P1 + .3, FY + .85, .5); add(box(.42, .7, .32), legno, P1 + .28, FY + .43, .5);     // lavabo
   // luci di casa: lampade a sospensione, accese quando fuori è buio e la casa è sveglia
   const lampM = new THREE.MeshBasicMaterial({ color: 0x40382a });
-  const lampade = [[-1.6, .1, 9], [.95, .3, 3.5], [2.3, .2, 3.5]].map(([x, z, i]) => { add(cyl(.006, .7, 6), nero, x, FY + WH - .15, z); add(new THREE.SphereGeometry(.1, 16, 12), lampM, x, FY + WH - .55, z);
+  const lampade = [[-1.6, .1, 9], [.75, .3, 3.5], [2.4, .2, 4.5]].map(([x, z, i]) => { add(cyl(.006, .7, 6), nero, x, FY + WH - .15, z); add(new THREE.SphereGeometry(.1, 16, 12), lampM, x, FY + WH - .55, z);
     const l = new THREE.PointLight(0xffd9a0, 0, 7, 1.6); l.position.set(x, FY + WH - .6, z); l.userData.max = i; g.add(l); return l; });
 
   // posto del generatore: fuori, a terra accanto alla parete destra, rivolto verso chi guarda. Qui va la UHP; alla tappa 4 lo stesso posto ospita l'ibrida.
@@ -67,7 +67,7 @@ const Casa = (() => {
     const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, Math.max(8, Math.round(len * 16)), r, 6), m, 0, 0, 0); tubi.push({ m, tx, verso, ramo });
   }
   const aM = ist.group.localToWorld(ist.attacchi.mandata.clone()), aR = ist.group.localToWorld(ist.attacchi.ritorno.clone());
-  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: 2.3, y: FY + .85 };
+  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: P2 + .5, y: FY + .85 };
   [[aM, 1, 'mandata', 0], [aR, -1, 'ritorno', .09]].forEach(([a, verso, ramo, dz]) => {
     const b = a.clone().addScaledVector(dietro, .28 + dz), zc = b.z;
     tubo([a, b, V(HW + .25, a.y, zc), V(XI - dz, a.y, zc), V(XI - dz, a.y, ZI + dz), V(COL.x + .18 - dz * 2, a.y, ZI + dz), V(COL.x + .18 - dz * 2, COL.y - .2, ZI + dz)], .026, verso, ramo);
@@ -77,6 +77,17 @@ const Casa = (() => {
   const yp = FY + .014, giu = x => [V(x, COL.y - .2, ZI + .02), V(x, yp, ZI + .02)];
   tubo(serpentina(-HW + TW + .25, P1 - .25, -HD + TW + .3, HD - .3, .34, [...giu(COL.x - .08), V(COL.x - .08, yp, HD - .3)]), .013, 1, 'mandata');
   tubo(serpentina(P1 + .22, P2 - .2, -HD + TW + 1.1, HD - .8, .3, [...giu(COL.x - .2), V(COL.x - .2, yp, HD - .55), V(P2 - .2, yp, HD - .55)]), .013, 1, 'mandata');
+  // acqua calda: HP 300PSDX nella lavanderia. Il locale disegnato è circa 1,9 x 4,8 x 2,7 m = 24 m³: sopra i 20 m³ che il manuale chiede (p.19) quando l'aria non è canalizzata.
+  const viste = [{ def: gen, ist, pos: POSTO.pos.clone().setY(1.5) }];
+  const acsDef = PRODOTTI.find(p => p.id === 'acs'), acs = acsDef && acsDef.costruisci();
+  if (acs) {
+    acs.group.position.set(HW - TW - .5, FY, -HD + TW + .5); g.add(acs.group); acs.group.updateMatrixWorld(true); acs.group.traverse(o => { o.userData.prodotto = 'acs'; });
+    viste.push({ def: acsDef, ist: acs, pos: acs.group.position.clone().setY(FY + 2.3) });
+    add(rbox(.6, .85, .6, .03), bianco, P2 + .4, FY + .425, -.6); add(cyl(.2, .02, 24), nero, P2 + .4, FY + .45, -.29).rotation.x = PI / 2;     // lavatrice
+    const c = acs.group.localToWorld(acs.attacchi.calda.clone()), f = acs.group.localToWorld(acs.attacchi.fredda.clone()), zb = -HD + TW + .07;
+    tubo([c, V(c.x + .1, c.y, c.z), V(c.x + .1, FY + 2.3, c.z), V(c.x + .1, FY + 2.3, zb), V(.52, FY + 2.3, zb), V(.52, FY + 2.02, zb)], .016, 1, 'acs');        // calda fino alla doccia (percorso generico)
+    tubo([V(XI, f.y, c.z + .5), V(f.x + .1, f.y, c.z + .5), V(f.x + .1, f.y, f.z), f], .016, 1, 'fredda');
+  }
   // aria che attraversa la macchina, visibile quando lavora
   const NA = 36, aPos = new Float32Array(NA * 3), aSeed = Array.from({ length: NA }, (_, i) => [rng(i + 3)(), rng(i + 40)(), rng(i + 77)()]);
   const aria = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(aPos, 3)), new THREE.PointsMaterial({ size: .05, transparent: true, opacity: 0, depthWrite: false, color: 0xbfe6ff }));
@@ -86,9 +97,9 @@ const Casa = (() => {
   const sole = add(new THREE.SphereGeometry(1.5, 20, 14), new THREE.MeshBasicMaterial({ color: 0xfff1c9, fog: false }), 0, 0, 0);
 
   // ───────── la giornata ─────────
-  const S = { t: 7, estate: false, play: true, carico: 0, toccato: false };
+  const S = { t: 6.4, estate: false, play: true, carico: 0, doccia: 0, caldo: 1, ricarica: false };
   const C = (h) => new THREE.Color(h), NOTTE = C(0x070b12), ALBA = C(0x6a5a6e), GI = C(0x86a5bf), GE = C(0x6aa6dc), tmp = C(0), CALDO = C(0xff7a2a), FREDDO = C(0x3fa9ff);
-  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85) };
+  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85), acs: C(0xff5a3c), fredda: C(0x58b8ff) };
   const FASI = {
     inverno: [[0, 'Notte. Fuori fa freddo: la pompa di calore lavora piano e tiene la casa in temperatura.'], [5, 'Mattino presto. Prende calore dall\'aria fredda e lo passa all\'acqua dell\'impianto: la casa è calda prima della sveglia.'],
       [9, 'Giorno. Con il sole la casa chiede meno calore e la macchina rallenta.'], [16, 'Sera. Fuori torna il freddo e la casa si riempie: lavora di più.'], [22, 'Notte. Rallenta e mantiene.']],
@@ -100,6 +111,11 @@ const Casa = (() => {
     if (estate) return Math.max(camp(t, 9, 19, 0, .85), camp(t, 12, 22, 0, .45));
     return clamp(.42 + camp(t, 4.5, 8.5, 0, .5) + camp(t, 16, 21.5, 0, .42) - camp(t, 10.5, 14.5, 0, .2));
   }
+  // acqua calda nella giornata (indicativo): due docce, poi l'HP 300PSDX si ricarica da solo con la sua pompa di calore
+  const DOCCE = [[7, 7.6], [20, 20.8]];
+  function acqua(t) { let doccia = 0, caldo = 1; const tt = t < 1 ? t + 24 : t;
+    for (const [a, b] of DOCCE) { const r = b + 3.6; if (tt >= a && tt < b) { doccia = 1; caldo = lerp(1, .5, (tt - a) / (b - a)); } else if (tt >= b && tt < r) caldo = lerp(.5, 1, (tt - b) / (r - b)); }
+    return { doccia, caldo }; }
   const fase = (t, estate) => { const f = FASI[estate ? 'estate' : 'inverno']; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
   let onStato = () => {};
   function applica() {
@@ -114,23 +130,24 @@ const Casa = (() => {
     lampade.forEach(l => { l.intensity = l.userData.max * luci; }); lampM.color.setHSL(.1, .8, .12 + .7 * luci);
     S.carico = carico(t, estate);
     const tinta = estate ? FREDDO : CALDO; fLiv.emissive.copy(tinta).multiplyScalar(.10 * S.carico); fBag.emissive.copy(tinta).multiplyScalar(.10 * S.carico);
-    for (const tb of tubi) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico));
+    const aq = acqua(t); S.doccia = aq.doccia; S.caldo = aq.caldo; S.ricarica = !aq.doccia && aq.caldo < .999;
+    for (const tb of tubi) { if (tb.ramo === 'acs' || tb.ramo === 'fredda') tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], S.doccia); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
     aria.material.opacity = .55 * sm(.02, .3, S.carico); aria.material.color.set(estate ? 0xffc9a0 : 0xbfe6ff);
     onStato(S, fase(t, estate));
   }
   // camera a orbita limitata: trascina per girare, pizzica o rotella per avvicinarti
   const cam = { az: rad(-7), el: rad(20), zoom: 1, dist: 20, tgt: V(.75, 1.2, 0) }; let W = 1, H = 1;
   function resize(w, h) { W = w; H = h; camera.aspect = w / h; camera.fov = w < h ? 40 : 30; camera.updateProjectionMatrix();
-    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.5 : 5.3) / Math.tan(hf), (basso ? 5.0 : 4.3) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 1.6 : basso ? 1.35 : 1.0, 0); if (stretto && !mossaCam) cam.el = rad(27); }
+    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.8 : 5.6) / Math.tan(hf), (basso ? 5.0 : 4.3) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 1.6 : basso ? 1.35 : 1.0, 0); if (stretto && !mossaCam) cam.el = rad(27); }
   function posaCamera() { const d = cam.dist * cam.zoom, ce = Math.cos(cam.el); camera.position.set(cam.tgt.x + Math.sin(cam.az) * ce * d, cam.tgt.y + Math.sin(cam.el) * d, cam.tgt.z + Math.cos(cam.az) * ce * d); camera.lookAt(cam.tgt); }
   const etich = V(); let onEtichetta = () => {}, mossaCam = false;
   function tick(dt, now) {
     if (S.play) { S.t = (S.t + dt * .8) % 24; applica(); }
-    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (S.carico > .02 ? .5 + 1.6 * S.carico : 0);
-    ist.tick(dt, S.carico);
+    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (tb.ramo === 'acs' || tb.ramo === 'fredda' ? 1.5 * S.doccia : S.carico > .02 ? .5 + 1.6 * S.carico : 0);
+    ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica ? 1 : 0);
     if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = ist.bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = ist.bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = ist.bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
     posaCamera();
-    etich.copy(POSTO.pos).setY(1.5).project(camera); onEtichetta((etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1);
+    viste.forEach((v, i) => { etich.copy(v.pos).project(camera); onEtichetta(i, (etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1); });
   }
   const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), dita = new Map(); let mosso = 0, pinch = 0, onApri = () => {};
   function down(e) { dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; }
@@ -139,9 +156,9 @@ const Casa = (() => {
     dita.set(e.pointerId, [e.clientX, e.clientY]);
     if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) cam.zoom = clamp(cam.zoom * pinch / d, .32, 1.25); pinch = d; mosso += 20; } }
   function up(e) { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
-    if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObject(ist.group, true)[0]; if (hit) onApri(gen); } }
+    if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(viste.map(v => v.ist.group), true)[0]; if (hit) onApri(PRODOTTI.find(q => q.id === hit.object.userData.prodotto)); } }
   function wheel(e) { cam.zoom = clamp(cam.zoom * Math.exp(e.deltaY * .0012), .32, 1.25); }
-  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, generatore: gen,
+  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, viste,
     entra() { applica(); }, ora(t) { S.t = clamp(t, 0, 24) % 24; applica(); }, stagione(estate) { S.estate = !!estate; applica(); }, play(v) { S.play = !!v; applica(); },
     su(apri, stato, etichetta) { onApri = apri; onStato = stato; onEtichetta = etichetta; } };
 })();

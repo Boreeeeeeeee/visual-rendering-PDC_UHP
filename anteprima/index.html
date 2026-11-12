@@ -55,7 +55,8 @@
   #cTop { position: absolute; left: var(--pad); right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
   #cCap { pointer-events: auto; max-width: 560px; padding: 12px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center }
   #cHour { font: 700 clamp(30px, 6vmin, 44px)/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; grid-row: span 2 }
-  #cStato { justify-self: start; font: 600 12px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
+  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
+  #cAcs[data-m=c] { background: #ff6a4a; color: #1b0805 } #cAcs[data-m=r] { background: rgba(255,154,77,.28) }
   #cStato[data-m=c] { background: var(--heat); color: #1b0f05 } #cStato[data-m=f] { background: var(--ice); color: #05121b }
   #cText { margin: 0; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; min-height: 2.7em }
   #cPanel { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 640px); pointer-events: auto; padding: 12px 14px 10px; border-radius: 16px;
@@ -72,9 +73,9 @@
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
   input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
   #ore { display: flex; justify-content: space-between; font: 500 11px/1 var(--body); color: var(--dim); font-variant-numeric: tabular-nums; margin-top: -6px }
-  #tag { position: absolute; left: 0; top: 0; pointer-events: auto; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--green); color: #10140f; font: 700 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+  .tag { position: absolute; left: 0; top: 0; pointer-events: auto; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--green); color: #10140f; font: 700 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
     box-shadow: 0 6px 22px rgba(0,0,0,.45); white-space: nowrap }
-  #tag::after { content: ""; position: absolute; left: 50%; top: 100%; width: 2px; height: 14px; background: var(--green); transform: translateX(-50%) }
+  .tag::after { content: ""; position: absolute; left: 50%; top: 100%; width: 2px; height: 14px; background: var(--green); transform: translateX(-50%) }
 
   #prod { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg) } #prod[hidden] { display: none }
   body[data-scena=prodotto] #top { display: none }
@@ -107,16 +108,15 @@
       <h1 id="hName">UHP 120</h1>
       <p id="hLine"></p>
       <div id="hRow"><button class="big" id="bOpen" type="button">Apri</button><button class="btn" id="bCasa" type="button">Entra nella casa</button></div>
-      <p class="credit">Animazione dimostrativa di Borelli Impianti, ricostruita dai manuali Unical.</p>
     </div>
   </section>
 
   <section id="casa" class="scena" aria-label="La casa">
     <div id="cTop">
       <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
-      <div id="cCap"><b id="cHour">07:00</b><span id="cStato">A riposo</span><p id="cText"></p></div>
+      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cAcs">Acqua calda: pronta</span></span><p id="cText"></p></div>
     </div>
-    <button id="tag" type="button">UHP 120</button>
+    <div id="tags"></div>
     <div id="cPanel">
       <div id="cRow"><h2>Una giornata in casa</h2><div class="seg"><button id="bInv" type="button" aria-pressed="true">Inverno</button><button id="bEst" type="button" aria-pressed="false">Estate</button></div><button id="bPlay" type="button" aria-pressed="true">Pausa</button></div>
       <input type="range" id="sDay" min="0" max="24" step="0.05" value="7" aria-label="Ora del giorno">
@@ -183,12 +183,45 @@ const T_GRID = rep(cv(256, 256, (g, w, h) => { g.fillStyle = '#0c1115'; g.fillRe
 const PRODOTTI = [];
 const registra = def => PRODOTTI.push(def);
 
+// ───────── HP 300PSDX · livello leggero per Home e Casa ─────────
+// Quote dal manuale installatore 00340944, p.14-15 (vedi src/dati/acs.json): Ø 600, altezza 1990 con piedini (35) e imbocchi aria (40),
+// coperchio con imbocchi 445, imbocchi Ø 177 a interasse 320, attacchi sul fianco destro alle altezze 32,5 / 235 / 855 / 1170 / 1270 / 1370 dal fondo.
+// Ricostruito: l'angolo degli attacchi e delle coperture attorno al cilindro e il verso dei due imbocchi (il manuale dà solo le altezze).
+registra({
+  id: 'acs', nome: 'HP 300PSDX', riga: 'Scaldacqua a pompa di calore da 300 litri, propano R290', apri: 'Apri l\'HP 300PSDX', pagina: 'acs/',
+  alto: 1.99, ordine: 2,
+  costruisci() {
+    const g = new THREE.Group(), B = .035, R = .30, YC = B + 1.51;   // B = piedini, YC = dove comincia il coperchio (1990 - 445)
+    const argento = std({ color: 0xb4b8bb, roughness: .38, metalness: .75 }), nero = std({ color: 0x1b1d20, roughness: .45, metalness: .1 }), gomma = std({ color: 0x0c0c0d, roughness: .95 });
+    const ottone = std({ color: 0xb08a3c, roughness: .35, metalness: .8 });
+    for (let i = 0; i < 3; i++) { const a = i * PI * 2 / 3 + PI / 6; g.add(mesh(cyl(.03, B, 12), gomma, Math.sin(a) * .22, B / 2, Math.cos(a) * .22)); }
+    g.add(mesh(cyl(R, YC - B, 48), argento, 0, (YC + B) / 2, 0));
+    g.add(mesh(cyl(R + .003, .02, 48), nero, 0, YC - .01, 0));
+    const prof = [[R, 0], [R, .06], [.296, .26], [.275, .355], [.235, .4], [0, .405]].map(([r, y]) => new THREE.Vector2(r, y));
+    g.add(mesh(new THREE.LatheGeometry(prof, 48), nero, 0, YC, 0));
+    // imbocchi aria Ø 177 con griglia, interasse 320
+    const tGr = cv(64, 64, (c, w, h) => { c.fillStyle = '#0b0c0d'; c.fillRect(0, 0, w, h); c.strokeStyle = '#3a3d41'; c.lineWidth = 3; for (let r = 6; r < 32; r += 7) { c.beginPath(); c.arc(32, 32, r, 0, 7); c.stroke(); } for (let a = 0; a < 6; a++) { c.beginPath(); c.moveTo(32, 32); c.lineTo(32 + Math.cos(a * PI / 3) * 30, 32 + Math.sin(a * PI / 3) * 30); c.stroke(); } });
+    for (const x of [-.16, .16]) { g.add(mesh(cyl(.0885, .04, 28), nero, x, YC + .425, 0)); const d = mesh(new THREE.CircleGeometry(.08, 28), std({ map: tGr, roughness: .6 }), x, YC + .446, 0); d.rotation.x = -PI / 2; g.add(d); }
+    // interfaccia utente sul coperchio
+    const tUI = cv(96, 96, (c, w, h) => { c.fillStyle = '#101214'; c.fillRect(0, 0, w, h); c.fillStyle = '#9fd8ff'; c.font = '700 34px sans-serif'; c.fillText('55°', 16, 58); });
+    const ui = mesh(new THREE.PlaneGeometry(.1, .1), new THREE.MeshBasicMaterial({ map: tUI }), 0, YC + .2, .297); ui.rotation.x = -.14; g.add(ui);
+    g.add(mesh(rbox(.13, .13, .02, .008), std({ color: 0x2a2d31, roughness: .4 }), 0, YC + .2, .287));
+    // attacchi sul fianco destro (rispetto al pannello): fredda, al solare, dal solare, anodo, calda, condensa
+    const att = h => V(R + .012, B + h, 0);
+    for (const h of [.0325, .235, .855, 1.17, 1.27, 1.37]) { const a = mesh(cyl(h === 1.37 ? .011 : .014, .03, 14), h === 1.17 ? nero : ottone); a.position.copy(att(h)); a.rotation.z = PI / 2; g.add(a); }
+    // coperture posteriori di resistenza (950) e termostato (1150)
+    for (const h of [.95, 1.15]) { const a = rad(150), c = mesh(cyl(.05, .012, 20), nero, Math.sin(a) * (R + .004), B + h, Math.cos(a) * (R + .004)); c.rotation.order = 'YXZ'; c.rotation.set(PI / 2, a, 0); g.add(c); }
+    const led = ui.material;
+    return { group: g, attacchi: { fredda: att(.0325).setX(R + .03), calda: att(1.27).setX(R + .03) }, tick(dt, carico = 0) { led.color.setScalar(.75 + .25 * carico); } };
+  },
+});
+
 // ───────── UHP 120 · livello leggero per Home e Casa ─────────
 // Stesse quote del modello completo (c_build.js, dal manuale 00341518 §5.5.2): larghezza 1280, profondità 450, altezza 1040 + piedi,
 // interasse piedi 784, attacchi acqua G 1" sul retro a 72 mm dal fondo. Pochi pezzi: il dettaglio vero sta nella pagina del prodotto.
 registra({
   id: 'uhp', nome: 'UHP 120', riga: 'Pompa di calore aria-acqua a propano R290', apri: 'Apri la UHP 120', pagina: 'uhp/',
-  alto: 1.08,
+  alto: 1.08, ordine: 1,
   costruisci() {
     const g = new THREE.Group();
     const Wd = 1.28, Dp = .45, Y0 = .036, YB = .081, YT = 1.076, XL = -.64, XR = .64, ZB = -.225, ZF = .225, XP = .19, HP = YT - .03 - YB, YC = YB + HP / 2;
@@ -247,13 +280,12 @@ const Home = (() => {
   const floor = mesh(new THREE.PlaneGeometry(80, 80), std({ map: T_GRID, roughness: .7, metalness: .2 }), 0, -.062, 0); floor.rotation.x = -PI / 2; scene.add(floor);
 
   // voci del cerchio: i prodotti fatti, più (solo in anteprima) i segnaposti neutri di quelli in arrivo
-  const voci = PRODOTTI.map(p => ({ ...p, fatto: true }));
+  const voci = PRODOTTI.slice().sort((a, b) => (a.ordine || 9) - (b.ordine || 9)).map(p => ({ ...p, fatto: true }));
   if (ANTEPRIMA) {
-    // Sagome neutre per provare il movimento. Le misure di ACS e modulo FV vengono dalle schede dati; le altre tre sono generiche.
+    // Sagome neutre per provare il movimento. Le misure del modulo FV vengono dalla scheda dati; le altre tre sono generiche.
     const sag = (nome, riga, alto, forma) => voci.push({ id: null, nome, riga, alto, fatto: false, costruisci: () => ({ group: forma(), tick() {} }) });
     const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
     const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
-    sag('Acqua calda', 'HP 300PSDX · in arrivo con la tappa 2', 1.99, () => solido(cyl(.3, 1.99, 28), .995));
     sag('Fotovoltaico', 'MULTIVOLT, ZOE1 e SUM BL · in arrivo con la tappa 3', 1.5, () => { const g = solido(box(1.134, 1.762, .03), .881); g.children.forEach(o => { o.rotation.x = -rad(28); o.position.set(0, .79, 0); }); return g; });
     sag('Ibrida', 'In arrivo con la tappa 4', .9, () => solido(box(.5, .9, .4), .45));
     sag('Ventilconvettori', 'In arrivo con la tappa 5', .6, () => solido(box(1.0, .58, .2), .29));
@@ -315,7 +347,7 @@ const Casa = (() => {
   const camera = new THREE.PerspectiveCamera(30, 1, .1, 200);
   const sun = new THREE.DirectionalLight(0xffffff, 2); scene.add(sun, sun.target);
   const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x2a2a26, .5); scene.add(hemi);
-  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.5, P1 = .3, P2 = 1.6;   // metri
+  const HW = 3.2, HD = 2.6, FY = .12, WH = 2.7, TW = .22, RH = 1.5, P1 = .1, P2 = 1.4;   // metri
 
   // materiali: i tagli (pareti, solaio e tetto sezionati) hanno un colore a parte, come in un disegno in sezione
   const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xd8d2c4, roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
@@ -350,14 +382,14 @@ const Casa = (() => {
   add(box(.04, .62, 1.05), nero, -HW + TW + .03, FY + 1.35, .9);    // televisore sulla parete sinistra
   const vetro = new THREE.MeshBasicMaterial({ color: 0x9cc4e4 });
   const finestra = (x, w, h, y) => { add(box(w + .12, h + .12, .03), bianco, x, y, -HD + TW + .012); add(box(w, h, .02), vetro, x, y, -HD + TW + .026); add(box(.04, h, .03), bianco, x, y, -HD + TW + .03); };
-  finestra(-1.3, 1.5, 1.2, FY + 1.6); finestra(.95, .6, .6, FY + 1.9);
-  add(rbox(.85, .06, .85, .02), bianco, .95, FY + .03, -HD + TW + .45);      // piatto doccia
-  add(box(.02, 1.9, .85), new THREE.MeshStandardMaterial({ color: 0xbfe0ee, transparent: true, opacity: .28, roughness: .1 }), 1.38, FY + .98, -HD + TW + .45);
-  add(cyl(.012, 1.9, 8), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .62, FY + 1.05, -HD + TW + .1); add(cyl(.09, .02, 16), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .72, FY + 2.0, -HD + TW + .2);
+  finestra(-1.3, 1.5, 1.2, FY + 1.6); finestra(.75, .6, .6, FY + 1.9);
+  add(rbox(.85, .06, .85, .02), bianco, .75, FY + .03, -HD + TW + .45);      // piatto doccia
+  add(box(.02, 1.9, .85), new THREE.MeshStandardMaterial({ color: 0xbfe0ee, transparent: true, opacity: .28, roughness: .1 }), 1.18, FY + .98, -HD + TW + .45);
+  add(cyl(.012, 1.9, 8), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .42, FY + 1.05, -HD + TW + .1); add(cyl(.09, .02, 16), std({ color: 0xc9ccd0, metalness: .9, roughness: .2 }), .52, FY + 2.0, -HD + TW + .2);
   add(rbox(.5, .14, .4, .03), bianco, P1 + .3, FY + .85, .5); add(box(.42, .7, .32), legno, P1 + .28, FY + .43, .5);     // lavabo
   // luci di casa: lampade a sospensione, accese quando fuori è buio e la casa è sveglia
   const lampM = new THREE.MeshBasicMaterial({ color: 0x40382a });
-  const lampade = [[-1.6, .1, 9], [.95, .3, 3.5], [2.3, .2, 3.5]].map(([x, z, i]) => { add(cyl(.006, .7, 6), nero, x, FY + WH - .15, z); add(new THREE.SphereGeometry(.1, 16, 12), lampM, x, FY + WH - .55, z);
+  const lampade = [[-1.6, .1, 9], [.75, .3, 3.5], [2.4, .2, 4.5]].map(([x, z, i]) => { add(cyl(.006, .7, 6), nero, x, FY + WH - .15, z); add(new THREE.SphereGeometry(.1, 16, 12), lampM, x, FY + WH - .55, z);
     const l = new THREE.PointLight(0xffd9a0, 0, 7, 1.6); l.position.set(x, FY + WH - .6, z); l.userData.max = i; g.add(l); return l; });
 
   // posto del generatore: fuori, a terra accanto alla parete destra, rivolto verso chi guarda. Qui va la UHP; alla tappa 4 lo stesso posto ospita l'ibrida.
@@ -375,7 +407,7 @@ const Casa = (() => {
     const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, Math.max(8, Math.round(len * 16)), r, 6), m, 0, 0, 0); tubi.push({ m, tx, verso, ramo });
   }
   const aM = ist.group.localToWorld(ist.attacchi.mandata.clone()), aR = ist.group.localToWorld(ist.attacchi.ritorno.clone());
-  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: 2.3, y: FY + .85 };
+  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: P2 + .5, y: FY + .85 };
   [[aM, 1, 'mandata', 0], [aR, -1, 'ritorno', .09]].forEach(([a, verso, ramo, dz]) => {
     const b = a.clone().addScaledVector(dietro, .28 + dz), zc = b.z;
     tubo([a, b, V(HW + .25, a.y, zc), V(XI - dz, a.y, zc), V(XI - dz, a.y, ZI + dz), V(COL.x + .18 - dz * 2, a.y, ZI + dz), V(COL.x + .18 - dz * 2, COL.y - .2, ZI + dz)], .026, verso, ramo);
@@ -385,6 +417,17 @@ const Casa = (() => {
   const yp = FY + .014, giu = x => [V(x, COL.y - .2, ZI + .02), V(x, yp, ZI + .02)];
   tubo(serpentina(-HW + TW + .25, P1 - .25, -HD + TW + .3, HD - .3, .34, [...giu(COL.x - .08), V(COL.x - .08, yp, HD - .3)]), .013, 1, 'mandata');
   tubo(serpentina(P1 + .22, P2 - .2, -HD + TW + 1.1, HD - .8, .3, [...giu(COL.x - .2), V(COL.x - .2, yp, HD - .55), V(P2 - .2, yp, HD - .55)]), .013, 1, 'mandata');
+  // acqua calda: HP 300PSDX nella lavanderia. Il locale disegnato è circa 1,9 x 4,8 x 2,7 m = 24 m³: sopra i 20 m³ che il manuale chiede (p.19) quando l'aria non è canalizzata.
+  const viste = [{ def: gen, ist, pos: POSTO.pos.clone().setY(1.5) }];
+  const acsDef = PRODOTTI.find(p => p.id === 'acs'), acs = acsDef && acsDef.costruisci();
+  if (acs) {
+    acs.group.position.set(HW - TW - .5, FY, -HD + TW + .5); g.add(acs.group); acs.group.updateMatrixWorld(true); acs.group.traverse(o => { o.userData.prodotto = 'acs'; });
+    viste.push({ def: acsDef, ist: acs, pos: acs.group.position.clone().setY(FY + 2.3) });
+    add(rbox(.6, .85, .6, .03), bianco, P2 + .4, FY + .425, -.6); add(cyl(.2, .02, 24), nero, P2 + .4, FY + .45, -.29).rotation.x = PI / 2;     // lavatrice
+    const c = acs.group.localToWorld(acs.attacchi.calda.clone()), f = acs.group.localToWorld(acs.attacchi.fredda.clone()), zb = -HD + TW + .07;
+    tubo([c, V(c.x + .1, c.y, c.z), V(c.x + .1, FY + 2.3, c.z), V(c.x + .1, FY + 2.3, zb), V(.52, FY + 2.3, zb), V(.52, FY + 2.02, zb)], .016, 1, 'acs');        // calda fino alla doccia (percorso generico)
+    tubo([V(XI, f.y, c.z + .5), V(f.x + .1, f.y, c.z + .5), V(f.x + .1, f.y, f.z), f], .016, 1, 'fredda');
+  }
   // aria che attraversa la macchina, visibile quando lavora
   const NA = 36, aPos = new Float32Array(NA * 3), aSeed = Array.from({ length: NA }, (_, i) => [rng(i + 3)(), rng(i + 40)(), rng(i + 77)()]);
   const aria = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(aPos, 3)), new THREE.PointsMaterial({ size: .05, transparent: true, opacity: 0, depthWrite: false, color: 0xbfe6ff }));
@@ -394,9 +437,9 @@ const Casa = (() => {
   const sole = add(new THREE.SphereGeometry(1.5, 20, 14), new THREE.MeshBasicMaterial({ color: 0xfff1c9, fog: false }), 0, 0, 0);
 
   // ───────── la giornata ─────────
-  const S = { t: 7, estate: false, play: true, carico: 0, toccato: false };
+  const S = { t: 6.4, estate: false, play: true, carico: 0, doccia: 0, caldo: 1, ricarica: false };
   const C = (h) => new THREE.Color(h), NOTTE = C(0x070b12), ALBA = C(0x6a5a6e), GI = C(0x86a5bf), GE = C(0x6aa6dc), tmp = C(0), CALDO = C(0xff7a2a), FREDDO = C(0x3fa9ff);
-  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85) };
+  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85), acs: C(0xff5a3c), fredda: C(0x58b8ff) };
   const FASI = {
     inverno: [[0, 'Notte. Fuori fa freddo: la pompa di calore lavora piano e tiene la casa in temperatura.'], [5, 'Mattino presto. Prende calore dall\'aria fredda e lo passa all\'acqua dell\'impianto: la casa è calda prima della sveglia.'],
       [9, 'Giorno. Con il sole la casa chiede meno calore e la macchina rallenta.'], [16, 'Sera. Fuori torna il freddo e la casa si riempie: lavora di più.'], [22, 'Notte. Rallenta e mantiene.']],
@@ -408,6 +451,11 @@ const Casa = (() => {
     if (estate) return Math.max(camp(t, 9, 19, 0, .85), camp(t, 12, 22, 0, .45));
     return clamp(.42 + camp(t, 4.5, 8.5, 0, .5) + camp(t, 16, 21.5, 0, .42) - camp(t, 10.5, 14.5, 0, .2));
   }
+  // acqua calda nella giornata (indicativo): due docce, poi l'HP 300PSDX si ricarica da solo con la sua pompa di calore
+  const DOCCE = [[7, 7.6], [20, 20.8]];
+  function acqua(t) { let doccia = 0, caldo = 1; const tt = t < 1 ? t + 24 : t;
+    for (const [a, b] of DOCCE) { const r = b + 3.6; if (tt >= a && tt < b) { doccia = 1; caldo = lerp(1, .5, (tt - a) / (b - a)); } else if (tt >= b && tt < r) caldo = lerp(.5, 1, (tt - b) / (r - b)); }
+    return { doccia, caldo }; }
   const fase = (t, estate) => { const f = FASI[estate ? 'estate' : 'inverno']; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
   let onStato = () => {};
   function applica() {
@@ -422,23 +470,24 @@ const Casa = (() => {
     lampade.forEach(l => { l.intensity = l.userData.max * luci; }); lampM.color.setHSL(.1, .8, .12 + .7 * luci);
     S.carico = carico(t, estate);
     const tinta = estate ? FREDDO : CALDO; fLiv.emissive.copy(tinta).multiplyScalar(.10 * S.carico); fBag.emissive.copy(tinta).multiplyScalar(.10 * S.carico);
-    for (const tb of tubi) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico));
+    const aq = acqua(t); S.doccia = aq.doccia; S.caldo = aq.caldo; S.ricarica = !aq.doccia && aq.caldo < .999;
+    for (const tb of tubi) { if (tb.ramo === 'acs' || tb.ramo === 'fredda') tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], S.doccia); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
     aria.material.opacity = .55 * sm(.02, .3, S.carico); aria.material.color.set(estate ? 0xffc9a0 : 0xbfe6ff);
     onStato(S, fase(t, estate));
   }
   // camera a orbita limitata: trascina per girare, pizzica o rotella per avvicinarti
   const cam = { az: rad(-7), el: rad(20), zoom: 1, dist: 20, tgt: V(.75, 1.2, 0) }; let W = 1, H = 1;
   function resize(w, h) { W = w; H = h; camera.aspect = w / h; camera.fov = w < h ? 40 : 30; camera.updateProjectionMatrix();
-    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.5 : 5.3) / Math.tan(hf), (basso ? 5.0 : 4.3) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 1.6 : basso ? 1.35 : 1.0, 0); if (stretto && !mossaCam) cam.el = rad(27); }
+    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.8 : 5.6) / Math.tan(hf), (basso ? 5.0 : 4.3) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 1.6 : basso ? 1.35 : 1.0, 0); if (stretto && !mossaCam) cam.el = rad(27); }
   function posaCamera() { const d = cam.dist * cam.zoom, ce = Math.cos(cam.el); camera.position.set(cam.tgt.x + Math.sin(cam.az) * ce * d, cam.tgt.y + Math.sin(cam.el) * d, cam.tgt.z + Math.cos(cam.az) * ce * d); camera.lookAt(cam.tgt); }
   const etich = V(); let onEtichetta = () => {}, mossaCam = false;
   function tick(dt, now) {
     if (S.play) { S.t = (S.t + dt * .8) % 24; applica(); }
-    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (S.carico > .02 ? .5 + 1.6 * S.carico : 0);
-    ist.tick(dt, S.carico);
+    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (tb.ramo === 'acs' || tb.ramo === 'fredda' ? 1.5 * S.doccia : S.carico > .02 ? .5 + 1.6 * S.carico : 0);
+    ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica ? 1 : 0);
     if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = ist.bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = ist.bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = ist.bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
     posaCamera();
-    etich.copy(POSTO.pos).setY(1.5).project(camera); onEtichetta((etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1);
+    viste.forEach((v, i) => { etich.copy(v.pos).project(camera); onEtichetta(i, (etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1); });
   }
   const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), dita = new Map(); let mosso = 0, pinch = 0, onApri = () => {};
   function down(e) { dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; }
@@ -447,9 +496,9 @@ const Casa = (() => {
     dita.set(e.pointerId, [e.clientX, e.clientY]);
     if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) cam.zoom = clamp(cam.zoom * pinch / d, .32, 1.25); pinch = d; mosso += 20; } }
   function up(e) { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
-    if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObject(ist.group, true)[0]; if (hit) onApri(gen); } }
+    if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(viste.map(v => v.ist.group), true)[0]; if (hit) onApri(PRODOTTI.find(q => q.id === hit.object.userData.prodotto)); } }
   function wheel(e) { cam.zoom = clamp(cam.zoom * Math.exp(e.deltaY * .0012), .32, 1.25); }
-  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, generatore: gen,
+  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, viste,
     entra() { applica(); }, ora(t) { S.t = clamp(t, 0, 24) % 24; applica(); }, stagione(estate) { S.estate = !!estate; applica(); }, play(v) { S.play = !!v; applica(); },
     su(apri, stato, etichetta) { onApri = apri; onStato = stato; onEtichetta = etichetta; } };
 })();
@@ -503,12 +552,13 @@ addEventListener('keydown', e => { if (nome !== 'home') return; if (e.key === 'A
 
 // Casa
 const sDay = $('sDay'), hh = t => { const m = Math.round(t * 60) % 1440; return String(m / 60 | 0).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
-const tag = $('tag'); tag.textContent = Casa.generatore.nome + ' ›'; tag.onclick = () => apri(Casa.generatore.id);
+const tags = Casa.viste.map(v => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tag'; b.textContent = v.def.nome + ' ›'; b.onclick = () => apri(v.def.id); $('tags').appendChild(b); return b; });
 Casa.su(p => apri(p.id), (S, testo) => {
   $('cHour').textContent = hh(S.t); $('cText').textContent = testo; sDay.value = S.t; sDay.style.setProperty('--f', (S.t / 24 * 100) + '%');
   $('bInv').setAttribute('aria-pressed', !S.estate); $('bEst').setAttribute('aria-pressed', S.estate); $('bPlay').setAttribute('aria-pressed', S.play); $('bPlay').textContent = S.play ? 'Pausa' : 'Avvia';
   $('cStato').textContent = S.carico < .03 ? 'A riposo' : (S.estate ? 'Raffresca' : 'Riscalda'); $('cStato').dataset.m = S.carico < .03 ? 'off' : (S.estate ? 'f' : 'c');
-}, (x, y, vis) => { tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`; tag.style.visibility = vis ? 'visible' : 'hidden'; });
+  const a = $('cAcs'); a.textContent = S.doccia ? 'Doccia: esce acqua calda' : S.ricarica ? 'Acqua calda: si ricarica' : 'Acqua calda: pronta'; a.dataset.m = S.doccia ? 'c' : S.ricarica ? 'r' : 'off';
+}, (i, x, y, vis) => { const tag = tags[i]; tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`; tag.style.visibility = vis ? 'visible' : 'hidden'; });
 sDay.addEventListener('input', () => { const v = +sDay.value; Casa.play(false); Casa.ora(v); });   // il valore si legge prima: fermare la giornata riscrive il cursore
 $('bPlay').onclick = () => Casa.play(!Casa.S.play); $('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
 $('bHome').onclick = () => apri('home');
@@ -529,7 +579,7 @@ function frame(ts) {
   if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1);
 }
 // per le prove automatiche
-window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, carico: +Casa.S.carico.toFixed(3) }),
+window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3) }),
   passo(n = 1, dt = 1 / 30) { for (let i = 0; i < n; i++) { last += dt; attiva && attiva.tick(dt, last); } attiva && renderer.render(attiva.scene, attiva.camera); } };
 rotta(); document.body.classList.add('pronto'); requestAnimationFrame(frame);
 

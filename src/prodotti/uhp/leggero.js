@@ -3,7 +3,7 @@
 // interasse piedi 784, attacchi acqua G 1" sul retro a 72 mm dal fondo. Pochi pezzi: il dettaglio vero sta nella pagina del prodotto.
 registra({
   id: 'uhp', nome: 'UHP 120', riga: 'Pompa di calore aria-acqua a propano R290', apri: 'Apri la UHP 120', pagina: 'uhp/',
-  alto: 1.08,
+  alto: 1.08, ordine: 1,
   costruisci() {
     const g = new THREE.Group();
     const Wd = 1.28, Dp = .45, Y0 = .036, YB = .081, YT = 1.076, XL = -.64, XR = .64, ZB = -.225, ZF = .225, XP = .19, HP = YT - .03 - YB, YC = YB + HP / 2;

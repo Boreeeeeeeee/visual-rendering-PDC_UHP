@@ -15,7 +15,7 @@ Tre scene, un solo indirizzo:
 |---|---|
 | `#home` (o niente) | Home: i prodotti su un piatto girevole |
 | `#casa` | Casa in sezione, con il cursore "Una giornata in casa" |
-| `#uhp` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti |
+| `#uhp`, `#acs` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX |
 
 Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto. La pagina completa di un prodotto è un file a sé (`uhp/index.html`): si carica in un riquadro solo quando si entra nel prodotto e si scarica uscendo, così sul telefono la memoria torna libera.
 
@@ -23,7 +23,7 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 
 | Percorso | Cosa contiene |
 |---|---|
-| `index.html` | Versione approvata. Fino all'approvazione della tappa 1 è ancora la sola pagina della UHP 120. |
+| `index.html` | Versione approvata. Finché Bore non approva le tappe 1 e 2 è ancora la sola pagina della UHP 120. |
 | `anteprima/` | La tappa in corso, generata da `build.py`. Non si modifica a mano. |
 | `src/app/` | Home, Casa e passaggio tra le scene: `shell.html` (pagina e stile), `a_base.js`, `b_home.js`, `c_casa.js`, `d_app.js`, `og.jpg`. |
 | `src/prodotti/<id>/` | Un prodotto: `leggero.js` (livello leggero e registrazione nel sito), `shell.html` e i file `?_*.js` della pagina completa. |

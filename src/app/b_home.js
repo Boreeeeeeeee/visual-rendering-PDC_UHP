@@ -9,13 +9,12 @@ const Home = (() => {
   const floor = mesh(new THREE.PlaneGeometry(80, 80), std({ map: T_GRID, roughness: .7, metalness: .2 }), 0, -.062, 0); floor.rotation.x = -PI / 2; scene.add(floor);
 
   // voci del cerchio: i prodotti fatti, più (solo in anteprima) i segnaposti neutri di quelli in arrivo
-  const voci = PRODOTTI.map(p => ({ ...p, fatto: true }));
+  const voci = PRODOTTI.slice().sort((a, b) => (a.ordine || 9) - (b.ordine || 9)).map(p => ({ ...p, fatto: true }));
   if (ANTEPRIMA) {
-    // Sagome neutre per provare il movimento. Le misure di ACS e modulo FV vengono dalle schede dati; le altre tre sono generiche.
+    // Sagome neutre per provare il movimento. Le misure del modulo FV vengono dalla scheda dati; le altre tre sono generiche.
     const sag = (nome, riga, alto, forma) => voci.push({ id: null, nome, riga, alto, fatto: false, costruisci: () => ({ group: forma(), tick() {} }) });
     const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
     const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
-    sag('Acqua calda', 'HP 300PSDX · in arrivo con la tappa 2', 1.99, () => solido(cyl(.3, 1.99, 28), .995));
     sag('Fotovoltaico', 'MULTIVOLT, ZOE1 e SUM BL · in arrivo con la tappa 3', 1.5, () => { const g = solido(box(1.134, 1.762, .03), .881); g.children.forEach(o => { o.rotation.x = -rad(28); o.position.set(0, .79, 0); }); return g; });
     sag('Ibrida', 'In arrivo con la tappa 4', .9, () => solido(box(.5, .9, .4), .45));
     sag('Ventilconvettori', 'In arrivo con la tappa 5', .6, () => solido(box(1.0, .58, .2), .29));
