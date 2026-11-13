@@ -1,0 +1,109 @@
+{
+ "id": "fcoil",
+ "prodotto": "F-COIL AGR 400",
+ "tipo": "Ventilconvettore a pavimento, parete e soffitto",
+ "stato": "tappa 5; taglia 400 e posto in soggiorno scelti da Claude, da confermare con Bore",
+ "documenti": {
+  "MI": {
+   "titolo": "F-COIL AGR 200-400-600-800, istruzioni per l'installatore e l'utente",
+   "codice": "00340791",
+   "pagine": 60,
+   "file": "X7556allegatoMANUALE_INSTALLAZIONE1-1X_00340791-manuale-install-f-coil-agr-it-en.pdf"
+  },
+  "SC": {
+   "titolo": "Scheda F-COIL AGR",
+   "codice": "05-2025",
+   "pagine": 2,
+   "file": "X7556allegatoDEPLIANT1-1X_f-coil-agr-scheda-ita_05_2025.pdf"
+  }
+ },
+ "ingombro": [
+  {
+   "voce": "Larghezza (taglia 400)",
+   "valore": 897,
+   "unita": "mm",
+   "fonte": "MI p.5"
+  },
+  {
+   "voce": "Altezza",
+   "valore": 579,
+   "unita": "mm",
+   "fonte": "MI p.5"
+  },
+  {
+   "voce": "Profondità",
+   "valore": 129,
+   "unita": "mm",
+   "fonte": "MI p.5; SC"
+  },
+  {
+   "voce": "Peso",
+   "valore": 15,
+   "unita": "kg",
+   "fonte": "MI p.5"
+  },
+  {
+   "voce": "Distanza minima dal pavimento",
+   "valore": 140,
+   "unita": "mm",
+   "fonte": "MI p.6 fig.2"
+  }
+ ],
+ "componenti": [
+  "A coperchio di accesso ai collettori",
+  "B batteria rame-alluminio, raccordi Eurokonus 3/4, sensore dell'acqua",
+  "C pannello di comando touch",
+  "D ventilatore tangenziale ad alette sfalsate su supporti EPDM",
+  "E motore DC",
+  "F griglia di mandata reversibile, RAL 9003",
+  "G griglia di aspirazione con sgancio rapido e microinterruttore",
+  "H bacinella della condensa in ABS",
+  "I schienale insonorizzante",
+  "L mantello e fianchi, RAL 9003",
+  "M struttura in lamiera elettrozincata"
+ ],
+ "dati": [
+  {
+   "voce": "Contenuto d'acqua della batteria",
+   "valore": 0.8,
+   "unita": "l",
+   "fonte": "MI p.5"
+  },
+  {
+   "voce": "Pressione massima",
+   "valore": 10,
+   "unita": "bar",
+   "fonte": "MI p.5"
+  },
+  {
+   "voce": "Temperatura dell'acqua in ingresso",
+   "valore": "4-80",
+   "unita": "°C",
+   "fonte": "MI p.5"
+  },
+  {
+   "voce": "Tubi (taglia 400)",
+   "valore": 14,
+   "unita": "mm",
+   "fonte": "MI p.8"
+  },
+  {
+   "voce": "Pannello radiante, contenuto d'acqua",
+   "valore": 0.27,
+   "unita": "l",
+   "fonte": "SC"
+  },
+  {
+   "voce": "Resa statica a 50 / 70 °C",
+   "valore": "0,42 / 0,71",
+   "unita": "kW",
+   "fonte": "SC"
+  }
+ ],
+ "modi": "ventilazione, estivo, invernale, automatico, notturno (NIGHT, per convezione); velocità minima, massima, modulata (MI p.18-21, SC)",
+ "ricostruito": [
+  "inclinazione e ranghi della batteria, numero di alette e di pale",
+  "posizione della scheda elettronica e percorso del pannello radiante",
+  "posto in casa e percorso dei tubi"
+ ]
+}

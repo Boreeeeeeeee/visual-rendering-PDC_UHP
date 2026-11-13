@@ -1,0 +1,69 @@
+{
+ "id": "clima",
+ "prodotto": "Climatizzatori: mono YA3 13H e dual XMX2 18HE con due XMPS 12HI",
+ "stato": "tappa 6; scelta delle macchine (mono 13H, dual 12+12 con due console) di Claude, da confermare con Bore",
+ "documenti": {
+  "DY": {
+   "titolo": "Depliant YA3",
+   "codice": "2026",
+   "file": "X4243allegatoDEPLIANT1-1X_ya3_2026_ita.pdf"
+  },
+  "MI": {
+   "titolo": "Manuale di installazione YA3 10-13H",
+   "codice": "00339164/a",
+   "pagine": 80,
+   "file": "X4243allegatoMANUALE_INSTALLAZIONE1-1X_00339164_a_manuale-installazione-ya3-10-13h.pdf"
+  },
+  "GA": {
+   "titolo": "Clima, la gamma",
+   "codice": "09-2026",
+   "pagine": 24,
+   "file": "X2820allegatoDEPLIANT1-1X_clima-la-gamma_09-2026_it.pdf"
+  },
+  "XM": {
+   "titolo": "Libretto XMPS 12H",
+   "codice": "00339716",
+   "pagine": 46,
+   "file": "X2820allegatoMANUALE_INSTALLAZIONE3-1X_it-00339716_-libretto-xmps-12h.pdf"
+  }
+ },
+ "macchine": [
+  {
+   "voce": "YA3 13HI",
+   "misure_mm": "802 x 297 x 189",
+   "peso_kg": 8.6,
+   "fonte": "DY"
+  },
+  {
+   "voce": "YA3 13HE",
+   "misure_mm": "765 x 555 x 303",
+   "peso_kg": 26.7,
+   "fonte": "DY; MI p.22-A"
+  },
+  {
+   "voce": "XMPS 12HI",
+   "misure_mm": "794 x 621 x 206",
+   "peso_kg": 15,
+   "fonte": "GA p.14"
+  },
+  {
+   "voce": "XMX2 18HE",
+   "misure_mm": "805 x 554 x 330",
+   "peso_kg": 35,
+   "R32_kg": 1.25,
+   "fonte": "GA p.15"
+  }
+ ],
+ "regole": [
+  "unità a parete a 2,3 m o più dal pavimento, 15 cm sopra, 12 cm ai lati (MI p.12)",
+  "XMX2 18HE: combinazioni 9+9, 9+12, 9+18, 12+12 (GA p.13)",
+  "linea massima per unità interna 25 m, dislivello 15 m (GA p.15)",
+  "valvole dell'unità esterna a 93 e 153 mm da terra sul fianco destro (MI p.22-A)"
+ ],
+ "ricostruito": [
+  "disposizione interna di tutte le unità e interno dei compressori",
+  "numero di alette e pale",
+  "posti in casa e percorso delle linee",
+  "la seconda console è più semplice della prima"
+ ]
+}
