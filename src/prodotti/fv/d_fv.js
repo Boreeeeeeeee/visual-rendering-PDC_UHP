@@ -20,7 +20,7 @@ const testoLcd = () => EN.sole > .15 ? 'SOLE' : ST.bat < -.01 ? 'BATTERIA' : 'RE
 const CFG = {
   id: 'fv', nome: 'Fotovoltaico', modello: 'Unical', sub: 'Unical · MULTIVOLT 460 BF · ZOE1-6000 · SUM BL15P',
   start: { k: 'Fotovoltaico con accumulo Unical', p: 'Moduli sul tetto, inverter e batteria in mansarda. Poi provalo tu: smontalo, guardaci dentro, segui l\'energia, fai sorgere e tramontare il sole.', dur: '50 secondi' },
-  T_ASM: TA, T_RUN: TR, T_END: TE, MC: V(.25, 1.15, -.1), BW: 4.7, BH: 2.7, S: ST,
+  T_ASM: TA, T_RUN: TR, T_END: TE, MC: V(-.25, 1.1, -.1), BW: 5.3, BH: 3.0, S: ST,
   ganci: [[.1, 1.5, '6,44 kWp', '#ffd84a', 'sul tetto della casa: 14 moduli'], [1.55, TA - .2, '15,36 kWh', '#7dff9a', 'da parte per la sera']],
   letture: [['Sole', s => s.sole > .6 ? 'Pieno' : s.sole > .15 ? 'Velato' : 'Notte', '#ffd84a', 'gen'], ['Batteria', s => s.bat > .01 ? 'Si carica' : s.bat < -.01 ? 'Alimenta la casa' : s.soc >= 1 ? 'Piena' : 'Ferma', '#7dff9a', 'gen'],
     ['Rete', s => s.rete > .01 ? 'Riceve' : s.rete < -.01 ? 'Fornisce' : 'Ferma', '#c49bff', 'gen']],
@@ -28,7 +28,8 @@ const CFG = {
     [4.6, 'Tramonto', 'Il sole cala. Quello che manca lo dà la batteria: la rete non serve.'],
     [8.6, 'Notte', 'La batteria tiene accesa la casa. Quando arriva alla scarica minima, si prende dalla rete.'],
     [12, 'Unical: moduli, inverter, batteria', 'MULTIVOLT 460 BF · ZOE1-6000 · SUM BL15P · l\'energia del sole, usata in casa prima che altrove.']],
-  camRun(H, TUTTO) { H(TR + .9, TUTTO, -6, 14); H(TR + 4.6, { off: [1.5, 1.05, ZW + .3], w: 1.9, h: 1.7 }, 10, 10); H(TR + 8.6, { off: [1.1, .85, ZW + .3], w: 1.5, h: 1.45 }, -14, 8); H(TR + 12, TUTTO, -4, 12); },
+  // come al mattino del 13: in funzione si vede sempre tutto l'impianto, dal tetto alla parete, perché l'energia parte dalle celle
+  camRun(H, TUTTO) { H(TR + .9, TUTTO, -6, 14); H(TR + 4.6, TUTTO, 6, 12, .94); H(TR + 8.6, TUTTO, -12, 10, .94); H(TR + 12, TUTTO, -4, 12); },
   film(t, fase) {
     const o = { sole: 0, soc: .45, casa: .35 };
     if (fase === 0) { o.sole = 1; o.soc = .5; ripartisci(o); Object.assign(ST, o, { xray: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0 }); }
@@ -38,7 +39,7 @@ const CFG = {
     const fl = fase === 1 ? 0 : 1; ST.s = ST.sole * fl; ST.b = Math.abs(ST.bat) * 2 * fl; ST.c = fl; ST.g = Math.min(1, Math.abs(ST.rete) * 3) * fl; ST.dentro = ST.xray * fl;
   },
   look(now, dt) {
-    M.cella.emissiveIntensity = M.celle.emissiveIntensity = .55 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
+    M.cella.emissiveIntensity = M.celle.emissiveIntensity = .12 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
     M.cellaB.emissiveIntensity = ST.bat > .01 ? .35 + .15 * Math.sin(now * 4) : ST.bat < -.01 ? .15 : 0;
     ventA += dt * (ST.s + ST.b > .05 ? 14 : 0); SCENA.ventola.rotation.z = -ventA;
     const l = testoLcd(); if (l !== lastLcd) { lastLcd = l; lcdInv(l); }
