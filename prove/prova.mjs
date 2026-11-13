@@ -109,6 +109,23 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   f = await fv("window.__ui.setTool('ride'); window.__fv.step(60, .05); [window.__ui.U.ride, document.getElementById('rT').textContent]"); ok(f[0] && f[1].length > 10, "Giro: la camera segue l'energia"); await sleep(300); await foto('fv_giro');
   f = await fv("window.__ui.setTool('touch'); window.__ui.openCard(3); window.__fv.step(20, .05); document.getElementById('cT').textContent"); ok(f.includes('ZOE1'), "la scheda dell'inverter si apre");
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
+  // ventilconvettore (tappa 5) e climatizzatori (tappa 6): dalla Casa alla pagina completa, film e strumenti
+  for (const [k, id, nome, n0, ng, card, chiave] of [[3, 'fcoil', 'ventilconvettore', 400, 7, 1, 'Ventilatore'], [4, 'clima', 'climatizzatori', 800, 6, 1, 'YA3']]) {
+    await page.locator('.tag').nth(k).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === id, `l'etichetta del ${nome} apre il prodotto`); ok(page.url().endsWith('#' + id), `indirizzo #${id}`);
+    ok(await fino(async () => await fr.locator('#bGo').count() > 0, 20000), `la pagina del ${nome} si carica`);
+    const q = f => fr.locator('body').evaluate((_, f) => (0, eval)(f), f), api = `window.__${id}`; await fino(async () => !!(await q(`!!${api}`)), 20000); await sleep(800); await foto(id + '_inizio');
+    let x = await q(`${api}.stato()`); ok(x.mode === 'start' && x.pezzi > n0 && x.gruppi === ng, `${nome}: schermata d'inizio con ${x.pezzi} pezzi in ${ng} gruppi`);
+    x = await q(`${api}.seek(2.9); ${api}.stato()`); ok(x.mode === 'film' && x.E > .5, `${nome}: il film parte e si apre`);
+    x = await q(`${api}.seek(${api}.T_RUN + 3); ${api}.stato()`); ok(x.posati === x.pezzi && x.xray > .5, `${nome}: in funzione, tutto montato e visto dentro`); await sleep(300); await foto(id + '_funzione');
+    x = await q(`document.getElementById('bSkip').click(); ${api}.step(30, .05); ${api}.stato()`); ok(x.mode === 'free', `${nome}: si passa alla parte libera`);
+    x = await q(`window.__ui.setTool('expl'); ${api}.step(40, .05); ${api}.stato()`); ok(x.E > .45, `${nome}: Smonta separa i gruppi`); await sleep(300); await foto(id + '_smonta');
+    x = await q(`window.__ui.setTool('ride'); ${api}.step(60, .05); [window.__ui.U.ride, document.getElementById('rT').textContent]`); ok(x[0] && x[1].length > 10, `${nome}: Giro, la camera segue il percorso`); await sleep(300); await foto(id + '_giro');
+    if (id === 'fcoil') { x = await q(`window.__ui.setTool('comandi'); document.getElementById('kModo').children[2].click(); ${api}.step(40, .05); ${api}.stato()`); ok(x.modo === 'Freddo' && x.gocce > .5, 'ventilconvettore: in Freddo la condensa scende nella bacinella');
+      x = await q(`document.getElementById('kModo').children[3].click(); ${api}.step(60, .05); ${api}.stato()`); ok(x.modo === 'Notte' && x.fan < .1 && x.rad > .8, 'ventilconvettore: Notte, ventilatore fermo e frontale radiante'); await sleep(300); await foto('fcoil_comandi'); }
+    else { x = await q(`window.__ui.setTool('comandi'); document.getElementById('k2').click(); document.getElementById('kC').click(); ${api}.step(60, .05); ${api}.stato()`); ok(x.caldo && x.c1 > .8 && x.c2 > .8 && x.mono > .8, 'climatizzatori: in Caldo con tutte e tre le unità accese'); await sleep(300); await foto('clima_comandi'); }
+    x = await q(`window.__ui.setTool('touch'); window.__ui.openCard(${card}); ${api}.step(20, .05); document.getElementById('cT').textContent`); ok(x.includes(chiave), `${nome}: la scheda del gruppo si apre`);
+    await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), `il ritorno dal ${nome} riporta alla Casa`);
+  }
   // ibrido (tappa 4): scambio del generatore nella Casa, caldaia nelle ore più fredde, pagina completa
   await page.click('#bIbr'); c = await st(); ok(c.gen === 'ibrido' && (await page.textContent('.tag')).startsWith('HYBREER 3'), "il pulsante Ibrido mette l'ibrido al posto della UHP");
   await ora(6.5); c = await st(); ok(c.caldaia > .9 && c.carico > .7 && (await page.isVisible('#cCal')), 'inverno, mattino presto: caldaia accesa insieme alla pompa di calore'); await sleep(500); await foto('casa_ibrido_mattino');
@@ -141,7 +158,7 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa') && (await st()).gen === 'ibrido', "il ritorno dall'ibrido riporta alla Casa, con l'ibrido ancora al suo posto");
   await page.click('#bUhp'); ok((await st()).gen === 'uhp' && (await page.textContent('.tag')).startsWith('UHP 120'), 'il pulsante Pompa di calore rimette la UHP');
   // indirizzi diretti
-  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#ibrido', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
+  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#ibrido', 'prodotto'], ['#fcoil', 'prodotto'], ['#clima', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
   ok(errs.length === 0, 'console senza errori: ' + errs.join(' | ')); await ctx.close();
 }
 console.log(`${fatti - falliti} controlli passati su ${fatti}`); await b.close(); srv.close(); process.exit(falliti ? 1 : 0);

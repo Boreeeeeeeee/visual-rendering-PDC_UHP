@@ -120,6 +120,19 @@ const Casa = (() => {
     viste.push({ def: fcDef, ist: fc, pos: V(-HW + TW + .3, FY + 1.15, .55) });
     const rame = std({ color: 0xc47a45, roughness: .35, metalness: .9 }); for (const dz of [-.37, -.33]) add(cyl(.008, .2, 10), rame, -HW + TW + .06, FY + .05, .55 + dz);
   }
+  // climatizzatori (tappa 6): in mansarda. YA3 13HI al centro della parete di fondo, a 2,3 m dal pavimento (manuale 00339164 p.12); due console XMPS 12HI
+  // sui muretti di sinistra e di destra; fuori, sul lato sinistro della casa, le unità esterne YA3 13HE e XMX2 18HE. Posti e percorso delle linee: indicativi.
+  const clDef = PRODOTTI.find(p => p.id === 'clima');
+  if (clDef && typeof CLM !== 'undefined') {
+    const gC = new THREE.Group(), zi = -HD + TW, ya3 = CLM.parete(), c1 = CLM.console(), c2 = CLM.console(), e1 = CLM.esterna(.765, .555, .303), e2 = CLM.esterna(.805, .554, .33);
+    ya3.position.set(0, FM + 2.3, zi); c1.position.set(-HW + TW, FM, -.4); c1.rotation.y = PI / 2; c2.position.set(HW - TW, FM, .4); c2.rotation.y = -PI / 2;
+    e1.position.set(-HW - .55, 0, -1.2); e1.rotation.y = -PI / 2; e2.position.set(-HW - .55, 0, .2); e2.rotation.y = -PI / 2; gC.add(ya3, c1, c2, e1, e2); g.add(gC);
+    gC.traverse(o => { o.userData.prodotto = 'clima'; }); viste.push({ def: clDef, ist: { group: gC, tick() {} }, pos: V(HW - TW - .25, FM + 1.0, .4) });
+    const rame = std({ color: 0xc47a45, roughness: .35, metalness: .9 }), linea = pts => { const c = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', .05); gC.add(new THREE.Mesh(new THREE.TubeGeometry(c, pts.length * 12, .012, 6), rame)); };
+    linea([V(-HW - .35, .2, -1.2), V(-HW - .12, .3, -1.2), V(-HW - .12, FM + 2.4, -1.2), V(-HW - .12, FM + 2.4, zi + .1), V(-.45, FM + 2.4, zi + .05)]);
+    linea([V(-HW - .35, .2, .1), V(-HW - .1, .3, .1), V(-HW - .1, FM + .15, .1), V(-HW + TW + .05, FM + .15, .1), V(-HW + TW + .05, FM + .15, -.4)]);
+    linea([V(-HW - .35, .32, .25), V(-HW - .08, .4, .25), V(-HW - .08, FM + .05, .25), V(HW - TW - .05, FM + .05, .25), V(HW - TW - .05, FM + .15, .4)]);
+  }
   // ibrido HYBREER 3 (tappa 4, scelte di Bore del 13 novembre 2026): HP_QOR 70 al posto della UHP; caldaia KONm 24 C e kit HYBREER a vista in lavanderia, sulla parete di fondo,
   // sopra il collettore dell'impianto. Collegamenti come nello schema del manuale HYBREER 00339200 p.14: pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal,
   // impianto su R imp / M imp. La caldaia lavora solo in riscaldamento (p.19, AHS = CALDO): i suoi attacchi C e F restano chiusi, l'acqua calda la fa l'HP 300PSDX.

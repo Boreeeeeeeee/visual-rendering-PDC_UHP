@@ -11,6 +11,7 @@
 //   libero()                                              stato all'ingresso nella parte libera
 //   scossa(t), dx(g), stato()                             facoltativi
 const { T_ASM, T_RUN, T_END, MC, BW, BH } = CFG, S = CFG.S;
+scene.fog.near = Math.max(9, BW * 2.5); scene.fog.far = Math.max(30, BW * 10);      // la nebbia non deve mangiare le scene larghe viste dal telefono in verticale
 $('bN').innerHTML = CFG.nome + ' <span>' + CFG.modello + '</span>'; $('bSub').textContent = CFG.sub; $('sK').textContent = CFG.start.k; $('sP').textContent = CFG.start.p; $('sDur').textContent = CFG.start.dur;
 CFG.letture.forEach(([l, , col, cls]) => { const d = document.createElement('div'); if (cls) d.className = cls; const s = document.createElement('small'), b = document.createElement('b'); s.textContent = l; if (col) b.style.color = col; d.append(s, b); $('read').appendChild(d); });
 

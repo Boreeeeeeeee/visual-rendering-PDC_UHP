@@ -218,6 +218,29 @@ registra({
   },
 });
 
+// ───────── Climatizzatori · livello leggero per Home e Casa ─────────
+// Misure dai documenti (vedi c_cl.js): YA3 13HI 802 × 297 × 189, YA3 13HE 765 × 555 × 303, XMPS 12HI 794 × 621 × 206, XMX2 18HE 805 × 554 × 330 mm.
+const CLM = (() => {
+  const bianco = std({ color: 0xe6e8ea, roughness: .4, metalness: .02 }), grig = std({ color: 0xb4b8bb, roughness: .6 }), scuro = std({ color: 0x2a2d31, roughness: .6 }), nero = std({ color: 0x15171a, roughness: .5 });
+  const parete = () => { const g = new THREE.Group(); g.add(mesh(rbox(.802, .297, .189, .03), bianco, 0, .1485, .0945)); g.add(mesh(box(.74, .006, .06), grig, 0, .03, .17)); return g; };
+  const console = () => { const g = new THREE.Group(); g.add(mesh(rbox(.794, .621, .206, .02), bianco, 0, .3105, .103)); for (let i = 0; i < 12; i++) g.add(mesh(box(.68, .004, .006), grig, 0, .14 + i * .03, .208)); g.add(mesh(box(.6, .006, .08), grig, 0, .62, .1)); return g; };
+  const esterna = (W, H, D) => { const g = new THREE.Group(), XP = W / 2 - .25, FX = (-W / 2 + XP) / 2, R = Math.min(.22, (XP + W / 2) / 2 - .03);
+    g.add(mesh(rbox(W, H, D, .015), std({ color: 0xd6d8da, roughness: .55 }), 0, H / 2 + .03, 0));
+    const gr = mesh(new THREE.CircleGeometry(R, 32), scuro, FX, H / 2 + .03, D / 2 + .002); g.add(gr); for (let i = 1; i < 6; i++) { const t = mesh(new THREE.TorusGeometry(R * i / 6, .002, 4, 40), grig, FX, H / 2 + .03, D / 2 + .004); g.add(t); }
+    for (const x of [-W * .3, W * .3]) g.add(mesh(box(.06, .03, .274), nero, x, .015, 0)); return g; };
+  return { parete, console, esterna };
+})();
+registra({
+  id: 'clima', nome: 'Climatizzatori', riga: 'Mono a parete YA3 e dual con due console XMPS', apri: 'Apri i climatizzatori', pagina: 'clima/',
+  alto: 1.2, ordine: 6,
+  costruisci() {
+    const g = new THREE.Group(), p = CLM.parete(), c = CLM.console(), e = CLM.esterna(.765, .555, .303);
+    p.position.set(-.45, .82, -.1); c.position.set(.5, 0, -.1); e.position.set(-.45, 0, .1); e.scale.setScalar(.9); g.add(p, c, e);
+    g.add(mesh(box(.04, .82, .04), std({ color: 0x3a3f44, roughness: .6 }), -.45, .41, -.12));
+    return { group: g, tick() {} };
+  },
+});
+
 // ───────── F-COIL AGR 400 · livello leggero per Home e Casa ─────────
 // Misure dal manuale 00340791 p.5: 897 × 579 × 129 mm (taglia 400, da confermare con Bore); a parete, 140 mm minimo dal pavimento (p.6). Pochi pezzi.
 registra({
@@ -423,7 +446,6 @@ const Home = (() => {
     const sag = (nome, riga, alto, forma) => voci.push({ id: null, nome, riga, alto, fatto: false, costruisci: () => ({ group: forma(), tick() {} }) });
     const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
     const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
-    sag('Climatizzatori', 'In arrivo con la tappa 6', .6, () => solido(box(.85, .3, .22), .45));
   }
   const n = voci.length, R = n > 1 ? 2.15 : 0, passo = PI * 2 / n;
   const piatto = new THREE.Group(); scene.add(piatto);
@@ -593,6 +615,19 @@ const Casa = (() => {
     const fc = fcDef.costruisci(); fc.group.position.set(-HW + TW + .002, FY, .55); fc.group.rotation.y = PI / 2; g.add(fc.group); fc.group.traverse(o => { o.userData.prodotto = 'fcoil'; });
     viste.push({ def: fcDef, ist: fc, pos: V(-HW + TW + .3, FY + 1.15, .55) });
     const rame = std({ color: 0xc47a45, roughness: .35, metalness: .9 }); for (const dz of [-.37, -.33]) add(cyl(.008, .2, 10), rame, -HW + TW + .06, FY + .05, .55 + dz);
+  }
+  // climatizzatori (tappa 6): in mansarda. YA3 13HI al centro della parete di fondo, a 2,3 m dal pavimento (manuale 00339164 p.12); due console XMPS 12HI
+  // sui muretti di sinistra e di destra; fuori, sul lato sinistro della casa, le unità esterne YA3 13HE e XMX2 18HE. Posti e percorso delle linee: indicativi.
+  const clDef = PRODOTTI.find(p => p.id === 'clima');
+  if (clDef && typeof CLM !== 'undefined') {
+    const gC = new THREE.Group(), zi = -HD + TW, ya3 = CLM.parete(), c1 = CLM.console(), c2 = CLM.console(), e1 = CLM.esterna(.765, .555, .303), e2 = CLM.esterna(.805, .554, .33);
+    ya3.position.set(0, FM + 2.3, zi); c1.position.set(-HW + TW, FM, -.4); c1.rotation.y = PI / 2; c2.position.set(HW - TW, FM, .4); c2.rotation.y = -PI / 2;
+    e1.position.set(-HW - .55, 0, -1.2); e1.rotation.y = -PI / 2; e2.position.set(-HW - .55, 0, .2); e2.rotation.y = -PI / 2; gC.add(ya3, c1, c2, e1, e2); g.add(gC);
+    gC.traverse(o => { o.userData.prodotto = 'clima'; }); viste.push({ def: clDef, ist: { group: gC, tick() {} }, pos: V(HW - TW - .25, FM + 1.0, .4) });
+    const rame = std({ color: 0xc47a45, roughness: .35, metalness: .9 }), linea = pts => { const c = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', .05); gC.add(new THREE.Mesh(new THREE.TubeGeometry(c, pts.length * 12, .012, 6), rame)); };
+    linea([V(-HW - .35, .2, -1.2), V(-HW - .12, .3, -1.2), V(-HW - .12, FM + 2.4, -1.2), V(-HW - .12, FM + 2.4, zi + .1), V(-.45, FM + 2.4, zi + .05)]);
+    linea([V(-HW - .35, .2, .1), V(-HW - .1, .3, .1), V(-HW - .1, FM + .15, .1), V(-HW + TW + .05, FM + .15, .1), V(-HW + TW + .05, FM + .15, -.4)]);
+    linea([V(-HW - .35, .32, .25), V(-HW - .08, .4, .25), V(-HW - .08, FM + .05, .25), V(HW - TW - .05, FM + .05, .25), V(HW - TW - .05, FM + .15, .4)]);
   }
   // ibrido HYBREER 3 (tappa 4, scelte di Bore del 13 novembre 2026): HP_QOR 70 al posto della UHP; caldaia KONm 24 C e kit HYBREER a vista in lavanderia, sulla parete di fondo,
   // sopra il collettore dell'impianto. Collegamenti come nello schema del manuale HYBREER 00339200 p.14: pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal,
