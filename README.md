@@ -33,7 +33,8 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 | `src/dati/` | Una scheda dati per prodotto, con documento e pagina di provenienza per ogni valore. |
 | `build.py` | Unisce i sorgenti. Solo Python 3, nessuna installazione. |
 | `prove/prova.mjs` | Prova automatica con Chrome senza finestra a 390×780, 844×390 e 1280×720. In fondo controlla, pagina per pagina, che nel montaggio nessun pezzo passi attraverso pezzi già posati più di quanto già noto (`prove/compenetrazioni.js` e l'elenco dei difetti noti `prove/compenetrazioni.json`, che si accorcia man mano che i prodotti vengono corretti). |
-| Tubi e cavi (pagine comuni) | `tubeGeo` e `curveOf` del motore sono sostituiti in `p1_base.js`: un tubo è la spezzata dei suoi punti con curve ad arco vere negli angoli, e nel film cresce lungo il percorso dal primo all'ultimo punto invece di arrivare in volo. Per un tubo che deve volare: `m.userData.vola = true`. I flussi seguono lo stesso percorso. |
+| Tubi e cavi (pagine comuni) | `tubeGeo` e `curveOf` del motore sono sostituiti in `src/comune/tubi.js`: un tubo è la spezzata dei suoi punti con curve ad arco vere negli angoli, e nel film cresce lungo il percorso dal primo all'ultimo punto invece di arrivare in volo. Per un tubo che deve volare: `m.userData.vola = true`. Cresce così ogni geometria con `userData.tubo` e le lunghezze dei suoi tratti (le bande del condensatore dell'HP 300 si avvolgono attorno al serbatoio). I flussi seguono lo stesso percorso. |
+| Ordine di montaggio | Un pezzo di un gruppo può arrivare più tardi, durante un altro gruppo, con `P(m, { at: secondi })`: nell'HP 300 la calotta, i pozzetti, l'anodo e la resistenza fanno parte del serbatoio ma arrivano dopo il serpentino, che scende nel serbatoio ancora aperto. |
 
 ## Comandi
 

@@ -1,14 +1,6 @@
 {
  "_nota": "Difetti noti: pezzi che nel montaggio passano attraverso pezzi già posati. Si tolgono quando il prodotto viene corretto: ibrido corretto al passo 3 (13 novembre 2026), HP 300PSDX al passo 4, ventilconvettore al passo 6. La prova fallisce solo se ne compare uno nuovo.",
- "acs": [
-  "cond: Bande in alluminio a sezione ovale  ⟶  coil: Spire in AISI 316",
-  "cond: Bande in alluminio a sezione ovale  ⟶  tank: Calotta superiore",
-  "cond: Bande in alluminio a sezione ovale  ⟶  tank: Pozzetto della sonda T3",
-  "cond: Bande in alluminio a sezione ovale  ⟶  tank: Pozzetto della sonda ausiliaria",
-  "cop: Coperchio superiore in plastica  ⟶  iso: Poliuretano espanso, 50 mm",
-  "frig: Vaschetta della condensa  ⟶  iso: Poliuretano espanso, 50 mm",
-  "frig: Vaschetta della condensa  ⟶  iso: Rivestimento grigio argento"
- ],
+ "acs": [],
  "fv": [],
  "ibrido": [],
  "fcoil": [

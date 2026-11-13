@@ -427,9 +427,10 @@ function group(key, name, spec, t0, t1, o = {}) {
     trav: o.trav ?? .45, pieces: [], c: V(), size: .3, az: o.az ?? 30, el: o.el ?? 14, zoom: o.zoom ?? 1, keys: o.keys || null, info: o.info || null };
   GROUPS.push(CUR); return CUR;
 }
+// at: istante assoluto di arrivo, per un pezzo del gruppo che si monta più tardi (la calotta dopo il serpentino)
 function piece(o, base) {
   const p = Object.assign({ g: CUR, st: -1, d: o.d ?? 0, dur: o.dur ?? .5, from: o.from ? V(...o.from) : null, spin: o.spin ? V(...o.spin) : null,
-    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click' }, base);
+    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click', at: o.at ?? null }, base);
   CUR.pieces.push(p); PIECES.push(p); return p;
 }
 function P(m, o = {}) { (o.parent || CUR.node).add(m); m.userData.g = CUR.i; piece(o, { m, im: null, inst: -1, fp: m.position.clone(), fq: m.quaternion.clone(), fs: m.scale.clone() }); return m; }
@@ -465,9 +466,9 @@ function finalize() {
     }
     box.getCenter(g.c); g.size = Math.max(.14, box.getSize(V()).length() / 2); g.box = box;
     for (const p of g.pieces) {
-      p.ts = g.t0 + p.d * (W - .95);
+      p.ts = p.at ?? g.t0 + p.d * (W - .95);
       p.te = Math.max(p.ts + .2, Math.round((p.ts + p.dur) / BEAT) * BEAT);
-      if (p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
+      if (p.at === null && p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
       if (!p.from) p.from = V((R() - .5) * .5, .16 + R() * .4, .12 + R() * .42);
       if (!p.spin) p.spin = V((R() - .5) * 2.2, (R() - .5) * 2.2, (R() - .5) * 2.2);
       if (!p.k) p.k = p.wc.clone().sub(g.c).multiplyScalar(g.spread);
@@ -705,32 +706,37 @@ scene.add(mesh(G.box(2.4, .01, 1.5), M.pav, .15, -.005, .1));
 const ombra = mesh(G.plane(1.0, 1.0), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), 0, .002, 0, -PI / 2); scene.add(ombra);
 
 // 1 ─ Serbatoio
-const gTank = group('tank', 'Serbatoio', 'Trecento litri in acciaio inox Duplex 2205: resiste alla corrosione e non serve trattarlo.', 3.5, 9.0, { stage: [0, 0, 0], ex: [0, 0, 0], az: 24, el: 8, zoom: .5,
+// RICOSTRUITO, l'ordine di montaggio: prima il guscio aperto in alto; il serpentino scende dentro dall'alto; poi pozzetti e presa dell'acqua calda,
+// la calotta che chiude, l'anodo e la resistenza dai loro manicotti. Questi pezzi del serbatoio arrivano durante il gruppo del serpentino (at).
+// calotta superiore ellittica (raccordo continuo con il mantello: un profilo a spigoli faceva un punto di luce che sfondava nel bagliore)
+const PROF_T = [[0, .10], [.15, .115], [.23, .17], [RT, .25], ...Array.from({ length: 13 }, (_, i) => { const f = i / 12 * PI / 2; return [RT * Math.cos(f), 1.32 + .135 * Math.sin(f)]; })].map(([r, y]) => new THREE.Vector2(r, y + B));
+const T_TANK = 3.5, T_COIL = 7.6, T_COND = 12.5;
+const gTank = group('tank', 'Serbatoio', 'Trecento litri in acciaio inox Duplex 2205: resiste alla corrosione e non serve trattarlo.', T_TANK, T_COIL, { stage: [0, 0, 0], ex: [0, 0, 0], zoom: 1,
+  keys: [[.02, 28, 16, .42, -.5], [.24, 32, 13, .5, -.42], [.4, 24, 9, 1.0, .02], [.62, 50, 8, 1.0, .05]],
   info: { e: 'Il cuore: trecento litri d\'acqua in un serbatoio d\'acciaio inossidabile. L\'acqua fredda entra dal fondo, quella calda esce dall\'alto.', s: 'Acciaio inox Duplex 2205 · 300 l · anodo in magnesio · resistenza 1500 W con termostato 85 °C · termostato 80 °C · attacchi G 3/4 · manuale 00340944 p.12-15' } });
 {
-  const o = x => x;
-  for (let i = 0; i < 3; i++) { const a = i * PI * 2 / 3 + PI / 6; P(mesh(G.cyl(.03, B, 16), M.rubber, Math.sin(a) * .22, B / 2, Math.cos(a) * .22), o({ d: i * .03, from: [0, -.3, 0], n: i ? null : 'Piedini' })); }
-  P(mesh(G.cyl(R - .004, .012, 48), M.black, 0, B + .006, 0), o({ d: .1, from: [0, -.4, 0], spin: [0, 1, 0], n: 'Fondo' }));
-  PIN(G.cyl(.012, .07, 12), M.galv, [0, 1, 2].map(i => { const a = i * PI * 2 / 3 + PI / 2; return { p: [Math.sin(a) * .15, B + .047, Math.cos(a) * .15] }; }), o({ d0: .14, d1: .16, n: 'Supporti del serbatoio' }));
-  const prof = [[0, .10], [.15, .115], [.23, .17], [RT, .25], [RT, 1.32], [.23, 1.40], [.15, 1.445], [0, 1.455]].map(([r, y]) => new THREE.Vector2(r, y + B));
-  P(mesh(new THREE.LatheGeometry(prof.slice(0, 4), 48), M.sTank), o({ d: .2, from: [0, -.5, 0], spin: [0, 1, 0], dur: .55, n: 'Fondo bombato' }));
-  P(mesh(new THREE.LatheGeometry(prof.slice(3, 5), 48), M.sTank), o({ d: .26, from: [0, 1.2, 0], spin: [0, .6, 0], dur: .65, n: 'Mantello in inox Duplex 2205' }));
-  P(mesh(new THREE.LatheGeometry(prof.slice(4), 48), M.sTank), o({ d: .34, from: [0, .7, 0], spin: [0, 1, 0], dur: .55, n: 'Calotta superiore' }));
-  [B + .25, B + 1.32].forEach((y, i) => P(mesh(G.torus(RT, .0035, PI * 2, 64), M.inox, 0, y, 0, PI / 2, 0, 0), o({ d: .4 + i * .02, n: i ? null : 'Saldature', snd: 'tick' })));
-  // manicotti sul fianco destro: acqua fredda, serpentino, anodo, acqua calda
-  [[1.17, 'Manicotto dell\'anodo'], [1.27, 'Manicotto dell\'acqua calda']].forEach(([h, n], i) => P(mesh(G.cylX(.016, .04, 16), M.inox, RT + .015, AT(h), 0), o({ d: .46 + i * .02, from: [.3, 0, 0], spin: [2, 0, 0], n, snd: 'screw' })));
-  P(mesh(G.cyl(.016, .03, 16), M.inox, .15, B + .1, 0), o({ d: .5, from: [0, -.3, 0], spin: [0, 2, 0], n: 'Manicotto dell\'acqua fredda, sul fondo', snd: 'screw' }));
-  // acqua fredda: entra in basso e sbocca sul fondo; acqua calda: prelevata in alto
-  P(mesh(tubeGeo([[R - .01, AT(.0325), 0], [.19, AT(.0325), 0], [.155, B + .05, 0], [.15, B + .09, 0]], .009, 24), M.inox), o({ d: .56, n: 'Ingresso dell\'acqua fredda, sotto il serbatoio' }));
-  P(mesh(G.cyl(.022, .012, 16), M.inox, .15, B + .14, 0), o({ d: .58, n: 'Diffusore' }));
-  P(mesh(tubeGeo([[RT + .03, AT(1.27), 0], [.16, AT(1.27), 0], [.08, AT(1.33), 0], [.04, AT(1.42), 0]], .009, 24), M.inox), o({ d: .6, n: 'Presa dell\'acqua calda, in cima' }));
-  // anodo, resistenza, pozzetti
-  P(mesh(G.cylX(.011, .36, 14), M.mag, RT - .18, AT(1.17), 0), o({ d: .64, from: [.8, 0, 0], spin: [0, 0, 0], n: 'Anodo in magnesio' }));
+  for (let i = 0; i < 3; i++) { const a = i * PI * 2 / 3 + PI / 6; P(mesh(G.cyl(.03, B, 16), M.rubber, Math.sin(a) * .22, B / 2, Math.cos(a) * .22), { d: i * .03, from: [0, -.3, 0], n: i ? null : 'Piedini' }); }
+  P(mesh(G.cyl(R - .004, .012, 48), M.black, 0, B + .006, 0), { d: .1, from: [0, -.4, 0], spin: [0, 1, 0], n: 'Fondo' });
+  PIN(G.cyl(.012, .07, 12), M.galv, [0, 1, 2].map(i => { const a = i * PI * 2 / 3 + PI / 2; return { p: [Math.sin(a) * .15, B + .047, Math.cos(a) * .15] }; }), { d0: .14, d1: .16, n: 'Supporti del serbatoio' });
+  P(mesh(new THREE.LatheGeometry(PROF_T.slice(0, 4), 48), M.sTank), { d: .2, from: [0, -.5, 0], spin: [0, 1, 0], dur: .55, n: 'Fondo bombato' });
+  P(mesh(new THREE.LatheGeometry(PROF_T.slice(3, 5), 48), M.sTank), { d: .3, from: [0, 1.2, 0], spin: [0, .6, 0], dur: .65, ease: eoc, n: 'Mantello in inox Duplex 2205' });
+  P(mesh(G.torus(RT, .0035, PI * 2, 64), M.sTank, 0, B + .25, 0, PI / 2, 0, 0), { d: .42, n: 'Saldature', snd: 'tick' });
+  // manicotti sul fianco destro: anodo e acqua calda (quelli del serpentino arrivano con lui); acqua fredda sul fondo
+  [[1.17, 'Manicotto dell\'anodo'], [1.27, 'Manicotto dell\'acqua calda']].forEach(([h, n], i) => P(mesh(G.cylX(.016, .04, 16), M.inox, RT + .015, AT(h), 0), { d: .5 + i * .03, from: [.3, 0, 0], spin: [2, 0, 0], n, snd: 'screw' }));
+  P(mesh(G.cyl(.016, .03, 16), M.inox, .15, B + .1, 0), { d: .58, from: [0, -.3, 0], spin: [0, 2, 0], n: 'Manicotto dell\'acqua fredda, sul fondo', snd: 'screw' });
+  // acqua fredda: entra in basso e sbocca sul fondo
+  P(mesh(tubeGeo([[R - .01, AT(.0325), 0], [.19, AT(.0325), 0], [.155, B + .05, 0], [.15, B + .09, 0]], .009, 24), M.inox), { d: .64, n: 'Ingresso dell\'acqua fredda, sotto il serbatoio' });
+  P(mesh(G.cyl(.022, .012, 16), M.inox, .15, B + .14, 0), { d: .72, from: [0, 1.1, 0], spin: [0, 0, 0], ease: eoc, n: 'Diffusore' });
+  // dopo il serpentino (at): pozzetti, presa dell'acqua calda, calotta, anodo, resistenza
+  [[205, .47, 'Pozzetto della sonda T2', .12], [150, .855, 'Pozzetto della sonda ausiliaria', .16], [205, 1.15, 'Pozzetto del termostato 80 °C', .14], [205, 1.25, 'Pozzetto della sonda T3', .12]].forEach(([az, h, n, L], i) => {
+    const m = radiale(mesh(G.cyl(.007, L, 10), M.inox, ...polare(az, RT - L / 2 + .01, AT(h))), az); P(m, { at: 9.6 + i * .1, dur: .4, from: polare(az, .3, 0), spin: [0, 0, 0], ease: eoc, n }); });
+  P(mesh(tubeGeo([[RT + .03, AT(1.27), 0], [.16, AT(1.27), 0], [.08, AT(1.33), 0], [.04, AT(1.42), 0]], .009, 24), M.inox), { at: 9.95, n: 'Presa dell\'acqua calda, in cima' });
+  P(mesh(new THREE.LatheGeometry(PROF_T.slice(4), 48), M.sTank), { at: 10.35, from: [0, .7, 0], spin: [0, 1, 0], dur: .55, ease: eoc, n: 'Calotta superiore' });
+  P(mesh(G.torus(RT, .0035, PI * 2, 64), M.sTank, 0, B + 1.32, 0, PI / 2, 0, 0), { at: 10.9, dur: .3, snd: 'tick' });
+  P(mesh(G.cylX(.011, .36, 14), M.mag, RT - .18, AT(1.17), 0), { at: 11.0, from: [.8, 0, 0], spin: [0, 0, 0], ease: eoc, n: 'Anodo in magnesio' });
   { const a9 = 205, d9 = polare(a9, RT - .15, AT(.95)), geo = mergeGeometries([G.cylX(.006, .3, 10).translate(0, -.02, 0), G.cylX(.006, .3, 10).translate(0, .02, 0), G.torus(.02, .006, PI).rotateZ(PI / 2).translate(-.15, 0, 0)]);
-    const r = mesh(geo, M.res, ...d9, 0, rad(a9) - PI / 2, 0); P(r, o({ d: .7, from: [-.5, 0, -.6], spin: [0, 0, 0], n: 'Resistenza 1500 W' })); }
-  P(radiale(mesh(G.cyl(.04, .02, 24), M.brass, ...polare(205, RT + .008, AT(.95))), 205), o({ d: .74, n: 'Flangia della resistenza', snd: 'screw' }));
-  [[205, 1.15, 'Pozzetto del termostato 80 °C', .14], [150, .855, 'Pozzetto della sonda ausiliaria', .16], [205, .5, 'Pozzetto della sonda T2', .12], [205, 1.25, 'Pozzetto della sonda T3', .12]].forEach(([az, h, n, L], i) => {
-    const m = mesh(G.cyl(.007, L, 10), M.inox, ...polare(az, RT - L / 2 + .01, AT(h)), PI / 2, rad(az), 0); m.rotation.order = 'YXZ'; m.rotation.set(PI / 2, rad(az), 0); P(m, o({ d: .78 + i * .04, n })); });
+    P(mesh(geo, M.res, ...d9, 0, rad(a9) - PI / 2, 0), { at: 11.15, from: polare(a9, .55, 0), spin: [0, 0, 0], ease: eoc, n: 'Resistenza 1500 W' }); }
+  P(radiale(mesh(G.cyl(.04, .02, 24), M.brass, ...polare(205, RT + .008, AT(.95))), 205), { at: 11.4, from: polare(205, .25, 0), spin: [0, 3, 0], ease: eoc, n: 'Flangia della resistenza', snd: 'screw' });
 }
 // acqua stratificata, dentro il serbatoio: segue il gruppo ma non è un pezzo
 const tAcqua = cv(4, 256, () => {}), acquaM = new THREE.MeshBasicMaterial({ map: tAcqua, transparent: true, opacity: 0, depthWrite: false });
@@ -738,44 +744,62 @@ const acqua = mesh(new THREE.CylinderGeometry(RT - .008, RT - .008, 1.3, 40, 1, 
 function disegnaAcqua(caldo, set) { const c = tAcqua.image.getContext('2d'), g = c.createLinearGradient(0, 0, 0, 256), k = clamp(caldo, .001, .999), top = set >= 70 ? '#ff2d1a' : set >= 65 ? '#ff5a1f' : '#ff8a2e';
   g.addColorStop(0, top); g.addColorStop(Math.max(0, k - .05), top); g.addColorStop(Math.min(1, k + .05), '#2a7fd6'); g.addColorStop(1, '#1d5fb0'); c.fillStyle = g; c.fillRect(0, 0, 4, 256); tAcqua.needsUpdate = true; }
 
-// 2 ─ Serpentino
-group('coil', 'Serpentino', 'Una spirale in acciaio AISI 316 da 1,2 m², in basso: porta nell\'acqua il calore di un\'altra fonte, per esempio il solare termico.', 9.0, 12.5, { stage: [0, 0, .9], ex: [0, 0, .85], az: 18, el: 10, zoom: .75, trav: .72,
-  info: { e: 'Una seconda strada per il calore: se in casa c\'è un impianto solare termico, il suo calore entra nell\'acqua da qui.', s: 'AISI 316 · 1,2 m² di superficie di scambio · attacchi G 3/4 a 235 mm (uscita al solare) e 855 mm (ingresso dal solare) · manuale 00340944 p.15' } });
+// 2 ─ Serpentino: scende dall'alto nel serbatoio ancora aperto
+group('coil', 'Serpentino', 'Una spirale in acciaio AISI 316 da 1,2 m², in basso: porta nell\'acqua il calore di un\'altra fonte, per esempio il solare termico. Poi la calotta chiude il serbatoio.', T_COIL, T_COND, { stage: [0, 0, 0], ex: [0, 0, .85], zoom: 1,
+  keys: [[.02, 40, 24, 1.25, .4], [.24, 28, 12, 1.15, .02], [.42, 64, 10, 1.3, .2], [.57, 36, 20, 1.6, .55], [.72, 100, 10, 1.45, .45]],
+  info: { e: 'Una seconda strada per il calore: se in casa c\'è un impianto solare termico, il suo calore entra nell\'acqua da qui.', s: 'AISI 316 · 1,2 m² di superficie di scambio · attacchi G 3/4 a 235 mm (uscita al solare) e 855 mm (ingresso dal solare) · manuale 00340944 p.15 · ordine di montaggio: ricostruito' } });
 {
   const NT = 9, y0 = AT(.30), y1 = AT(.78), rc = .185;
   for (let i = 0; i < NT; i++) { const p = []; for (let k = 0; k <= 24; k++) { const a = (i + k / 24) * PI * 2, y = lerp(y0, y1, (i + k / 24) / NT); p.push([Math.cos(a) * rc, y, Math.sin(a) * rc]); }
-    P(mesh(tubeGeo(p, .011, 48), M.inox), { d: .1 + i * .07, from: [0, .25, .3], spin: [0, 2, 0], dur: .45, n: i ? null : 'Spire in AISI 316', snd: 'fin' }); }
-  P(mesh(tubeGeo([[RT + .03, AT(.235), 0], [.2, AT(.235), 0], [rc, y0, 0]], .011, 20), M.inox), { d: .76, n: 'Uscita verso il solare (2)' });
-  P(mesh(tubeGeo([[rc, y1, 0], [.2, AT(.82), 0], [RT + .03, AT(.855), 0]], .011, 20), M.inox), { d: .8, n: 'Ingresso dal solare (3)' });
-  [[RT + .015, AT(.235)], [RT + .015, AT(.855)]].forEach(([x, y], i) => P(mesh(G.cylX(.016, .04, 16), M.inox, x, y, 0), { d: .84 + i * .03, from: [.3, 0, 0], spin: [2, 0, 0], snd: 'screw', n: i ? null : 'Manicotti' }));
-  PIN(G.box(.012, y1 - y0 + .06, .02), M.inox, [0, 1, 2].map(i => { const a = i * PI * 2 / 3 + .4; return { p: [Math.cos(a) * rc, (y0 + y1) / 2, Math.sin(a) * rc], r: [0, -a, 0] }; }), { d0: .9, d1: .94, n: 'Supporti' });
+    const m = mesh(tubeGeo(p, .011, 48), M.inox); m.userData.vola = true; P(m, { d: .02 + i * .035, from: [0, 1.3, 0], spin: [0, .8, 0], dur: .5, ease: eoc, n: i ? null : 'Spire in AISI 316', snd: 'fin' }); }
+  // supporti: barrette appoggiate all'interno delle spire
+  PIN(G.box(.012, y1 - y0 + .06, .02), M.inox, [0, 1, 2].map(i => { const a = i * PI * 2 / 3 + .4; return { p: [Math.cos(a) * (rc - .017), (y0 + y1) / 2, Math.sin(a) * (rc - .017)], r: [0, -a, 0], a }; }),
+    { d0: .32, d1: .36, from: (i, it) => [-Math.cos(it.a) * .09, 0, -Math.sin(it.a) * .09], spin: [0, 0, 0], ease: eoc, n: 'Supporti' });
+  P(mesh(tubeGeo([[RT + .03, AT(.235), 0], [.2, AT(.235), 0], [rc, y0, 0]], .011, 20), M.inox), { d: .38, n: 'Uscita verso il solare (2)' });
+  P(mesh(tubeGeo([[rc, y1, 0], [.2, AT(.82), 0], [RT + .03, AT(.855), 0]], .011, 20), M.inox), { d: .41, n: 'Ingresso dal solare (3)' });
+  [[RT + .015, AT(.235)], [RT + .015, AT(.855)]].forEach(([x, y], i) => P(mesh(G.cylX(.016, .04, 16), M.inox, x, y, 0), { d: .44 + i * .02, from: [.3, 0, 0], spin: [2, 0, 0], snd: 'screw', n: i ? null : 'Manicotti' }));
 }
 
 // 3 ─ Condensatore a flusso parallelo, avvolto all'esterno del serbatoio
-group('cond', 'Condensatore avvolto', 'Bande piatte di alluminio a flusso parallelo, avvolte fuori dal serbatoio: il gas caldo cede il calore all\'acqua senza mai toccarla.', 12.5, 16.5, { stage: [0, 1.5, 0], ex: [-.85, 0, 0], az: -24, el: 10, zoom: .5,
+// Ogni banda si avvolge al suo posto partendo dal collettore d'ingresso; dove passa un manicotto, un pozzetto o la flangia la banda ha una tacca.
+// RICOSTRUITO: numero e quote delle bande, tacche.
+group('cond', 'Condensatore avvolto', 'Bande piatte di alluminio a flusso parallelo, avvolte fuori dal serbatoio: il gas caldo cede il calore all\'acqua senza mai toccarla.', T_COND, 16.5, { stage: [0, 0, 0], ex: [-.85, 0, 0], zoom: 1,
+  keys: [[.03, 118, 12, 1.25, .2], [.32, 72, 8, 1.2, .1], [.58, 14, 9, 1.45, 0]],
   info: { e: 'Qui il calore preso dall\'aria passa all\'acqua. Il gas scorre in bande d\'alluminio strette al serbatoio: niente contatto con l\'acqua di casa, niente calcare.', s: 'Alluminio, flusso parallelo, sezione ovale · all\'esterno del bollitore: anti-contaminazione e anti-incrostazione · depliant 00341057 · numero di bande: ricostruito' } });
 {
-  const NB = 18, ya = AT(.52), yb = AT(1.27), rb = RT + .006, a0 = rad(194), al = PI * 2 - rad(28);
-  PIN(G.open(rb, .022, a0, al, 72), M.condA, Array.from({ length: NB }, (_, i) => ({ p: [0, lerp(yb, ya, i / (NB - 1)), 0] })), { d0: .08, d1: .62, dur: .4, from: [0, .45, 0], spin: [0, 1.4, 0], ease: eoc, n: 'Bande in alluminio a sezione ovale', snd: 'fin' });
-  [[170, 'Collettore di ingresso del gas'], [190, 'Collettore di uscita']].forEach(([az, n], i) => P(mesh(G.cyl(.011, yb - ya + .05, 16), M.condA, ...polare(az, rb + .006, (ya + yb) / 2)), { d: .66 + i * .05, from: [0, .6, 0], n }));
-  PIN(G.box(.02, .012, .004), M.galv, [0, 1, 2, 3].flatMap(k => [60, 300].map(az => ({ p: polare(az, rb + .004, lerp(ya, yb, k / 3)), r: [0, rad(az), 0] }))), { d0: .78, d1: .9, n: 'Fascette di tenuta' });
+  const NB = 18, ha = .52, hb = 1.27, rb = RT + .006, BH = .022, A0 = 166, AL = 332, NS = 144;
+  // ciò che attraversa la fascia delle bande: [azimut, quota, mezza altezza]
+  const PASSA = [[90, .235, .016], [90, .855, .016], [90, 1.17, .016], [90, 1.27, .016], [205, .95, .04], [205, .47, .007], [150, .855, .007], [205, 1.15, .007], [205, 1.25, .007]];
+  const banda = h => {
+    const y = AT(h), tacche = PASSA.filter(([, hc, r]) => Math.abs(h - hc) <= BH / 2 + r + .003).map(([az, , r]) => [az, Math.asin((r + .005) / rb) * 180 / PI]);
+    const pos = [], nor = [], idx = [], len = [];
+    for (let k = 0; k <= NS; k++) { const az = rad(A0 - AL * k / NS), sx = Math.sin(az), cz = Math.cos(az); pos.push(sx * rb, y - BH / 2, cz * rb, sx * rb, y + BH / 2, cz * rb); nor.push(sx, 0, cz, sx, 0, cz); len.push(k); }
+    for (let k = 0; k < NS; k++) { const am = A0 - AL * (k + .5) / NS, b0 = 2 * k;
+      if (tacche.some(([az, w]) => Math.abs(((am - az) % 360 + 540) % 360 - 180) < w)) idx.push(b0, b0, b0, b0, b0, b0); else idx.push(b0, b0 + 1, b0 + 2, b0 + 1, b0 + 3, b0 + 2); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setIndex(idx);
+    g.userData = { tubo: true, len: Float32Array.from(len), tot: NS, n: NS, rad: 1, testa: V(...polare(A0, rb, y)), punta: V(...polare(A0 - AL, rb, y)) };
+    return g; };
+  for (let i = 0; i < NB; i++) P(mesh(banda(lerp(hb, ha, i / (NB - 1))), M.condA), { d: .06 + i * .03, n: i ? null : 'Bande in alluminio a sezione ovale', snd: 'fin' });
+  [[170, 'Collettore di ingresso del gas'], [190, 'Collettore di uscita']].forEach(([az, n], i) => P(mesh(G.cyl(.011, AT(hb) - AT(ha) + .05, 16), M.condA, ...polare(az, rb + .006, AT((ha + hb) / 2))), { d: .64 + i * .05, from: polare(az, .3, 0), spin: [0, 0, 0], ease: eoc, n }));
+  PIN(G.box(.02, .012, .004), M.galv, [0, 1, 2, 3].flatMap(k => [60, 300].map(az => ({ p: polare(az, rb + .004, AT(lerp(ha, hb, k / 3))), r: [0, rad(az), 0], az }))),
+    { d0: .78, d1: .9, from: (i, it) => polare(it.az, .2, 0), spin: [0, 0, 0], ease: eoc, n: 'Fascette di tenuta' });
 }
 
 // 4 ─ Isolamento e rivestimento
-group('iso', 'Isolamento e rivestimento', 'Cinque centimetri di poliuretano espanso tengono il calore; fuori, la lamiera grigio argento con tutti gli attacchi.', 16.5, 21.0, { stage: [0, 0, 0], ex: [.95, 0, 0], az: 58, el: 8, zoom: .5,
+group('iso', 'Isolamento e rivestimento', 'Cinque centimetri di poliuretano espanso tengono il calore; fuori, la lamiera grigio argento con tutti gli attacchi.', 16.5, 21.0, { stage: [0, 0, 0], ex: [.95, 0, 0], zoom: 1, keys: [[.03, 36, 10, 1.05, 0], [.3, 66, 8, 1.05, 0], [.52, 150, 8, 1.0, 0], [.8, 80, 8, 1.05, 0]],
   info: { e: 'Il cappotto: tiene l\'acqua calda per ore. Fuori, la lamiera con gli attacchi dell\'acqua sul fianco destro e le coperture sul retro.', s: 'Poliuretano espanso 50 mm · Ø 600 mm · attacchi 1-6 sul fianco destro a 32,5 / 235 / 855 / 1170 / 1270 / 1370 mm · coperture 7-13 sul retro · manuale 00340944 p.14-15' } });
 {
   const H0 = B + .012, HH = YC - H0;
   [[PI / 2, PI * 1.5, -1], [-PI / 2, PI / 2, 1]].forEach(([a, b2, s], i) => P(mesh(annulus(R - .005, RT + .016, HH, a, b2, 48), M.sPU, 0, H0 + HH / 2, 0), { d: i * .06, from: [s * .7, 0, 0], spin: [0, 0, 0], dur: .55, ease: eoc, n: i ? null : 'Poliuretano espanso, 50 mm' }));
   P(mesh(G.cyl(R - .005, .03, 48), M.sPU, 0, YC - .015, 0), { d: .14, from: [0, .5, 0], spin: [0, 0, 0] });
   [[PI / 2, PI * 1.5, -1, 'Rivestimento grigio argento'], [-PI / 2, PI / 2, 1, null]].forEach(([a, b2, s, n], i) => P(mesh(annulus(R, R - .003, HH, a, b2, 64), M.sJack, 0, H0 + HH / 2, 0), { d: .22 + i * .07, from: [s * .9, 0, 0], spin: [0, 0, 0], dur: .6, ease: eoc, n }));
-  P(mesh(G.torus(R, .006, PI * 2, 64), M.black, 0, YC - .003, 0, PI / 2, 0, 0), { d: .36, from: [0, .4, 0], n: 'Bordo superiore' });
+  P(mesh(G.torus(R, .006, PI * 2, 64), M.sCov, 0, YC - .003, 0, PI / 2, 0, 0), { d: .36, from: [0, .4, 0], spin: [0, 0, 0], ease: eoc, n: 'Bordo superiore' });
   // attacchi 1-6 sul fianco destro
-  [[.0325, M.brass, .014, 'Acqua fredda (1)'], [.235, M.brass, .014, 'Al solare (2)'], [.855, M.brass, .014, 'Dal solare (3)'], [1.17, M.black, .017, 'Tappo dell\'anodo (4)'], [1.27, M.brass, .014, 'Acqua calda (5)'], [1.37, M.brass, .011, 'Condensa G 1/2 (6)']].forEach(([h, m, r, n], i) => {
+  [[.0325, M.brass, .014, 'Acqua fredda (1)'], [.235, M.brass, .014, 'Al solare (2)'], [.855, M.brass, .014, 'Dal solare (3)'], [1.17, M.sCov, .017, 'Tappo dell\'anodo (4)'], [1.27, M.brass, .014, 'Acqua calda (5)'], [1.37, M.brass, .011, 'Condensa G 1/2 (6)']].forEach(([h, m, r, n], i) => {
     P(mesh(G.cylX(r, .045, 16), m, R + .02, AT(h), 0), { d: .42 + i * .03, from: [.3, 0, 0], spin: [4, 0, 0], snd: 'screw', n });
     if (m === M.brass) P(mesh(G.cylX(r + .006, .012, 6), m, R + .006, AT(h), 0), { d: .44 + i * .03, from: [.3, 0, 0], spin: [6, 0, 0], snd: 'screw' }); });
   // coperture e passaggi sul retro (7-13)
-  const ret = (az, h) => { const m = mesh(G.cyl(1, 1, 24), M.black); m.position.set(...polare(az, R + .004, AT(h))); m.rotation.order = 'YXZ'; m.rotation.set(PI / 2, rad(az), 0); return m; };
+  const ret = (az, h) => { const m = mesh(G.cyl(1, 1, 24), M.sCov); m.position.set(...polare(az, R + .004, AT(h))); m.rotation.order = 'YXZ'; m.rotation.set(PI / 2, rad(az), 0); return m; };
   [[150, .855, .012, .02, 'Pozzetto della sonda ausiliaria PG9 (7)'], [228, .86, .05, .014, 'Copertura dei morsetti ausiliari (8)'], [205, .95, .055, .014, 'Copertura della resistenza (9)'], [205, 1.15, .045, .014, 'Copertura del termostato (10)'],
     [228, 1.33, .012, .02, 'Sonda solare (11)'], [228, 1.42, .014, .02, 'Passaggio alimentazione (12)'], [228, .79, .012, .02, 'Passaggio cavi ausiliari (13)']].forEach(([az, h, r, t, n], i) => { const m = ret(az, h); m.scale.set(r, t, r); const d = polare(az, .4, 0); P(m, { d: .62 + i * .03, from: [d[0], 0, d[2]], spin: [0, 0, 0], n }); });
   P(mesh(G.plane(.16, .094), M.sTarga, ...polare(180, R + .002, AT(.62)), 0, PI, 0), { d: .86, from: [0, 0, -.4], spin: [0, 0, 0], n: 'Targhetta' });
@@ -787,7 +811,7 @@ group('iso', 'Isolamento e rivestimento', 'Cinque centimetri di poliuretano espa
 
 // 5 ─ Compressore rotativo (in sezione finché non arriva la chiusura: interno di principio)
 group('comp', 'Compressore rotativo', 'Un pistone rotante schiaccia il propano R290 e lo scalda. Sotto, la piastra che regge tutto il gruppo frigorifero.', 21.0, 26.5, { stage: [0, .1, .85], ex: [0, .5, 0], az: 34, el: 14, trav: .55,
-  keys: [[.03, 30, 18, 1.15, 0], [.3, 22, 10, .7, -.02], [.5, 40, 12, .85, 0], [.72, 28, 8, .72, -.01], [.9, 36, 14, 1.15, 0]],
+  keys: [[.03, 30, 18, 1.15, 0], [.3, 22, 10, .7, -.02], [.5, 40, 12, .85, 0], [.72, 28, 8, .72, -.01], [.88, 36, 14, 1.15, 0]],
   info: { e: 'Il motore della pompa di calore: schiaccia il gas, che si scalda, e lo manda al condensatore attorno al serbatoio.', s: 'Compressore rotativo · propano R290 · interno: schema di principio · manuale 00340944 p.13, depliant 00341057' } });
 let cmp, crank;
 {
@@ -830,13 +854,13 @@ const qcw = p => [CX + p[0] * KS, Y5 + p[1] * KS, CZ + p[2] * KS];
 
 // 6 ─ Evaporatore, ventilatore e circuito del propano
 const FP = {
-  dis: [qcw([-.02, .43, -.02]), [CX - .012, Y5 + .3, CZ - .03], [.12, Y5 + .3, -.2], [.06, YC - .02, -.25], [.0455, AT(1.38), -.258], [.0455, AT(1.29), -.258]],
+  dis: [qcw([-.02, .43, -.02]), [CX - .012, Y5 + .285, CZ - .012], [.06, Y5 + .285, -.24], [.06, YC - .03, -.24], [.0455, AT(1.38), -.258], [.0455, AT(1.29), -.258]],
   cond: (() => { const a = [], n = 64; for (let i = 0; i <= n; i++) { const f = i / n, az = 170 - f * 700; a.push(polare(az, RT + .012, lerp(AT(1.27), AT(.52), f))); } return a; })(),
   liq: [[-.0455, AT(.5), -.258], [-.05, AT(.6), -.27], [-.06, AT(1.0), -.272], [-.06, AT(1.4), -.27], [-.03, YC + .02, -.262], [.08, Y5 + .02, -.255], [.2, Y5 + .02, -.2], [.25, Y5 + .02, -.06], [.23, Y5 + .03, .08], [.17, Y5 + .05, .13]],
   exp: [[.17, Y5 + .09, .13], [.13, Y5 + .1, .17], [.07, Y5 + .06, .17], [EX + .012, Y5 + .05, .16]],
   evap: (() => { const a = []; for (let i = 0; i < 5; i++) { const y = Y5 + .055 + i * .057, f = i % 2 === 0; a.push([EX + .014, y, f ? .15 : -.19], [EX + .014, y, f ? -.19 : .15]); } return a; })(),
   suc: [[EX + .01, Y5 + .3, -.2], [.06, Y5 + .33, -.17], [CX - .115 * KS, Y5 + .3, CZ + .05 * KS], [CX - .115 * KS, Y5 + .24, CZ + .05 * KS]],
-  bypass: [[.12, Y5 + .3, -.2], [.15, Y5 + .22, -.06], [.11, Y5 + .13, .07], [.07, Y5 + .07, .16]],
+  bypass: [[.12, Y5 + .285, -.18], [.15, Y5 + .22, -.06], [.11, Y5 + .13, .07], [.07, Y5 + .07, .16]],
   cond6: [[EX + .03, Y5 + .012, .1], [.08, YC - .02, .2], [.22, AT(1.45), .14], [.27, AT(1.375), .03], [R, AT(1.37), 0]],
   aria: [[.16, YC + .75, 0], [.16, YC + .45, 0], [.15, Y5 + .22, .0], [.08, Y5 + .16, -.02], [EX - .02, Y5 + .15, -.02], [FX + .06, FY, FZ], [FX, FY - .02, FZ - .02], [FX, FY + .1, FZ - .066], [FX - .005, YC + .3, -.01], [-.16, YC + .45, 0], [-.16, YC + .8, 0]],
 };
@@ -846,7 +870,7 @@ group('frig', 'Evaporatore, ventilatore e circuito R290', 'Il ventilatore aspira
   info: { e: 'Qui la pompa di calore prende il calore dall\'aria della stanza: l\'aria esce più fresca e più asciutta, per questo sta bene in lavanderia o in dispensa.', s: 'Evaporatore a microcanali · ventilatore centrifugo · valvola di espansione elettronica · valvola a 2 vie di by-pass · pressostato di bassa · presa di servizio · sonde T1, T4, T5 · box elettrico con coperchio a 4 viti · manuale 00340944 p.13, 18, 26' } });
 {
   // evaporatore a microcanali, in piedi tra la camera d'ingresso e quella del ventilatore
-  P(mesh(G.box(.06, .012, .38), M.galv, EX, Y5 + .016, -.02), { d: 0, from: [0, -.2, 0], n: 'Vaschetta della condensa' });
+  P(mesh(G.box(.06, .012, .38), M.galv, EX, Y5 + .006, -.02), { d: 0, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Vaschetta della condensa' });
   [-.2, .16].forEach((z, i) => P(mesh(G.cyl(.011, .28, 16), M.alu, EX, Y5 + .17, z), { d: .03 + i * .02, from: [0, .4, 0], n: i ? null : 'Collettori' }));
   PIN(G.box(.018, .003, .34), M.alu, Array.from({ length: 14 }, (_, i) => ({ p: [EX, Y5 + .05 + i * .019, -.02] })), { d0: .07, d1: .2, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Microcanali', snd: 'fin' });
   PIN(G.box(.016, .016, .34), M.evap, Array.from({ length: 13 }, (_, i) => ({ p: [EX, Y5 + .0595 + i * .019, -.02] })), { d0: .2, d1: .3, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Alette a feritoie', snd: 'fin' });
@@ -875,7 +899,7 @@ group('frig', 'Evaporatore, ventilatore e circuito R290', 'Il ventilatore aspira
   P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, .1, Y5 + .3, -.115), { d: .91, n: 'Sonda T5 di aspirazione' });
   P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, .17, Y5 + .33, .06), { d: .915, n: 'Sonda T1 dell\'aria ambiente' });
   // box elettrico, con il coperchio metallico a 4 viti
-  const bx = -.16, by = Y5 + .1, bz = -.14;
+  const bx = -.16, by = Y5 + .1, bz = -.13;
   P(mesh(G.box(.05, .18, .12), M.galv, bx, by, bz), { d: .92, from: [-.4, 0, -.2], spin: [0, 0, 0], n: 'Box elettrico' });
   P(mesh(G.box(.003, .16, .1), M.pcb, bx + .02, by, bz), { d: .94, from: [.3, 0, 0], spin: [0, 0, 0], n: 'Scheda di controllo' });
   PIN(G.cyl(.008, .022, 12), M.cap, [[-.04, -.02], [-.04, .02], [.0, -.02]].map(([y, z]) => ({ p: [bx + .032, by + y, bz + z], r: [0, 0, PI / 2] })), { d0: .95, d1: .96 });
@@ -884,23 +908,38 @@ group('frig', 'Evaporatore, ventilatore e circuito R290', 'Il ventilatore aspira
 }
 
 // 7 ─ Coperchio e interfaccia
-group('cop', 'Coperchio e interfaccia', 'Il cappello in plastica, isolato acusticamente: da un imbocco entra l\'aria, dall\'altro esce. Davanti, il regolatore touch screen.', 31.5, 35.0, { stage: [0, 0, 0], ex: [0, 1.2, 0], az: 20, el: 16, zoom: 1.0,
+// Dal manuale p.13 (vista d'insieme) e dalla foto del depliant: anello di base, corpo cilindrico che si stringe appena in alto, sul tetto i due imbocchi
+// con la griglia tra nervature ad H, sul fronte la finestra dell'interfaccia con il regolatore e il logo, ai lati due pannelli dal bordo curvo.
+// RICOSTRUITO: quote del profilo, delle nervature e dei pannelli laterali.
+M.sCovL = xr(std({ color: 0x3a3e42, roughness: .45, metalness: .12, side: THREE.DoubleSide })); ambiente(['sCovL'], AMB_B);
+group('cop', 'Coperchio e interfaccia', 'Il cappello in plastica, isolato acusticamente: da un imbocco entra l\'aria, dall\'altro esce. Davanti, il regolatore touch screen.', 31.5, 35.0, { stage: [0, 0, 0], ex: [0, 1.2, 0], zoom: 1,
+  keys: [[.04, 20, 16, 1.5, 0], [.36, 36, 34, 1.15, .06], [.66, 6, 8, .85, -.03]],
   info: { e: 'Il cappello: protegge la pompa di calore, smorza il rumore e porta l\'aria dentro e fuori. Davanti, lo schermo per comandarlo, anche dal telefono via Wi-Fi.', s: 'Plastica isolata acusticamente · imbocchi aria Ø 177 mm a 320 mm di interasse, canalizzabili DN 180 · regolatore touch screen · Wi-Fi integrato · manuale 00340944 p.12-14' } });
 {
-  const prof = [[R, 0], [R, .06], [.296, .26], [.275, .355], [.235, .4], [.0885, .405]].map(([r, y]) => new THREE.Vector2(r, y));
-  P(mesh(new THREE.LatheGeometry(prof.map(v => new THREE.Vector2(v.x - .012, v.y - .006)), 48), M.sFelt, 0, YC, 0), { d: 0, from: [0, .8, 0], spin: [0, 1, 0], dur: .55, n: 'Isolamento acustico' });
-  P(mesh(new THREE.LatheGeometry(prof, 56), M.sCov, 0, YC, 0), { d: .14, from: [0, 1.0, 0], spin: [0, .8, 0], dur: .65, n: 'Coperchio superiore in plastica' });
-  P(mesh(G.cyl(.0885, .002, 32), M.sCov, 0, YC + .405, 0), { d: .2, from: [0, .6, 0] });
+  const LID = [[R + .004, 0], [R + .004, .045], [.297, .05], [.297, .19], [.27, .37], [.252, .395], [.21, .403], [.0885, .403], [0, .403]];
+  const HT = .403, rL = y => y <= .19 ? .297 : y >= .37 ? .27 : .297 - .15 * (y - .19), TILT = Math.atan(.15);     // raggio del corpo alla quota y sopra YC
+  P(mesh(new THREE.LatheGeometry(LID.map(([r, y]) => new THREE.Vector2(Math.max(0, r - .012), y - .006)), 48), M.sFelt, 0, YC, 0), { d: 0, from: [0, .8, 0], spin: [0, 1, 0], dur: .55, ease: eoc, n: 'Isolamento acustico' });
+  P(mesh(new THREE.LatheGeometry(LID.map(([r, y]) => new THREE.Vector2(r, y)), 64), M.sCov, 0, YC, 0), { d: .12, from: [0, 1.0, 0], spin: [0, .8, 0], dur: .65, ease: eoc, n: 'Coperchio superiore in plastica' });
+  // nervature ad H sul tetto: due lungo l'asse degli imbocchi, una in mezzo
+  [[0, .108, .36, .016], [0, -.108, .36, .016], [0, 0, .016, .2]].forEach(([x, z, w, l], i) => P(mesh(G.rbox(w, .012, l, .005), M.sCov, x, YC + HT + .006, z), { d: .2 + i * .03, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: i ? null : 'Nervature del tetto' }));
   [[-.16, 'Uscita dell\'aria'], [.16, 'Ingresso dell\'aria']].forEach(([x, n], k) => {
-    P(mesh(G.open(.0885, .04, 0, PI * 2, 40), M.sCov, x, YC + .425, 0), { d: .26 + k * .14, from: [0, .5, 0], spin: [0, 2, 0], n });
-    for (let i = 0; i < 4; i++) P(mesh(G.torus(.022 + i * .019, .003, PI * 2, 40), M.black, x, YC + .438, 0, PI / 2, 0, 0), { d: .3 + k * .14 + i * .02, from: [0, .35, 0], spin: [0, 0, 0], snd: 'tick', n: i ? null : 'Griglia' });
-    PIN(G.box(.17, .004, .004), M.black, [0, 1, 2].map(i => ({ p: [x, YC + .438, 0], r: [0, i * PI / 3, 0] })), { d0: .38 + k * .14, d1: .39 + k * .14, from: [0, .3, 0], spin: [0, 1, 0] }); });
-  // regolatore touch screen sul fronte
-  const sy = YC + .2, sz = .296;
-  P(mesh(G.rbox(.13, .13, .02, .01), M.black, 0, sy, sz - .006, -.14, 0, 0), { d: .66, from: [0, .1, .4], spin: [0, 0, 0], n: 'Regolatore touch screen' });
-  P(mesh(G.plane(.1, .1), M.schermo, 0, sy + .001, sz + .0045, -.14, 0, 0), { d: .72, from: [0, 0, .3], spin: [0, 0, 0] });
-  P(mesh(G.plane(.12, .03), M.logoC, 0, YC + .31, .278, -.4, 0, 0), { d: .76, from: [0, 0, .3], spin: [0, 0, 0], n: 'Logo' });
-  screws([0, 90, 180, 270].map(a => ({ p: polare(a + 45, R + .002, YC + .03), r: [PI / 2, 0, -rad(a + 45)] })), { d0: .82, d1: .9, mat: M.steel, n: 'Viti del coperchio' });
+    P(mesh(G.open(.0885, .05, 0, PI * 2, 40), M.sCov, x, YC + .42, 0), { d: .3 + k * .14, from: [0, .5, 0], spin: [0, 2, 0], ease: eoc, n });
+    for (let i = 0; i < 4; i++) P(mesh(G.torus(.022 + i * .019, .003, PI * 2, 40), M.black, x, YC + .432, 0, PI / 2, 0, 0), { d: .34 + k * .14 + i * .02, from: [0, .35, 0], spin: [0, 0, 0], snd: 'tick', n: i ? null : 'Griglia' });
+    PIN(G.box(.17, .004, .004), M.black, [0, 1, 2].map(i => ({ p: [x, YC + .432, 0], r: [0, i * PI / 3, 0] })), { d0: .42 + k * .14, d1: .43 + k * .14, from: [0, .3, 0], spin: [0, 1, 0] }); });
+  // pannelli laterali: coprono il fianco sotto un bordo che sale curvo dal fronte verso il retro
+  const fianco = sg => {
+    const NA = 40, NY = 14, pos = [], idx = [];
+    for (let i = 0; i <= NA; i++) { const th = lerp(28, 140, i / NA), top = .06 + .31 * sm(28, 100, th), a = rad(th);
+      for (let j = 0; j <= NY; j++) { const y = lerp(.055, top, j / NY), r = rL(y) + .0025; pos.push(sg * Math.sin(a) * r, y, Math.cos(a) * r); } }
+    for (let i = 0; i < NA; i++) for (let j = 0; j < NY; j++) { const a = i * (NY + 1) + j, b = a + NY + 1; if (sg > 0) idx.push(a, b, a + 1, b, b + 1, a + 1); else idx.push(a, a + 1, b, b, a + 1, b + 1); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return g; };
+  [1, -1].forEach((sg, i) => P(mesh(fianco(sg), M.sCovL, 0, YC, 0), { d: .6 + i * .04, from: polare(sg * 85, .3, 0), spin: [0, 0, 0], ease: eoc, n: i ? null : 'Pannelli laterali' }));
+  // finestra dell'interfaccia sul fronte: il regolatore sta sulla parete inclinata, schermo e logo sulla sua faccia
+  const ry = .28, rz = rL(ry), nrm = [0, Math.sin(TILT), Math.cos(TILT)], su = [0, Math.cos(TILT), -Math.sin(TILT)], sul = (o, u) => [0, YC + ry + nrm[1] * o + su[1] * u, rz - .004 + nrm[2] * o + su[2] * u];
+  P(mesh(G.rbox(.12, .16, .02, .008), M.black, ...sul(0, 0), -TILT, 0, 0), { d: .7, from: [0, 0, .35], spin: [0, 0, 0], ease: eoc, n: 'Regolatore touch screen' });
+  P(mesh(G.plane(.085, .085), M.schermo, ...sul(.0106, .005), -TILT, 0, 0), { d: .76, from: [0, 0, .25], spin: [0, 0, 0], ease: eoc });
+  P(mesh(G.plane(.07, .0175), M.logoC, ...sul(.0106, .064), -TILT, 0, 0), { d: .8, from: [0, 0, .25], spin: [0, 0, 0], ease: eoc, n: 'Logo' });
+  screws([0, 90, 180, 270].map(a => ({ p: polare(a + 45, R + .005, YC + .025), r: [PI / 2, 0, -rad(a + 45)] })), { d0: .84, d1: .92, mat: M.steel, n: 'Viti del coperchio' });
 }
 finalize();
 function schermo(set, lav) { const c = T.schermo.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 256, 256); c.fillStyle = '#9fd8ff'; c.font = '700 92px Barlow, Arial, sans-serif'; c.textAlign = 'center'; c.fillText(set + '°', 128, 150);
@@ -946,7 +985,7 @@ const CFG = {
   camRun(H, TUTTO) { H(TR + .9, TUTTO, 10, 9); H(TR + 4.6, { off: [.06, .8, 0], w: 1.0, h: 1.7 }, -24, 6); H(TR + 8.5, { off: [.0, 1.65, 0], w: .95, h: .85 }, 28, 20); H(TR + 12, TUTTO, 6, 9); },
   film(t, fase) {
     if (fase === 0) Object.assign(ST, { xray: 0, comp: 1.5, fan: 4, air: 1, ref: 0, demo: 0, water: 0, dw: 0, heat: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0, who: 1, set: 55, caldo: 1 });
-    else if (fase === 1) { const a = 21.0; Object.assign(ST, { xray: .85 * sm(10.9, 11.4, t) * (1 - sm(12.25, 12.6, t)), comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), fan: 0, air: 0, ref: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), water: 0, dw: 0, heat: 0, E: 0, shr: 1, read: 0, who: 1, set: 55, caldo: 1 }); }
+    else if (fase === 1) { const a = 21.0; Object.assign(ST, { xray: .85 * sm(7.5, 7.95, t) * (1 - sm(10.3, 10.75, t)), comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), fan: 0, air: 0, ref: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), water: 0, dw: 0, heat: 0, E: 0, shr: 1, read: 0, who: 1, set: 55, caldo: 1 }); }
     else { const r = t - TR, x = sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r));
       Object.assign(ST, { xray: x, comp: 3 * sm(.6, 2, r), fan: 5 * sm(.3, 1.8, r), air: sm(.8, 2, r), ref: sm(1.4, 2.4, r) * x, demo: 0, water: sm(.2, 1, r), dw: sm(4.6, 5, r) * (1 - sm(7.8, 8.2, r)), heat: 0, E: 0, shr: 1, read: r > 1 ? 1 : 0,
         caldo: 1 - .45 * sm(4.8, 7.8, r) + .45 * sm(8.4, 11.5, r), set: r > 8.6 ? 65 : 55, who: 1 }); }

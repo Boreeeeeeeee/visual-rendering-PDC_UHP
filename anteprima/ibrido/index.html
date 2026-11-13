@@ -448,9 +448,10 @@ function group(key, name, spec, t0, t1, o = {}) {
     trav: o.trav ?? .45, pieces: [], c: V(), size: .3, az: o.az ?? 30, el: o.el ?? 14, zoom: o.zoom ?? 1, keys: o.keys || null, info: o.info || null };
   GROUPS.push(CUR); return CUR;
 }
+// at: istante assoluto di arrivo, per un pezzo del gruppo che si monta più tardi (la calotta dopo il serpentino)
 function piece(o, base) {
   const p = Object.assign({ g: CUR, st: -1, d: o.d ?? 0, dur: o.dur ?? .5, from: o.from ? V(...o.from) : null, spin: o.spin ? V(...o.spin) : null,
-    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click' }, base);
+    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click', at: o.at ?? null }, base);
   CUR.pieces.push(p); PIECES.push(p); return p;
 }
 function P(m, o = {}) { (o.parent || CUR.node).add(m); m.userData.g = CUR.i; piece(o, { m, im: null, inst: -1, fp: m.position.clone(), fq: m.quaternion.clone(), fs: m.scale.clone() }); return m; }
@@ -486,9 +487,9 @@ function finalize() {
     }
     box.getCenter(g.c); g.size = Math.max(.14, box.getSize(V()).length() / 2); g.box = box;
     for (const p of g.pieces) {
-      p.ts = g.t0 + p.d * (W - .95);
+      p.ts = p.at ?? g.t0 + p.d * (W - .95);
       p.te = Math.max(p.ts + .2, Math.round((p.ts + p.dur) / BEAT) * BEAT);
-      if (p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
+      if (p.at === null && p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
       if (!p.from) p.from = V((R() - .5) * .5, .16 + R() * .4, .12 + R() * .42);
       if (!p.spin) p.spin = V((R() - .5) * 2.2, (R() - .5) * 2.2, (R() - .5) * 2.2);
       if (!p.k) p.k = p.wc.clone().sub(g.c).multiplyScalar(g.spread);

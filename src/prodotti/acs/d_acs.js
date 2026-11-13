@@ -38,7 +38,7 @@ const CFG = {
   camRun(H, TUTTO) { H(TR + .9, TUTTO, 10, 9); H(TR + 4.6, { off: [.06, .8, 0], w: 1.0, h: 1.7 }, -24, 6); H(TR + 8.5, { off: [.0, 1.65, 0], w: .95, h: .85 }, 28, 20); H(TR + 12, TUTTO, 6, 9); },
   film(t, fase) {
     if (fase === 0) Object.assign(ST, { xray: 0, comp: 1.5, fan: 4, air: 1, ref: 0, demo: 0, water: 0, dw: 0, heat: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0, who: 1, set: 55, caldo: 1 });
-    else if (fase === 1) { const a = 21.0; Object.assign(ST, { xray: .85 * sm(10.9, 11.4, t) * (1 - sm(12.25, 12.6, t)), comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), fan: 0, air: 0, ref: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), water: 0, dw: 0, heat: 0, E: 0, shr: 1, read: 0, who: 1, set: 55, caldo: 1 }); }
+    else if (fase === 1) { const a = 21.0; Object.assign(ST, { xray: .85 * sm(7.5, 7.95, t) * (1 - sm(10.3, 10.75, t)), comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), fan: 0, air: 0, ref: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), water: 0, dw: 0, heat: 0, E: 0, shr: 1, read: 0, who: 1, set: 55, caldo: 1 }); }
     else { const r = t - TR, x = sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r));
       Object.assign(ST, { xray: x, comp: 3 * sm(.6, 2, r), fan: 5 * sm(.3, 1.8, r), air: sm(.8, 2, r), ref: sm(1.4, 2.4, r) * x, demo: 0, water: sm(.2, 1, r), dw: sm(4.6, 5, r) * (1 - sm(7.8, 8.2, r)), heat: 0, E: 0, shr: 1, read: r > 1 ? 1 : 0,
         caldo: 1 - .45 * sm(4.8, 7.8, r) + .45 * sm(8.4, 11.5, r), set: r > 8.6 ? 65 : 55, who: 1 }); }
