@@ -51,6 +51,8 @@ const tags = Casa.viste.map(v => { const b = document.createElement('button'); b
 Casa.su(p => apri(p.id), (S, testo) => {
   $('cHour').textContent = hh(S.t); $('cText').textContent = testo; sDay.value = S.t; sDay.style.setProperty('--f', (S.t / 24 * 100) + '%');
   $('bInv').setAttribute('aria-pressed', !S.estate); $('bEst').setAttribute('aria-pressed', S.estate); $('bPlay').setAttribute('aria-pressed', S.play); $('bPlay').textContent = S.play ? 'Pausa' : 'Avvia';
+  $('bUhp').setAttribute('aria-pressed', S.gen !== 'ibrido'); $('bIbr').setAttribute('aria-pressed', S.gen === 'ibrido'); tags[0].textContent = Casa.viste[0].def.nome + ' ›';
+  const k = $('cCal'); k.hidden = !(S.gen === 'ibrido' && S.caldaia > .5); k.textContent = 'Caldaia accesa'; k.dataset.m = 'on';
   $('cStato').textContent = S.carico < .03 ? 'A riposo' : (S.estate ? 'Raffresca' : 'Riscalda'); $('cStato').dataset.m = S.carico < .03 ? 'off' : (S.estate ? 'f' : 'c');
   const f = $('cFv'); f.hidden = !S.fv; f.textContent = S.pv > .05 ? (S.bat > .01 ? 'Sole: alimenta la casa e carica la batteria' : S.rete > .02 ? 'Sole: batteria piena, il resto va in rete' : S.rete < -.02 ? 'Poco sole: la rete aiuta' : 'Sole: alimenta la casa') : (S.bat < -.01 ? 'Buio: la batteria alimenta la casa' : 'Buio: la casa prende dalla rete'); f.dataset.m = S.pv > .05 ? 's' : 'off';
   const a = $('cAcs'); a.textContent = S.doccia ? 'Doccia: esce acqua calda' : S.sole ? 'Acqua calda: il sole la porta a 65 °C' : S.ricarica ? 'Acqua calda: si ricarica' : 'Acqua calda: pronta'; a.dataset.m = S.doccia ? 'c' : S.ricarica ? 'r' : 'off';
@@ -58,6 +60,7 @@ Casa.su(p => apri(p.id), (S, testo) => {
 sDay.addEventListener('input', () => { const v = +sDay.value; Casa.play(false); Casa.ora(v); });   // il valore si legge prima: fermare la giornata riscrive il cursore
 $('bPlay').onclick = () => Casa.play(!Casa.S.play); $('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
 $('bHome').onclick = () => apri('home');
+if (Casa.ibrido) { $('cGen').hidden = false; $('bUhp').onclick = () => Casa.generatore('uhp'); $('bIbr').onclick = () => Casa.generatore('ibrido'); }
 
 // gesti sulla scena attiva
 canvas.addEventListener('pointerdown', e => { if (!attiva) return; canvas.setPointerCapture(e.pointerId); attiva.down(e); });
@@ -75,6 +78,6 @@ function frame(ts) {
   if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1);
 }
 // per le prove automatiche
-window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3) }),
+window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3), gen: Casa.S.gen, caldaia: +Casa.S.caldaia.toFixed(3) }),
   passo(n = 1, dt = 1 / 30) { for (let i = 0; i < n; i++) { last += dt; attiva && attiva.tick(dt, last); } attiva && renderer.render(attiva.scene, attiva.camera); } };
 rotta(); document.body.classList.add('pronto'); requestAnimationFrame(frame);

@@ -14,6 +14,7 @@ const Casa = (() => {
   const sez = m => [m, m, m, m, cut, m];   // faccia +z = taglio
   const g = new THREE.Group(); scene.add(g);
   const add = (geo, mat, x, y, z, parent = g) => { const o = mesh(geo, mat, x, y, z); parent.add(o); return o; };
+  let dest = g;     // gruppo in cui finiscono i tubi: quelli dei due generatori stanno in gruppi che si accendono e spengono
 
   // terreno, solaio, pareti
   const ground = add(new THREE.CircleGeometry(130, 48), std({ color: 0x5c7a45, roughness: 1 }), 0, 0, 0); ground.rotation.x = -PI / 2;
@@ -53,11 +54,12 @@ const Casa = (() => {
   const lampade = [[-1.6, .1, 9], [.75, .3, 3.5], [2.4, .2, 4.5]].map(([x, z, i]) => { add(cyl(.006, .7, 6), nero, x, FY + WH - .15, z); add(new THREE.SphereGeometry(.1, 16, 12), lampM, x, FY + WH - .55, z);
     const l = new THREE.PointLight(0xffd9a0, 0, 7, 1.6); l.position.set(x, FY + WH - .6, z); l.userData.max = i; g.add(l); return l; });
 
-  // posto del generatore: fuori, a terra accanto alla parete destra, rivolto verso chi guarda. Qui va la UHP; alla tappa 4 lo stesso posto ospita l'ibrida.
+  // posto del generatore: fuori, a terra accanto alla parete destra, rivolto verso chi guarda. Qui va la UHP oppure, scambiandola (tappa 4), la HP_QOR dell'ibrido.
   const POSTO = { pos: V(HW + 1.15, .08, 1.55), yaw: rad(-14) };
   add(rbox(1.7, .08, .8, .02), slab, POSTO.pos.x, .04, POSTO.pos.z).rotation.y = POSTO.yaw;
+  const gUhp = new THREE.Group(); g.add(gUhp); dest = gUhp;
   const gen = PRODOTTI.find(p => p.id === 'uhp'), ist = gen.costruisci();
-  ist.group.position.copy(POSTO.pos); ist.group.rotation.y = POSTO.yaw; g.add(ist.group); ist.group.updateMatrixWorld(true);
+  ist.group.position.copy(POSTO.pos); ist.group.rotation.y = POSTO.yaw; gUhp.add(ist.group); ist.group.updateMatrixWorld(true);
   ist.group.traverse(o => { o.userData.prodotto = gen.id; });
 
   // tubi: dal retro della macchina alla parete, su fino al collettore, poi le serpentine a pavimento
@@ -65,15 +67,15 @@ const Casa = (() => {
   const tubi = [];
   function tubo(pts, r, verso, ramo) {
     const c = new THREE.CurvePath(); for (let i = 1; i < pts.length; i++) c.add(new THREE.LineCurve3(pts[i - 1], pts[i])); const len = c.getLength(), tx = tFlow.clone(); tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(Math.max(1, len / .32), 1); tx.needsUpdate = true;
-    const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, Math.max(8, Math.round(len * 16)), r, 6), m, 0, 0, 0); tubi.push({ m, tx, verso, ramo });
+    const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, Math.max(8, Math.round(len * 16)), r, 6), m, 0, 0, 0, dest); tubi.push({ m, tx, verso, ramo });
   }
   const aM = ist.group.localToWorld(ist.attacchi.mandata.clone()), aR = ist.group.localToWorld(ist.attacchi.ritorno.clone());
-  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: P2 + .5, y: FY + .85 };
+  const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: HW - TW - .4, y: FY + .32 };   // collettore in basso a destra: sopra stanno il kit HYBREER e la caldaia (tappa 4)
   [[aM, 1, 'mandata', 0], [aR, -1, 'ritorno', .09]].forEach(([a, verso, ramo, dz]) => {
     const b = a.clone().addScaledVector(dietro, .28 + dz), zc = b.z;
     tubo([a, b, V(HW + .25, a.y, zc), V(XI - dz, a.y, zc), V(XI - dz, a.y, ZI + dz), V(COL.x + .18 - dz * 2, a.y, ZI + dz), V(COL.x + .18 - dz * 2, COL.y - .2, ZI + dz)], .026, verso, ramo);
   });
-  add(rbox(.6, .46, .1, .015), std({ color: 0xc7ccd0, roughness: .4, metalness: .5 }), COL.x, COL.y, ZI);     // collettore dell'impianto (generico)
+  dest = g; add(rbox(.6, .46, .1, .015), std({ color: 0xc7ccd0, roughness: .4, metalness: .5 }), COL.x, COL.y, ZI);     // collettore dell'impianto (generico)
   function serpentina(x0, x1, z0, z1, passo, entra) { const p = entra.slice(); let dir = 1; for (let x = x1; x >= x0 - .001; x -= passo) { p.push(V(x, FY + .014, dir > 0 ? z1 : z0), V(x, FY + .014, dir > 0 ? z0 : z1)); dir = -dir; } return p; }
   const yp = FY + .014, giu = x => [V(x, COL.y - .2, ZI + .02), V(x, yp, ZI + .02)];
   tubo(serpentina(-HW + TW + .25, P1 - .25, -HD + TW + .3, HD - .3, .34, [...giu(COL.x - .08), V(COL.x - .08, yp, HD - .3)]), .013, 1, 'mandata');
@@ -82,7 +84,7 @@ const Casa = (() => {
   const viste = [{ def: gen, ist, pos: POSTO.pos.clone().setY(1.5) }];
   const acsDef = PRODOTTI.find(p => p.id === 'acs'), acs = acsDef && acsDef.costruisci();
   if (acs) {
-    acs.group.position.set(HW - TW - .5, FY, -HD + TW + .5); g.add(acs.group); acs.group.updateMatrixWorld(true); acs.group.traverse(o => { o.userData.prodotto = 'acs'; });
+    acs.group.position.set(HW - TW - .98, FY, -HD + TW + .5); g.add(acs.group); acs.group.updateMatrixWorld(true); acs.group.traverse(o => { o.userData.prodotto = 'acs'; });     // dalla tappa 4 spostato di 48 cm a sinistra: a destra stanno caldaia e kit
     viste.push({ def: acsDef, ist: acs, pos: acs.group.position.clone().setY(FY + 2.3) });
     add(rbox(.6, .85, .6, .03), bianco, P2 + .4, FY + .425, -.6); add(cyl(.2, .02, 24), nero, P2 + .4, FY + .45, -.29).rotation.x = PI / 2;     // lavatrice
     const c = acs.group.localToWorld(acs.attacchi.calda.clone()), f = acs.group.localToWorld(acs.attacchi.fredda.clone()), zb = -HD + TW + .07;
@@ -110,23 +112,59 @@ const Casa = (() => {
     tubo([V(.92, FM + 1.2, zc), V(.92, FM + .06, zc), V(-.3, FM + .06, zc), V(-.3, yq + .2, zc)], .012, 1, 'casa');
     tubo([V(-.45, yq, zc), V(-HW + TW + .06, yq, zc), V(-HW + TW + .06, yq, 1.0), V(-HW - .06, yq, 1.0), V(-HW - .06, FY + 1.5, 1.0)], .012, 1, 'rete');
   }
+  // ibrido HYBREER 3 (tappa 4, scelte di Bore del 13 novembre 2026): HP_QOR 70 al posto della UHP; caldaia KONm 24 C e kit HYBREER a vista in lavanderia, sulla parete di fondo,
+  // sopra il collettore dell'impianto. Collegamenti come nello schema del manuale HYBREER 00339200 p.14: pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal,
+  // impianto su R imp / M imp. La caldaia lavora solo in riscaldamento (p.19, AHS = CALDO): i suoi attacchi C e F restano chiusi, l'acqua calda la fa l'HP 300PSDX.
+  // Ricostruiti: posizione di caldaia e kit sulla parete, contatore del gas, percorso di tubi, gas e scarico fumi.
+  const ibDef = PRODOTTI.find(p => p.id === 'ibrido'); let IBR = null;
+  if (ibDef) {
+    const gIb = new THREE.Group(); gIb.visible = false; g.add(gIb); dest = gIb;
+    const q = IB.qor(); q.group.position.copy(POSTO.pos); q.group.rotation.y = POSTO.yaw; gIb.add(q.group); q.group.updateMatrixWorld(true);
+    const zw = -HD + TW, KXc = COL.x, kit = IB.kit(), kon = IB.kon(); kit.group.position.set(KXc, FY + .66, zw); kon.group.position.set(KXc, FY + 1.3, zw); gIb.add(kit.group, kon.group);
+    gIb.updateMatrixWorld(true); const W = (o, v) => o.localToWorld(v.clone());
+    const kA = k => W(kit.group, kit.attacchi[k]), cA = k => W(kon.group, kon.attacchi[k]), ZH = zw + .035, ZF = zw + .09;
+    // pompa di calore → kit: lungo la parete di fondo dietro l'HP 300PSDX, poi dall'alto negli attacchi R pdc e M pdc
+    [[W(q.group, q.attacchi.mandata), 1, 'pdcM', 0, 'Mpdc', FY + 1.16], [W(q.group, q.attacchi.ritorno), -1, 'pdcR', .07, 'Rpdc', FY + 1.22]].forEach(([a, verso, ramo, dz, k, yh]) => {
+      const b = a.clone().addScaledVector(dietro, .28 + dz), zc = b.z, f = kA(k);
+      tubo([a, b, V(HW + .25, a.y, zc), V(XI - dz, a.y, zc), V(XI - dz, a.y, ZH), V(XI - dz, yh, ZH), V(f.x, yh, ZH), V(f.x, yh, ZF), V(f.x, f.y, ZF)], .02, verso, ramo); });
+    // caldaia → kit: R e M scendono negli attacchi R Cal e M Cal
+    for (const [c, k, verso, ramo] of [['M', 'MCal', 1, 'calM'], ['R', 'RCal', -1, 'calR']]) { const a = cA(c), f = kA(k), ym = FY + 1.22; tubo([a, V(a.x, ym, ZF), V(f.x, ym, ZF), V(f.x, f.y, ZF)], .016, verso, ramo); }
+    // kit → collettore dell'impianto
+    for (const [k, verso, ramo] of [['Mimp', 1, 'mandata'], ['Rimp', -1, 'ritorno']]) { const a = kA(k); tubo([a, V(a.x, COL.y + .23, ZF)], .02, verso, ramo); }
+    // gas: contatore sulla parete esterna destra, dentro casa fino all'attacco G della caldaia
+    const gasM = std({ color: 0xc9a227, roughness: .5, metalness: .5 }), aG = cA('G'), yg = FY + 1.0;
+    add(box(.12, .32, .26), std({ color: 0x8f969b, roughness: .5, metalness: .4 }), HW + .06, yg, .55, gIb);
+    tubo([V(HW + .06, yg, .55), V(XI - .1, yg, .55), V(XI - .1, yg, zw + .18), V(KXc + .27, yg, zw + .18), V(KXc + .27, FY + 1.27, zw + .18), V(aG.x, FY + 1.27, zw + .18), V(aG.x, FY + 1.27, aG.z), aG], .012, 1, 'gas');
+    for (const c of ['C', 'F']) add(cyl(.013, .02, 10), gasM, cA(c).x, cA(c).y - .005, cA(c).z, gIb);     // attacchi sanitari chiusi
+    // scarico fumi: sale e attraversa la parete di fondo
+    const sc = W(kon.group, kon.scarico), fumi = std({ color: 0xdfe2e4, roughness: .4, metalness: .3 });
+    add(cyl(.05, FY + 2.52 - sc.y, 16), fumi, sc.x, (sc.y + FY + 2.52) / 2, sc.z, gIb); add(cyl(.05, sc.z + HD + .12, 16), fumi, sc.x, FY + 2.52, (sc.z - HD - .12) / 2, gIb).rotation.x = PI / 2;
+    gIb.traverse(o => { o.userData.prodotto = 'ibrido'; }); dest = g;
+    IBR = { def: ibDef, gIb, q, ist: { group: gIb, tick: () => {} }, pos: POSTO.pos.clone().setY(1.3) };
+  }
   // aria che attraversa la macchina, visibile quando lavora
   const NA = 36, aPos = new Float32Array(NA * 3), aSeed = Array.from({ length: NA }, (_, i) => [rng(i + 3)(), rng(i + 40)(), rng(i + 77)()]);
   const aria = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(aPos, 3)), new THREE.PointsMaterial({ size: .05, transparent: true, opacity: 0, depthWrite: false, color: 0xbfe6ff }));
-  ist.group.add(aria);
+  ist.group.add(aria); let bocca = ist.bocca;
 
   // sole in cielo
   const sole = add(new THREE.SphereGeometry(1.5, 20, 14), new THREE.MeshBasicMaterial({ color: 0xfff1c9, fog: false }), 0, 0, 0);
 
   // ───────── la giornata ─────────
-  const S = { t: 6.4, estate: false, play: true, carico: 0, doccia: 0, caldo: 1, ricarica: false, fv: !!fvDef, pv: 0, ld: 0, bat: 0, rete: 0, soc: .5, sole: false };
+  const S = { t: 6.4, estate: false, play: true, gen: 'uhp', caldaia: 0, carico: 0, doccia: 0, caldo: 1, ricarica: false, fv: !!fvDef, pv: 0, ld: 0, bat: 0, rete: 0, soc: .5, sole: false };
   const C = (h) => new THREE.Color(h), NOTTE = C(0x070b12), ALBA = C(0x6a5a6e), GI = C(0x86a5bf), GE = C(0x6aa6dc), tmp = C(0), CALDO = C(0xff7a2a), FREDDO = C(0x3fa9ff);
-  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85), acs: C(0xff5a3c), fredda: C(0x58b8ff), fv: C(0xffd84a), bat: C(0x7dff9a), casa: C(0xfff2b0), rete: C(0xc49bff) };
+  const COL_T = { mandataC: C(0xff8a3d), ritornoC: C(0xb5522e), mandataF: C(0x7fd6ff), ritornoF: C(0x3f86c9), fermo: C(0x7a7f85), acs: C(0xff5a3c), fredda: C(0x58b8ff), fv: C(0xffd84a), bat: C(0x7dff9a), casa: C(0xfff2b0), rete: C(0xc49bff), gas: C(0xffc83a), calC: C(0xff5a2a) };
   const FASI = {
     inverno: [[0, 'Notte. Fuori fa freddo: la pompa di calore lavora piano e tiene la casa in temperatura.'], [5, 'Mattino presto. Prende calore dall\'aria fredda e lo passa all\'acqua dell\'impianto: la casa è calda prima della sveglia.'],
       [9, 'Giorno. Con il sole la casa chiede meno calore e la macchina rallenta.'], [16, 'Sera. Fuori torna il freddo e la casa si riempie: lavora di più.'], [22, 'Notte. Rallenta e mantiene.']],
     estate: [[0, 'Notte. La casa è fresca: la pompa di calore riposa.'], [9, 'Il sole scalda la casa: parte il raffrescamento.'],
       [13, 'Pomeriggio. Lavora al contrario: toglie calore alla casa e lo porta fuori.'], [19, 'Sera. Fuori rinfresca e la macchina rallenta.'], [23, 'Notte. Si ferma.']],
+    // con l'ibrido (manuale HYBREER p.19): sotto la temperatura esterna impostata la caldaia si accende insieme alla pompa di calore; in estate raffresca solo la pompa di calore
+    inverno_ibrido: [[0, 'Notte. Fuori fa freddo: la pompa di calore lavora piano e tiene la casa in temperatura.'], [1.5, 'Notte fonda. Fuori scende sotto la soglia impostata: si accende la caldaia e lavora insieme alla pompa di calore.'],
+      [5, 'Mattino presto. Pompa di calore e caldaia insieme: la casa è calda prima della sveglia.'], [8.5, 'Fuori si scalda: la caldaia si spegne, resta solo la pompa di calore, che consuma meno.'],
+      [16, 'Sera. Fuori torna il freddo e la casa si riempie: la pompa di calore lavora di più.'], [22, 'Notte. Rallenta e mantiene.']],
+    estate_ibrido: [[0, 'Notte. La casa è fresca: tutto spento.'], [9, 'Il sole scalda la casa: parte il raffrescamento. La caldaia resta spenta: d\'estate lavora solo la pompa di calore.'],
+      [13, 'Pomeriggio. La pompa di calore toglie calore alla casa e lo porta fuori.'], [19, 'Sera. Fuori rinfresca e la pompa di calore rallenta.'], [23, 'Notte. Si ferma.']],
   };
   const camp = (t, a, b, lo, hi) => lo + (hi - lo) * sm(a, a + 1.5, t) * (1 - sm(b, b + 1.5, t));   // rampa morbida tra due orari
   function carico(t, estate) {
@@ -146,7 +184,7 @@ const Casa = (() => {
       if (av > 0) { b = soc < 1 ? Math.min(av, .6) : 0; soc = Math.min(1, soc + b * .034); } else { b = soc > .1 ? Math.max(av, -.6) : 0; soc = Math.max(.1, soc + b * .034); }
       r[i] = { pv, ld, b, rete: av - b, soc }; }
     return r; });
-  const fase = (t, estate) => { const f = FASI[estate ? 'estate' : 'inverno']; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
+  const fase = (t, estate) => { const f = FASI[(estate ? 'estate' : 'inverno') + (S.gen === 'ibrido' ? '_ibrido' : '')]; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
   let onStato = () => {}; const VEL = {};
   function applica() {
     const { t, estate } = S, alba = estate ? 5.6 : 7.7, tram = estate ? 21 : 16.8, k = clamp((t - alba) / (tram - alba)), su = t > alba && t < tram ? Math.sin(k * PI) : 0;
@@ -159,12 +197,15 @@ const Casa = (() => {
     const sveglia = t > 6 && t < 23.4, luci = (1 - giorno) * (sveglia ? 1 : 0);
     lampade.forEach(l => { l.intensity = l.userData.max * luci; }); lampM.color.setHSL(.1, .8, .12 + .7 * luci);
     S.carico = carico(t, estate);
+    // ore più fredde dell'inverno (indicative, nessun numero a schermo): la caldaia dell'ibrido si accende e lavora insieme alla pompa di calore
+    S.caldaia = S.gen === 'ibrido' && !estate ? sm(1.3, 1.8, t) * (1 - sm(8.3, 8.8, t)) : 0;
     const tinta = estate ? FREDDO : CALDO; fLiv.emissive.copy(tinta).multiplyScalar(.10 * S.carico); fBag.emissive.copy(tinta).multiplyScalar(.10 * S.carico);
     const aq = acqua(t); S.doccia = aq.doccia; S.caldo = aq.caldo; S.ricarica = !aq.doccia && aq.caldo < .999;
     const en = EN[estate ? 1 : 0][Math.min(239, Math.floor(t * 10))]; S.pv = en.pv; S.ld = en.ld; S.bat = en.b; S.rete = en.rete; S.soc = en.soc; S.sole = S.fv && en.pv - en.ld > .05; if (bat) bat.carica(en.soc);
-    const ATT = { acs: S.doccia, fredda: S.doccia, fv: sm(0, .08, S.pv), bat: sm(0, .02, Math.abs(S.bat)), casa: 1, rete: sm(0, .02, Math.abs(S.rete)) };
-    VEL.acs = VEL.fredda = 1.5 * S.doccia; VEL.fv = 2.2 * S.pv; VEL.bat = 2.6 * S.bat; VEL.casa = .5 + S.ld; VEL.rete = 2.6 * S.rete;
-    for (const tb of tubi) { if (tb.ramo in ATT) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], ATT[tb.ramo]); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
+    const ATT = { acs: S.doccia, fredda: S.doccia, fv: sm(0, .08, S.pv), bat: sm(0, .02, Math.abs(S.bat)), casa: 1, rete: sm(0, .02, Math.abs(S.rete)), gas: S.caldaia };
+    VEL.acs = VEL.fredda = 1.5 * S.doccia; VEL.fv = 2.2 * S.pv; VEL.bat = 2.6 * S.bat; VEL.casa = .5 + S.ld; VEL.rete = 2.6 * S.rete; VEL.gas = .8 * S.caldaia; VEL.calM = VEL.calR = 1.6 * S.caldaia;
+    const RAMO = { pdcM: 'mandata', pdcR: 'ritorno' };
+    for (const tb of tubi) { if (tb.ramo === 'calM' || tb.ramo === 'calR') tb.m.color.copy(COL_T.fermo).lerp(tb.ramo === 'calM' ? COL_T.calC : COL_T.ritornoC, S.caldaia); else if (tb.ramo in RAMO) tb.m.color.copy(COL_T.fermo).lerp(COL_T[RAMO[tb.ramo] + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); else if (tb.ramo in ATT) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], ATT[tb.ramo]); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
     aria.material.opacity = .55 * sm(.02, .3, S.carico); aria.material.color.set(estate ? 0xffc9a0 : 0xbfe6ff);
     onStato(S, fase(t, estate));
   }
@@ -177,8 +218,8 @@ const Casa = (() => {
   function tick(dt, now) {
     if (S.play) { S.t = (S.t + dt * .8) % 24; applica(); }
     for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (tb.ramo in VEL ? VEL[tb.ramo] : S.carico > .02 ? .5 + 1.6 * S.carico : 0);
-    ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica ? 1 : 0);
-    if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = ist.bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = ist.bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = ist.bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
+    if (S.gen === 'ibrido') IBR.q.tick(dt, S.carico); else ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica ? 1 : 0);
+    if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
     posaCamera();
     viste.forEach((v, i) => { etich.copy(v.pos).project(camera); onEtichetta(i, (etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1); });
   }
@@ -191,7 +232,12 @@ const Casa = (() => {
   function up(e) { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
     if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(viste.map(v => v.ist.group), true)[0]; if (hit) onApri(PRODOTTI.find(q => q.id === hit.object.userData.prodotto)); } }
   function wheel(e) { cam.zoom = clamp(cam.zoom * Math.exp(e.deltaY * .0012), .32, 1.25); }
-  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, viste,
+  // scambio del generatore: UHP da sola oppure ibrido HYBREER 3. La prima etichetta segue il generatore acceso.
+  const VUHP = { def: gen, ist, pos: viste[0].pos.clone() };
+  function generatore(id) { if (id === 'ibrido' && !IBR) return; S.gen = id === 'ibrido' ? 'ibrido' : 'uhp'; const ib = S.gen === 'ibrido';
+    gUhp.visible = !ib; if (IBR) IBR.gIb.visible = ib; Object.assign(viste[0], ib ? { def: IBR.def, ist: IBR.ist, pos: IBR.pos.clone() } : VUHP);
+    (ib ? IBR.q.group : ist.group).add(aria); bocca = ib ? IBR.q.bocca : ist.bocca; applica(); }
+  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, viste, generatore, ibrido: !!IBR,
     entra() { applica(); }, ora(t) { S.t = clamp(t, 0, 24) % 24; applica(); }, stagione(estate) { S.estate = !!estate; applica(); }, play(v) { S.play = !!v; applica(); },
     su(apri, stato, etichetta) { onApri = apri; onStato = stato; onEtichetta = etichetta; } };
 })();

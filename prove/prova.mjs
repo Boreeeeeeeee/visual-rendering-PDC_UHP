@@ -100,8 +100,28 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   f = await fv("window.__fv.setTool('smonta'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.e > .4, 'Smonta separa i gruppi del fotovoltaico');
   f = await fv("window.__fv.setTool('dentro'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.dentro > .95 && f.e < .05 && f.pezzi > 80, 'Dentro rende trasparenti gli involucri'); await sleep(300); await foto('fv_dentro');
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
+  // ibrido (tappa 4): scambio del generatore nella Casa, caldaia nelle ore più fredde, pagina completa
+  await page.click('#bIbr'); c = await st(); ok(c.gen === 'ibrido' && (await page.textContent('.tag')).startsWith('HYBREER 3'), "il pulsante Ibrido mette l'ibrido al posto della UHP");
+  await ora(6.5); c = await st(); ok(c.caldaia > .9 && c.carico > .7 && (await page.isVisible('#cCal')), 'inverno, mattino presto: caldaia accesa insieme alla pompa di calore'); await sleep(500); await foto('casa_ibrido_mattino');
+  await ora(12.5); c = await st(); ok(c.caldaia === 0 && !(await page.isVisible('#cCal')), 'inverno, mezzogiorno: la caldaia è spenta');
+  await page.click('#bEst'); await ora(15); c = await st(); ok(c.caldaia === 0 && c.carico > .6 && (await page.textContent('#cStato')) === 'Raffresca', "estate: raffresca solo la pompa di calore"); await page.click('#bInv');
+  await page.locator('.tag').first().evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'ibrido', "l'etichetta dell'ibrido apre il prodotto"); ok(page.url().endsWith('#ibrido'), 'indirizzo #ibrido');
+  ok(await fino(async () => await fr.locator('#sT').count() > 0, 20000), "la pagina dell'ibrido si carica");
+  const ib = q => fr.locator('body').evaluate((_, q) => (0, eval)(q), q); await fino(async () => !!(await ib('!!window.__ibrido'))); await sleep(800); await foto('ibrido_inizio'); ok((await ib('window.__ibrido.stato()')).mode === 'start', "l'ibrido parte dalla schermata d'inizio");
+  ok((await ib('window.__ibrido.seek(20); window.__ibrido.stato()')).mode === 'film', "il film dell'ibrido parte"); await sleep(300); await foto('ibrido_film');
+  ok((await ib('window.__ibrido.seek(49.5); window.__ibrido.avanti(.3); window.__ibrido.stato()')).cal > .5, 'nel finale del film fa freddo e si accende la caldaia');
+  const fuori = v => `window.__ibrido.setTool('fuori'); { const s = document.getElementById('sT'); s.value = ${v}; s.dispatchEvent(new Event('input')); } window.__ibrido.avanti(3); window.__ibrido.stato()`;
+  let x = await ib('window.__ibrido.libero(false); ' + fuori(10)); ok(x.mode === 'free' && x.pdc > .95 && x.cal < .05, 'Fuori 10 °C: solo pompa di calore');
+  x = await ib(fuori(-3)); ok(x.pdc > .95 && x.cal > .95, 'Fuori −3 °C: pompa di calore e caldaia insieme'); await sleep(300); await foto('ibrido_fuori');
+  x = await ib(fuori(-18)); ok(x.pdc < .05 && x.cal > .95, 'Fuori −18 °C: solo caldaia');
+  x = await ib("document.getElementById('kEst').click(); window.__ibrido.avanti(3); window.__ibrido.stato()"); ok(x.estate && x.pdc > .95 && x.cal < .05, 'Estate: raffresca solo la pompa di calore'); await ib("document.getElementById('kEst').click()");
+  x = await ib("window.__ibrido.setTool('smonta'); window.__ibrido.avanti(2); window.__ibrido.stato()"); ok(x.e > .4, "Smonta separa i gruppi dell'ibrido"); await sleep(300); await foto('ibrido_smonta');
+  x = await ib("window.__ibrido.setTool('dentro'); window.__ibrido.avanti(2); window.__ibrido.stato()"); ok(x.dentro > .95 && x.e < .05 && x.pezzi > 60, "Dentro rende trasparenti gli involucri dell'ibrido"); await sleep(300); await foto('ibrido_dentro');
+  await ib("window.__ibrido.setTool('tocca')"); await fr.locator('#nomi .btn').nth(1).evaluate(b => b.click()); ok((await fr.locator('#pTocca').textContent()).includes('KONm 24 C'), "la scheda della caldaia si apre");
+  await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa') && (await st()).gen === 'ibrido', "il ritorno dall'ibrido riporta alla Casa, con l'ibrido ancora al suo posto");
+  await page.click('#bUhp'); ok((await st()).gen === 'uhp' && (await page.textContent('.tag')).startsWith('UHP 120'), 'il pulsante Pompa di calore rimette la UHP');
   // indirizzi diretti
-  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
+  for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#ibrido', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
   ok(errs.length === 0, 'console senza errori: ' + errs.join(' | ')); await ctx.close();
 }
 console.log(`${fatti - falliti} controlli passati su ${fatti}`); await b.close(); srv.close(); process.exit(falliti ? 1 : 0);

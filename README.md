@@ -14,8 +14,8 @@ Tre scene, un solo indirizzo:
 | Indirizzo | Scena |
 |---|---|
 | `#home` (o niente) | Home: i prodotti su un piatto girevole |
-| `#casa` | Casa in sezione, con il cursore "Una giornata in casa" |
-| `#uhp`, `#acs`, `#fv` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX, `fv` = moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL |
+| `#casa` | Casa in sezione, con il cursore "Una giornata in casa" e lo scambio del generatore: UHP da sola oppure ibrido HYBREER 3 |
+| `#uhp`, `#acs`, `#fv`, `#ibrido` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX, `fv` = moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL, `ibrido` = HYBREER 3 (pompa di calore HP_QOR 70, caldaia KONm 24 C, kit HYBREER) |
 
 Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto. La pagina completa di un prodotto è un file a sé (`uhp/index.html`): si carica in un riquadro solo quando si entra nel prodotto e si scarica uscendo, così sul telefono la memoria torna libera.
 

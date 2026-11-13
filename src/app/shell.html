@@ -51,8 +51,9 @@
   #cTop { position: absolute; left: var(--pad); right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
   #cCap { pointer-events: auto; max-width: 560px; padding: 12px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center }
   #cHour { font: 700 clamp(30px, 6vmin, 44px)/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; grid-row: span 2 }
-  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs, #cFv { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
-  #cFv[data-m=s] { background: #ffd84a; color: #1b1605 } #cFv[hidden] { display: none }
+  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs, #cFv, #cCal { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
+  #cFv[data-m=s] { background: #ffd84a; color: #1b1605 } #cFv[hidden], #cCal[hidden], #cGen[hidden] { display: none } #cCal[data-m=on] { background: #ff5a2a; color: #1b0805 }
+  #cGen { pointer-events: auto; background: var(--panel); backdrop-filter: blur(10px) }
   #cAcs[data-m=c] { background: #ff6a4a; color: #1b0805 } #cAcs[data-m=r] { background: rgba(255,154,77,.28) }
   #cStato[data-m=c] { background: var(--heat); color: #1b0f05 } #cStato[data-m=f] { background: var(--ice); color: #05121b }
   #cText { margin: 0; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; min-height: 2.7em }
@@ -82,7 +83,7 @@
   @media (max-height: 460px) { #hName { font-size: 30px } #hInfo { gap: 5px; padding-top: 16px } #hNum, .credit, #hHint, #ore, #cPanel h2 { display: none } .big, .btn { min-height: 42px }
     #cTop { top: var(--pad); left: calc(var(--pad) + 110px); right: calc(var(--pad) + 130px); flex-direction: row; align-items: center } #cCap { padding: 6px 12px; flex: 1; max-width: 520px } #cHour { font-size: 24px } #cText { min-height: 0; font-size: 12px; line-height: 1.25 }
     #cPanel { flex-direction: row; align-items: center; padding: 6px 10px; gap: 12px; width: min(calc(100% - 2 * var(--pad)), 760px) } #cRow { flex-wrap: nowrap } .seg button, #bPlay { min-height: 40px; padding: 0 12px } }
-  @media (max-width: 480px) { .freccia { top: 36% } }
+  @media (max-width: 480px) { .freccia { top: 36% } #cGen button { min-height: 36px; padding: 0 12px; font-size: 12px } }
   body.solo .freccia, body.solo #hNum { display: none }
   /* fotogramma per l'anteprima del link (og.jpg): si attiva da script con la classe "og" */
   #ogT { display: none; position: absolute; left: 44px; bottom: 40px; right: 44px; text-shadow: 0 2px 18px rgba(0,0,0,.7) } #ogT b { display: block; font: 700 92px/.95 var(--display); letter-spacing: .03em; text-transform: uppercase } #ogT span { display: block; margin-top: 12px; font: 500 30px/1.2 var(--body) }
@@ -111,7 +112,8 @@
   <section id="casa" class="scena" aria-label="La casa">
     <div id="cTop">
       <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
-      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cAcs">Acqua calda: pronta</span><span id="cFv" hidden></span></span><p id="cText"></p></div>
+      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cCal" hidden></span><span id="cAcs">Acqua calda: pronta</span><span id="cFv" hidden></span></span><p id="cText"></p></div>
+      <div class="seg" id="cGen" role="group" aria-label="Generatore" hidden><button id="bUhp" type="button" aria-pressed="true">Pompa di calore</button><button id="bIbr" type="button" aria-pressed="false">Ibrido</button></div>
     </div>
     <div id="tags"></div>
     <div id="cPanel">
