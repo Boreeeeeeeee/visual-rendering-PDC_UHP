@@ -50,10 +50,12 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await page.click('#bPlay'); const t1 = (await st()).ora; await sleep(600); ok((await st()).ora === t1, 'Pausa ferma la giornata');
   const ora = v => page.evaluate(v => { const s = document.getElementById('sDay'); s.value = v; s.dispatchEvent(new Event('input', { bubbles: true })); }, v);
   await ora(6.5); let s = await st(); ok(Math.abs(s.ora - 6.5) < .01 && s.carico > .7 && (await page.textContent('#cStato')) === 'Riscalda', 'inverno, mattino: riscalda forte'); await sleep(500); await foto('casa_inverno_mattino');
+  ok(s.fcoil > .5 && s.mono === 0 && s.dual === 0 && !(await page.isVisible('#cCli')), 'inverno: lavora il ventilconvettore, i climatizzatori restano spenti');
   await ora(12.5); ok((await st()).carico < s.carico, 'inverno, mezzogiorno: rallenta');
   await ora(20); await sleep(500); await foto('casa_inverno_sera');
   await page.click('#bEst'); await ora(15); s = await st(); ok(s.estate && s.carico > .6 && (await page.textContent('#cStato')) === 'Raffresca', 'estate, pomeriggio: raffresca'); await sleep(500); await foto('casa_estate_pomeriggio');
-  await ora(3); ok((await st()).carico < .03 && (await page.textContent('#cStato')) === 'A riposo', 'estate, notte: a riposo');
+  ok(s.fcoil > .5 && s.mono > .9 && s.dual > .9 && (await page.isVisible('#cCli')), 'estate, pomeriggio: accesi ventilconvettore e climatizzatori');
+  await ora(3); s = await st(); ok(s.carico < .03 && s.mono === 0 && s.dual === 0 && (await page.textContent('#cStato')) === 'A riposo', 'estate, notte: tutto a riposo');
   await page.click('#bInv'); ok(!(await st()).estate, 'ritorno a inverno');
   // orbita e zoom
   // un punto libero della scena, non coperto da etichette o pannelli (le etichette seguono i prodotti e possono finire ovunque)

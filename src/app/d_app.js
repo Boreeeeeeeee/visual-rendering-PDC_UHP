@@ -55,8 +55,22 @@ Casa.su(p => apri(p.id), (S, testo) => {
   const k = $('cCal'); k.hidden = !(S.gen === 'ibrido' && S.caldaia > .5); k.textContent = 'Caldaia accesa'; k.dataset.m = 'on';
   $('cStato').textContent = S.carico < .03 ? 'A riposo' : (S.estate ? 'Raffresca' : 'Riscalda'); $('cStato').dataset.m = S.carico < .03 ? 'off' : (S.estate ? 'f' : 'c');
   const f = $('cFv'); f.hidden = !S.fv; f.textContent = S.pv > .05 ? (S.bat > .01 ? 'Sole: alimenta la casa e carica la batteria' : S.rete > .02 ? 'Sole: batteria piena, il resto va in rete' : S.rete < -.02 ? 'Poco sole: la rete aiuta' : 'Sole: alimenta la casa') : (S.bat < -.01 ? 'Buio: la batteria alimenta la casa' : 'Buio: la casa prende dalla rete'); f.dataset.m = S.pv > .05 ? 's' : 'off';
+  const cl = $('cCli'); cl.hidden = !(S.dual > .5 || S.mono > .5); cl.textContent = 'Climatizzatori accesi';     // dove, lo dice il testo della fase: sul telefono il riquadro non deve crescere
   const a = $('cAcs'); a.textContent = S.doccia ? 'Doccia: esce acqua calda' : S.sole ? 'Acqua calda: il sole la porta a 65 °C' : S.ricarica ? 'Acqua calda: si ricarica' : 'Acqua calda: pronta'; a.dataset.m = S.doccia ? 'c' : S.ricarica ? 'r' : 'off';
-}, (i, x, y, vis) => { const tag = tags[i]; tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`; tag.style.visibility = vis ? 'visible' : 'hidden'; });
+}, (i, x, y, vis) => { const q = posTag[i]; q.x = x; q.y = y; q.vis = vis; if (i === tags.length - 1) dispostiTag(); });
+// etichette: se due si sovrappongono, la più in alto sale e il suo gambo si allunga fino al prodotto
+const posTag = tags.map(() => ({ x: 0, y: 0, vis: false }));
+function dispostiTag() {
+  const ord = posTag.map((q, i) => i).filter(i => posTag[i].vis).sort((a, b) => posTag[b].y - posTag[a].y), messe = [], dim = tags.map(t => [t.offsetWidth + 8, t.offsetHeight + 6]);   // prima si legge, poi si scrive
+  for (const i of ord) { const q = posTag[i], [w, hh] = dim[i]; let bot = q.y;
+    for (let giro = 0; giro < 6; giro++) { const c = messe.find(r => Math.abs(r.x - q.x) < (r.w + w) / 2 && bot - hh < r.bot && bot > r.bot - r.hh); if (!c) break; bot = c.bot - c.hh; }
+    messe.push({ x: q.x, w, bot, hh }); tags[i].style.setProperty('--gambo', (14 + q.y - bot).toFixed(0) + 'px');
+    const vw = stage.clientWidth, xc = clamp(q.x, w / 2 + 2, Math.max(w / 2 + 2, vw - w / 2 - 2));     // la pillola resta nello schermo, il gambo continua a puntare al prodotto
+    tags[i].style.setProperty('--sx', clamp(q.x - xc, -w / 2 + 16, w / 2 - 16).toFixed(0) + 'px');
+    tags[i].style.transform = `translate(${xc.toFixed(1)}px, ${bot.toFixed(1)}px) translate(-50%, -100%)`; }
+  tags.forEach((t, i) => { t.style.visibility = posTag[i].vis ? 'visible' : 'hidden'; });
+}
+
 sDay.addEventListener('input', () => { const v = +sDay.value; Casa.play(false); Casa.ora(v); });   // il valore si legge prima: fermare la giornata riscrive il cursore
 $('bPlay').onclick = () => Casa.play(!Casa.S.play); $('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
 $('bHome').onclick = () => apri('home');
@@ -78,6 +92,6 @@ function frame(ts) {
   if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1);
 }
 // per le prove automatiche
-window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3), gen: Casa.S.gen, caldaia: +Casa.S.caldaia.toFixed(3) }),
+window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3), fcoil: +Casa.S.fcoil.toFixed(3), mono: +Casa.S.mono.toFixed(3), dual: +Casa.S.dual.toFixed(3), gen: Casa.S.gen, caldaia: +Casa.S.caldaia.toFixed(3) }),
   passo(n = 1, dt = 1 / 30) { for (let i = 0; i < n; i++) { last += dt; attiva && attiva.tick(dt, last); } attiva && renderer.render(attiva.scene, attiva.camera); } };
 rotta(); document.body.classList.add('pronto'); requestAnimationFrame(frame);

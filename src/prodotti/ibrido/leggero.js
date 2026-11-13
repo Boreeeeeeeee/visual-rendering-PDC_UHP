@@ -70,7 +70,7 @@ registra({
   alto: 2.0, ordine: 4,
   costruisci() {      // per la Home: la pompa di calore a terra e, su un pezzo di parete, la caldaia con il kit sotto
     const g = new THREE.Group(), q = IB.qor(); q.group.position.set(-.38, 0, .1); g.add(q.group);
-    g.add(mesh(box(.62, 2.0, .03), std({ color: 0x23282d, roughness: .9 }), .62, 1.0, -.2));
+    g.add(mesh(box(.62, 2.0, .03), std({ color: 0xb9b4a9, roughness: .9 }), .62, 1.0, -.2));     // pezzo di parete chiaro: su quello scuro l'ibrido spariva
     const k = IB.kit(); k.group.position.set(.62, .62, -.185); g.add(k.group); const c = IB.kon(); c.group.position.set(.62, 1.18, -.185); g.add(c.group);
     return { group: g, tick(dt, carico) { q.tick(dt, carico); } };
   },

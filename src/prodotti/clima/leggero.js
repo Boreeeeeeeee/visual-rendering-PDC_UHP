@@ -12,11 +12,11 @@ const CLM = (() => {
 })();
 registra({
   id: 'clima', nome: 'Climatizzatori', riga: 'Mono a parete YA3 e dual con due console XMPS', apri: 'Apri i climatizzatori', pagina: 'clima/',
-  alto: 1.2, ordine: 6,
+  alto: 1.4, largo: 1.95, ordine: 6,
   costruisci() {
     const g = new THREE.Group(), p = CLM.parete(), c = CLM.console(), e = CLM.esterna(.765, .555, .303);
     p.position.set(-.45, .82, -.1); c.position.set(.5, 0, -.1); e.position.set(-.45, 0, .1); e.scale.setScalar(.9); g.add(p, c, e);
-    g.add(mesh(box(.04, .82, .04), std({ color: 0x3a3f44, roughness: .6 }), -.45, .41, -.12));
+    g.add(mesh(box(1.75, 1.22, .04), std({ color: 0xb9b4a9, roughness: .9 }), .02, .61, -.12));     // un pezzo di parete: le unità interne stanno appese al muro, non su un palo
     return { group: g, tick() {} };
   },
 });

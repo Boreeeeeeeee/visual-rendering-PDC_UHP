@@ -16,7 +16,7 @@ const Home = (() => {
     const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
     const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
   }
-  const n = voci.length, R = n > 1 ? 2.15 : 0, passo = PI * 2 / n;
+  const n = voci.length, R = n > 1 ? Math.max(2.15, n * .56) : 0, passo = PI * 2 / n;     // il cerchio cresce con i prodotti: con sei, i vicini non coprono quello davanti
   const piatto = new THREE.Group(); scene.add(piatto);
   const disco = mesh(cyl(R + 1.25, .06, 72), std({ color: 0x12181d, roughness: .5, metalness: .6 }), 0, -.03, 0); piatto.add(disco);
   const anello = mesh(new THREE.TorusGeometry(R + 1.25, .012, 8, 96), new THREE.MeshBasicMaterial({ color: 0xa9bd8f }), 0, .002, 0); anello.rotation.x = PI / 2; piatto.add(anello);
@@ -35,8 +35,9 @@ const Home = (() => {
   }
   // la camera si adatta all'altezza del prodotto davanti, che resta nella fascia libera sopra i testi
   let vf = .26, hf = .4, cd = 5, cy = .2, basso = false;
-  function inquadra(k) { const A = voci[sel].alto || 1, d = Math.max(A / ((basso ? .62 : .80) * Math.tan(vf)), 1.5 / (1.62 * Math.tan(hf))), y = A / 2 - (basso ? .40 : .22) * d * Math.tan(vf);
-    cd = lerp(cd, d, k); cy = lerp(cy, y, k); camera.position.set(0, cy + .2 * cd, R + .98 * cd); camera.lookAt(0, cy, R); }
+  function inquadra(k) { const A = voci[sel].alto || 1, d = Math.max(A / ((basso ? .62 : .80) * Math.tan(vf)), (voci[sel].largo || 1.5) / (1.62 * Math.tan(hf))), y = A / 2 - (basso ? .40 : .22) * d * Math.tan(vf);
+    cd = lerp(cd, d, k); cy = lerp(cy, y, k); camera.position.set(0, cy + .2 * cd, R + .98 * cd); camera.lookAt(0, cy, R);
+    scene.fog.near = cd * .96; scene.fog.far = cd + 3.2; }     // la nebbia segue la distanza: i prodotti alti (ibrido) inquadrati da lontano non devono diventare scuri
   function tick(dt, now) {
     inquadra(1 - Math.exp(-dt * 3));
     if (!presa) {
