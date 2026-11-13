@@ -56,9 +56,11 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await ora(3); ok((await st()).carico < .03 && (await page.textContent('#cStato')) === 'A riposo', 'estate, notte: a riposo');
   await page.click('#bInv'); ok(!(await st()).estate, 'ritorno a inverno');
   // orbita e zoom
-  const az0 = await page.evaluate(() => window.__casa.Casa.cam.az); await page.mouse.move(W * .4, H * .45); await page.mouse.down(); await page.mouse.move(W * .4 + 80, H * .45 + 20, { steps: 4 }); await page.mouse.up();
+  // un punto libero della scena, non coperto da etichette o pannelli (le etichette seguono i prodotti e possono finire ovunque)
+  const [px, py] = await page.evaluate(([W, H]) => { for (const [x, y] of [[.4, .45], [.5, .55], [.3, .6], [.6, .4], [.2, .5], [.7, .6], [.5, .35]]) { const e = document.elementFromPoint(W * x, H * y); if (e && e.id === 'gl') return [W * x, H * y]; } return [W * .4, H * .45]; }, [W, H]);
+  const az0 = await page.evaluate(() => window.__casa.Casa.cam.az); await page.mouse.move(px, py); await page.mouse.down(); await page.mouse.move(px + 80, py + 20, { steps: 4 }); await page.mouse.up();
   ok(await page.evaluate(() => window.__casa.Casa.cam.az) !== az0, 'la casa si gira trascinando');
-  const z0 = await page.evaluate(() => window.__casa.Casa.cam.zoom); await page.mouse.wheel(0, -300); await sleep(200); ok(await page.evaluate(() => window.__casa.Casa.cam.zoom) < z0, 'la rotella avvicina');
+  const z0 = await page.evaluate(() => window.__casa.Casa.cam.zoom); await page.mouse.move(px, py); await page.mouse.wheel(0, -300); await sleep(200); ok(await page.evaluate(() => window.__casa.Casa.cam.zoom) < z0, 'la rotella avvicina');
   // dalla Casa al prodotto e ritorno alla Casa
   await page.locator('.tag').first().evaluate(b => b.click()); ok(await scena('prodotto'), "l'etichetta sulla macchina apre il prodotto"); await fino(async () => await fr.locator('.back').count() > 0, 15000);
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal prodotto riporta alla Casa');
