@@ -5,7 +5,7 @@ const IMS = []; machine.traverse(o => { if (o.isInstancedMesh) IMS.push(o); });
 const comet = pushed(points(40, .03), .04); comet.visible = false; machine.add(comet); const camP = V(), camL = V();
 const ray = new THREE.Raycaster(), ptr = new Map(), _n = new THREE.Vector2(), _t = V(), _d = V();
 // frasi del giro, per tratto del percorso (vedi PATH.ride in f_show.js)
-const RIDE = [[0, 'L\'acqua torna tiepida dal pavimento e sale al kit HYBREER'], [2, 'Una parte va alla pompa di calore, fuori casa'], [3, 'Passa dal filtro ed entra nello scambiatore a piastre'], [4, 'Tra le piastre prende il calore del gas R32'], [5, 'Il circolatore la spinge di nuovo verso il kit'], [7, 'Torna al kit più calda'],
+const RIDE = [[0, 'L\'acqua torna tiepida dal pavimento e sale al kit HYBREER'], [2, 'Una parte va alla pompa di calore, fuori casa'], [3, 'Passa dal flussostato, scende nel circolatore ed entra nello scambiatore a piastre'], [4, 'Tra le piastre prende il calore del gas R32'], [5, 'Esce dalla testa dello scambiatore e riparte verso il kit'], [7, 'Torna al kit più calda'],
   [8, 'Quando fuori gela, il kit ne manda una parte anche alla caldaia'], [10, 'Il circolatore della caldaia la spinge nello scambiatore'], [12, 'Sotto il bruciatore la scalda la fiamma del gas'], [13, 'Scende dal tubo di mandata e torna al kit'], [16, 'Dal kit riparte verso il pavimento di casa']];
 const SHORT = { qbase: 'Batteria', qhyd: 'Kit idronico', qcomp: 'Compressore', qfan: 'Ventilatore', qref: 'Circuito R32', qshell: 'Involucro', kcomb: 'Bruciatore', khyd: 'Idraulica caldaia', kshell: 'Mantello', kit: 'Kit HYBREER', link: 'Collegamenti' };
 const GUSCI = ['qshell', 'kshell'];
@@ -104,7 +104,9 @@ function uiTick(dt) {
   ease('air', pdc * calm * (U.ride ? 0 : 1)); ease('ref', pdc * calm * (inside && !U.ride ? 1 : 0), 3);
   ease('watP', (pdc || U.ride ? 1 : 0) * calm, 3); ease('watB', cal * calm, 3); ease('watI', (w || U.ride ? 1 : 0) * calm, 3);
   S.outT = U.outT; S.watT = S.cool ? 18 : IMPIANTI[U.imp].t; S.who = w; S.read = 1; readout();
-  const r = stage.getBoundingClientRect(), dockH = $('dock').offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height));
+  // col telefono in orizzontale la barra degli strumenti sta di fianco: sposto l'impianto nella parte libera invece di alzarlo
+  const r = stage.getBoundingClientRect(), dk = $('dock'), side = dk.offsetWidth < r.width - 4, dockH = side ? 0 : dk.offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height)), fx = side ? Math.min(.5, dk.offsetWidth / Math.max(1, r.width)) : 0;
+  { const key = fx + ':' + r.width + ':' + r.height; if (key !== U.vkey) { U.vkey = key; if (fx) camera.setViewOffset(r.width, r.height, r.width * fx / 2, 0, r.width, r.height); else camera.clearViewOffset(); } }
   // camera
   if (U.ride) {
     const pa = PATH.ride; U.ru += dt * .62 / pa.tot;                 // 62 cm al secondo
@@ -127,12 +129,12 @@ function uiTick(dt) {
     const g = g0; _t.copy(g ? _d.copy(g.node.position).add(g.c) : MC); free.t.lerp(_t, Math.min(1, dt * 4));
     const zs = g && g.key !== 'link' ? Math.max(.24, g.size * 2.5 / BW) : 1 + U.Ecur * .55;
     // la barra degli strumenti copre il fondo: alzo il modello di conseguenza
-    rig.az = free.az; rig.el = free.el; rig.w += (BW * zs * free.zoom - rig.w) * Math.min(1, dt * 4); rig.h += (BH * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
+    rig.az = free.az; rig.el = free.el; rig.w += (BW * zs * free.zoom / (1 - fx) - rig.w) * Math.min(1, dt * 4); rig.h += (BH * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
   }
   // lente: finché nessuno la tocca passa da sola sull'impianto, per far capire cosa fa
   if (U.lens) {
     const R = Math.min(r.width, r.height - dockH) * .2, pr = renderer.getPixelRatio(), L = $('lens'), cy = (r.height - dockH) * .5;
-    if (U.lensAuto) { U.lx = r.width * (.5 + .24 * Math.sin(now * .7)); U.ly = cy + (r.height - dockH) * .16 * Math.sin(now * 1.1 + 1); }
+    if (U.lensAuto) { U.lx = r.width * (1 - fx) * (.5 + .24 * Math.sin(now * .7)); U.ly = cy + (r.height - dockH) * .16 * Math.sin(now * 1.1 + 1); }
     LENS.value.set(U.lx * pr, (r.height - U.ly) * pr, R * pr); L.style.width = L.style.height = R * 2 + 'px'; L.style.transform = `translate(${U.lx - R}px, ${U.ly - R}px)`;
   }
   audioTick();
@@ -142,7 +144,7 @@ function uiEnter() {
   setTool('touch'); free.auto = true;
   [...$('tabs').children].forEach((b, i) => { b.classList.remove('pulse'); setTimeout(() => { b.classList.add('pulse'); }, 1500 + i * 130); });
 }
-function uiLeave() { if (U.lens) setLens(false); if (U.ride) setRide(false); closeCard(); setE(0); S.cool = false; S.ghost = 0; resize(); ptSizes(); freeTick = null; }
+function uiLeave() { camera.clearViewOffset(); U.vkey = ''; if (U.lens) setLens(false); if (U.ride) setRide(false); closeCard(); setE(0); S.cool = false; S.ghost = 0; resize(); ptSizes(); freeTick = null; }
 
 function initUI() {
   $('nP').textContent = PIECES.length;

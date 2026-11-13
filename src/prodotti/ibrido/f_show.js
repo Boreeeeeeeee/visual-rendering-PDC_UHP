@@ -3,20 +3,33 @@
 // Logica dal manuale HYBREER 00339200 p.19 (HP_QOR): sopra T4_AHS_ON riscalda solo la pompa di calore; tra T4HMIN e T4_AHS_ON pompa di calore e caldaia insieme;
 // sotto T4HMIN solo la caldaia. T4_AHS_ON consigliata: 5 °C (pavimento, mandata 35 °C), 7 °C (pavimento 40/45 °C), 10 °C (fan coil 55 °C e radiatori 70 °C).
 // T4HMIN di fabbrica: −15 °C. La caldaia è impostata solo in riscaldamento (7.8 FUNZIONE AHS = 1): d'estate raffresca solo la pompa di calore.
-const T_ASM = 3.5, T_RUN = 45.5, T_END = 59.5, MC = V(.1, 1.02, 0), BW = 2.75, BH = 2.5, T4HMIN = -15;
+const T_ASM = 3.5, T_RUN = 45.5, T_END = 59.5, MC = V(-.03, 1.02, 0), BW = 3.15, BH = 2.5, T4HMIN = -15;
 const AMB_B = .3, AMB_M = .42;
 const IMPIANTI = [{ n: 'Pavimento 35 °C', t: 35, s: 5 }, { n: 'Pavimento 40/45 °C', t: 45, s: 7 }, { n: 'Fan coil 55 °C', t: 55, s: 10 }, { n: 'Radiatori 70 °C', t: 70, s: 10 }];
 scene.fog.near = 9; scene.fog.far = 30;
 // Le superfici bianche e i metalli chiari qui sono grandi: con l'ambiente della scena sfonderebbero nel bagliore. L'intensità dell'ambiente si regola per materiale
 // solo se il materiale ha la sua mappa: gliela do io, più bassa.
 const ambiente = (keys, k) => { for (const n of keys) { const m = M[n]; m.envMap = scene.environment; m.envMapIntensity = k; } };
-ambiente(['sClear', 'sWhite', 'sWhite2', 'sQFront', 'sGrid', 'sKPanel', 'sCof', 'sPP', 'white', 'vesQ', 'vesK', 'gauge', 'sQLabel', 'sKLabel', 'sIn', 'sOut', 'grey', 'term'], AMB_B);
+ambiente(['sClear', 'sWhite', 'sWhite2', 'sQFront', 'sGrid', 'sKPanel', 'sCof', 'sPP', 'white', 'vesQ', 'vesQ2', 'vesK', 'gauge', 'sQLabel', 'sKLabel', 'sIn', 'sOut', 'grey', 'term'], AMB_B);
 ambiente(['galv', 'steel', 'inox', 'alu', 'fin', 'zinc', 'sBugne', 'backK', 'lam'], AMB_M); ambiente(['copper', 'brass'], .6);
+// nel Giro dell'acqua restano accesi solo l'acqua e la sua scia: rame, ottone e muri si fanno da parte
+let soloNow = 0; const SOLO = [];
+function soloAcqua(x) { if (x === soloNow) return; soloNow = x; for (const [m, o] of SOLO) { m.opacity = lerp(1, o, x); const tr = x > .004; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; } }
 const ground = mesh(new THREE.CircleGeometry(11, 64), new THREE.MeshBasicMaterial({ map: T.ground }), 0, 0, 0, -PI / 2); scene.add(ground);
-const shadow = mesh(G.plane(2.1, 1.2), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), QX, .003, QZ, -PI / 2); scene.add(shadow);
-// la parete in muratura dietro caldaia e kit: scenografia, non un pezzo
-// (un piano con una faccia sola: da dietro non si vede, così la camera può girare dietro alla pompa di calore)
-const muro = mesh(G.plane(1.8, 2.62), std({ color: 0x9aa0a4, roughness: .95, map: T.muro, bumpMap: T.noise, bumpScale: 1.5 }), KX - .08, 1.31, ZW); scene.add(muro);
+const shadow = mesh(G.plane(2.1, 1.2), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), QX, .004, QZ, -PI / 2); scene.add(shadow);
+// scenografia, non pezzi: fuori il basamento in calcestruzzo della pompa di calore, in mezzo il muro esterno della casa tagliato in sezione,
+// dentro la parete della lavanderia con caldaia e kit. Ogni faccia è un piano con un lato solo: da dietro non si vede, così la camera può girare intorno alle macchine.
+const WX0 = -.06, WX1 = .14, WZ1 = .25, WH = 2.62;
+const mMuro = std({ color: 0x9aa0a4, roughness: .95, map: T.muro, bumpMap: T.noise, bumpScale: 1.5 }), mFuori = std({ color: 0xa8a297, roughness: .97, bumpMap: T.noise, bumpScale: 2.2 });
+T.sezione = cv(128, 128, (g, w, h) => { g.fillStyle = '#b9b39a'; g.fillRect(0, 0, w * .3, h); g.fillStyle = '#8a5f4c'; g.fillRect(w * .3, 0, w * .62, h); g.fillStyle = '#c9c9c4'; g.fillRect(w * .92, 0, w * .08, h); g.strokeStyle = 'rgba(40,24,18,.5)'; g.lineWidth = 2; for (let i = -h; i < w; i += 14) { g.beginPath(); g.moveTo(w * .3 + Math.max(0, i), Math.max(0, -i)); g.lineTo(Math.min(w * .92, w * .3 + i + h), Math.min(h, h - Math.max(0, i + h - w * .62))); g.stroke(); } g.fillStyle = 'rgba(60,56,40,.35)'; for (let i = 0; i < 70; i++) g.fillRect((i * 37 % 100) / 100 * w * .28, (i * 53 % 100) / 100 * h, 2, 2); });
+T.sezione.wrapT = THREE.RepeatWrapping; T.sezione.repeat.set(1, 9);
+const mSez = std({ color: 0xb0b0b0, roughness: .95, map: T.sezione });
+const muro = mesh(G.plane(1.28, WH), mMuro, WX1 + .64, WH / 2, ZW); scene.add(muro);
+scene.add(mesh(G.plane(WZ1 - ZW, WH), mMuro, WX1, WH / 2, (WZ1 + ZW) / 2, 0, PI / 2, 0), mesh(G.plane(WZ1 - ZW, WH), mFuori, WX0, WH / 2, (WZ1 + ZW) / 2, 0, -PI / 2, 0), mesh(G.plane(WX1 - WX0, WH), mSez, (WX0 + WX1) / 2, WH / 2, WZ1));
+{ const cap = mesh(G.plane(WX1 - WX0, WZ1 - ZW), std({ color: 0x8c8c88, roughness: .95 }), (WX0 + WX1) / 2, WH, (WZ1 + ZW) / 2, -PI / 2); scene.add(cap);
+  SOLO.push([M.copper, .2], [M.brass, .25], [mMuro, .35], [mFuori, .18], [mSez, .18], [cap.material, .18]);
+  const pad = mesh(G.rbox(1.34, .004, .7, .002), std({ color: 0x3f4244, roughness: .96, bumpMap: T.noise, bumpScale: 2, envMapIntensity: .2 }), QX, 0, QZ); scene.add(pad);
+  const mm = std({ color: 0x3a3d40, roughness: .8 }); for (const [y, z] of [[.368, ZW + HZ], [.533, ZW + HZ + .06]]) for (const x of [WX0 - .003, WX1 + .003]) scene.add(mesh(annulus(.034, .017, .006), mm, x, y, z, 0, 0, PI / 2)); }
 
 function points(n, size, add = true) {
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
@@ -90,7 +103,7 @@ const PATH = {
   // il giro dell'acqua: dal pavimento al kit, nella pompa di calore, di nuovo al kit, nella caldaia, e giù verso il pavimento
   const r = fP.path([seg('lRi', W0, W0, 1), seg([hK(-.1182, .1), hK(-.1182, .19), hK(HK.Rpdc, .29)], W0, W0), seg('lRp', W0, W0, 1), seg('qwIn', W0, W0), seg('qwHx', W0, W1), seg('qwA', W1, W1), seg('qwB', W1, W1), seg('lMp', W1, W1),
     seg([hK(HK.Mpdc, .3), hK(HK.Mpdc, .19), hK(HK.RCal, .19), hK(HK.RCal, .29)], W1, W0), seg('lRc', W0, W0, 1), seg('kret1', W0, W0), seg('kret2', W0, W0), seg('khx', W0, WB), seg('kflow', WB, WB), seg('kmOut', WB, WB), seg('lMc', WB, WB),
-    seg([hK(HK.MCal, .3), hK(HK.MCal, .19), hK(.1182, .19), hK(.1182, .1)], WB, W1), seg('lMi', W1, W1), seg([[1.17, .05, -.25], [.2, .05, -.25]], W1, W0)], 900);
+    seg([hK(HK.MCal, .3), hK(HK.MCal, .19), hK(.1182, .19), hK(.1182, .1)], WB, W1), seg('lMi', W1, W1), seg([[1.17, .05, -.25], [.22, .05, -.25]], W1, W0)], 900);
   r.curve = new THREE.CatmullRomCurve3(Array.from({ length: 300 }, (_, i) => { const q = Math.round(i / 299 * (r.S - 1)); return V(r.P[q * 3], r.P[q * 3 + 1], r.P[q * 3 + 2]); }), false, 'centripetal'); PATH.ride = r; }
 // scintille all'arrivo dei pezzi
 const NK = 240, spark = points(NK, .011), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
@@ -107,7 +120,7 @@ function applyLook(now, dt) {
   scene.background.lerpColors(C_STUDIO, C_COLD, S.cold); scene.fog.color.copy(scene.background);
   ground.material.color.setRGB(1 + S.cold * .5, 1 + S.cold * 1.1, 1 + S.cold * 1.9); rimL.intensity = 1.5 + S.cold * 1.6; keyL.intensity = 2.3 - S.cold * .7;
   M.heater.emissiveIntensity = S.cold * 1.5;
-  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost);
+  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost); soloAcqua(S.ghost < .003 ? 0 : S.ghost);
   fanA += dt * S.fan * PI * 2; fanRot.rotation.z = -fanA; crankA += dt * S.comp * PI * 2; crank.rotation.y = crankA; bfA += dt * S.boil * 9 * PI * 2; bFan.rotation.x = bfA;
   const fl = S.boil * (1 - clamp(S.E * 4)); FIAMMA.opacity = fl * (.72 + .28 * Math.sin(now * 31) * Math.sin(now * 13)); fiamma.visible = fl > .01; fiamma.scale.set(1, 1 + .14 * Math.sin(now * 23), 1); M.fibra.emissiveIntensity = fl * 1.4;
   const lk = (S.boil > .5 ? 1 : 0) + '|' + S.watT; if (lk !== lcdK) { lcdK = lk; lcdCaldaia(S.watT, S.boil > .5); }
@@ -239,7 +252,7 @@ $('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $
 resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
 queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
 // per le prove: tempo, esplosione e vista comandabili da fuori
-window.__ibrido = { GROUPS, PIECES, M, vista(v) { vistaProva = v; }, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
+window.__ibrido = { GROUPS, PIECES, M, PATH, PIPE, vista(v) { vistaProva = v; }, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
   setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
   groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
   stato: () => ({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, who: S.who, outT: Math.round(S.outT), watT: S.watT, cool: S.cool, fan: +S.fan.toFixed(2), boil: +S.boil.toFixed(2), xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }) };

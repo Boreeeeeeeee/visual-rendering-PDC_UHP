@@ -52,7 +52,7 @@ group('kit', 'Kit HYBREER', 'Doppio collettore coibentato: sopra arrivano pompa 
 }
 
 // 11 ─ Collegamenti e impianto
-const qIn = [QX + .455, .533, QZ - QD / 2 - .037], qOut = [QX + .455, .368, QZ - QD / 2 - .037], ZT = ZW + HZ;
+const qIn = [QX + QPX, .533, QZ - QD / 2 - .037], qOut = [QX + QPX, .368, QZ - QD / 2 - .037], ZT = ZW + HZ;
 const LP = {
   Mp: [qOut, [qOut[0], .368, -.2], [qOut[0], .368, ZT], [.25, .368, ZT], [.25, 1.13, ZT], [KX + HK.Mpdc, 1.13, ZT], [KX + HK.Mpdc, HY + .315, ZT]],
   Rp: [qIn, [qIn[0], .533, -.14], [qIn[0], .533, ZT + .06], [.19, .533, ZT + .06], [.19, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT], [KX + HK.Rpdc, HY + .29, ZT]],
@@ -64,16 +64,16 @@ const LP = {
   cond: [kwp(.012, -.035, .2), kwp(.03, -.1, .1), [KX + .2, 1.1, ZW + .03], [.87, .9, ZW + .03], [.87, .06, ZW + .03]],
 };
 // pavimento radiante: dodici file, andata e ritorno
-const FL = { x0: .08, x1: 1.17, z0: -.25, dz: .083, n: 12, y: .05 };
+const FL = { x0: .22, x1: 1.17, z0: -.25, dz: .083, n: 12, y: .05 };
 LP.floor = (() => { const a = []; for (let i = 0; i < FL.n; i++) { const z = FL.z0 + i * FL.dz, L = i % 2 === 0; a.push([L ? FL.x1 : FL.x0, FL.y, z], [L ? FL.x0 : FL.x1, FL.y, z]); } a.push([1.23, FL.y, FL.z0 + (FL.n - 1) * FL.dz], [1.23, FL.y, -.3]); return a; })();
 for (const k in LP) PIPE['l' + k] = LP[k];
 PIPE.fumiExt = [kwp(0, .72, .225), kwp(0, .93, .225), kwp(0, .98, .19), kwp(0, 1.0, .1), kwp(0, 1.0, -.06)];
 group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, kit e caldaia, sonda T1 sulla mandata, gas, scarico fumi e pavimento radiante.', 42.0, 45.5, { stage: [0, 0, .9], ex: [0, -.1, .7], az: 4, el: 16, zoom: .82,
-  info: { e: 'Quello che unisce tutto: l\'acqua va e torna tra i due generatori, il kit e il pavimento di casa.', s: 'Pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal, impianto su R imp / M imp · sonda di mandata globale T1 00470021 sull\'attacco della pompa di calore · tubi coibentati per il raffrescamento · gas, fumi e pavimento: percorso indicativo' } }).home = { off: [.1, 1.02, 0], w: 2.75, h: 2.5 };
+  info: { e: 'Quello che unisce tutto: l\'acqua va e torna tra i due generatori, il kit e il pavimento di casa.', s: 'Pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal, impianto su R imp / M imp · sonda di mandata globale T1 00470021 sull\'attacco della pompa di calore · tubi coibentati per il raffrescamento · gas, fumi e pavimento: percorso indicativo' } }).home = { off: [-.03, 1.02, 0], w: 3.15, h: 2.5 };
 {
   const o = x => x, tubo = (k, r, m, opt) => P(mesh(tubeGeo(LP[k], r, LP[k].length * 14), m), opt);
   // pavimento radiante: pannello isolante con le bugne, tubo a serpentina
-  P(mesh(G.box(1.27, .03, 1.08), M.massetto, .64, .015, .2), o({ d: 0, from: [0, -.2, .3], spin: [0, 0, 0], dur: .55, k: [0, -.25, .1], n: 'Pannello isolante del pavimento' }));
+  P(mesh(G.box(1.12, .03, 1.08), M.massetto, .715, .015, .2), o({ d: 0, from: [0, -.2, .3], spin: [0, 0, 0], dur: .55, k: [0, -.25, .1], n: 'Pannello isolante del pavimento' }));
   PIN(G.cylX(.0085, FL.x1 - FL.x0, 10), M.pex, Array.from({ length: FL.n }, (_, i) => ({ p: [(FL.x0 + FL.x1) / 2, FL.y, FL.z0 + i * FL.dz] })), o({ d0: .05, d1: .2, dur: .35, from: [0, .2, .4], spin: [0, 0, 0], ease: eoc, k: [0, -.2, .1], n: 'Tubo del pavimento radiante', snd: 'fin' }));
   PIN(new THREE.TorusGeometry(FL.dz / 2, .0085, 8, 14, PI), M.pex, Array.from({ length: FL.n - 1 }, (_, i) => ({ p: [i % 2 ? FL.x1 : FL.x0, FL.y, FL.z0 + (i + .5) * FL.dz], r: [PI / 2, 0, i % 2 ? -PI / 2 : PI / 2] })), o({ d0: .2, d1: .26, from: [0, .2, .3], spin: [0, 0, 0], k: [0, -.2, .1], snd: 'fin' }));
   P(mesh(tubeGeo([[FL.x1, FL.y, FL.z0 + (FL.n - 1) * FL.dz], [1.21, FL.y, FL.z0 + (FL.n - 1) * FL.dz - .01], [1.23, FL.y, .55], [1.23, FL.y, -.3]], .0085, 30), M.pex), o({ d: .27, k: [0, -.2, .1] }));

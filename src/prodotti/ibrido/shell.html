@@ -150,6 +150,13 @@
     #freetop .btn { min-height: 36px; padding: 0 11px; letter-spacing: .08em } #freetop { gap: 6px } }
   @media (max-width: 560px) { #read { flex-wrap: wrap; row-gap: 6px } #rGen { flex-basis: 100% } }
   @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 30px) } #start h1 { font-size: 30px } .tab { min-height: 46px; flex-direction: row; gap: 6px } .tab svg { width: 18px; height: 18px } #panel { padding: 8px 12px } input[type=range] { height: 34px } }
+  /* telefono in orizzontale: strumenti in colonna a destra, l'impianto resta libero a sinistra */
+  @media (max-height: 460px) and (min-aspect-ratio: 3/2) {
+    #dock { left: auto; top: 0; width: min(44vw, 340px); padding: 8px 8px 8px 22px; justify-content: flex-end; background: linear-gradient(90deg, transparent, rgba(5,8,10,.9) 16%) }
+    #panel { width: 100%; max-height: calc(100% - 112px); overflow-y: auto; padding: 8px 10px } #panel section { gap: 7px }
+    #tabs { width: 100%; grid-template-columns: repeat(3, 1fr) } .keys { grid-template-columns: repeat(2, 1fr) } .key { min-height: 36px; font-size: 11.5px; letter-spacing: .02em } #pRem .how { display: none } .note { font-size: 12.5px; line-height: 1.3 }
+    body.free #freetop { top: auto; bottom: var(--pad); right: auto; left: var(--pad) } body.free #brandrow > :last-child { visibility: hidden }
+  }
   @media (prefers-reduced-motion: reduce) { #cap.in, #tick.in, .gest::after, .tab.pulse { animation: none } }
 </style>
 </head>

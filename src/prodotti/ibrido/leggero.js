@@ -34,7 +34,7 @@ const IB = (() => {
     const tFin = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#6f7478'; c.fillRect(0, 0, w, h); c.fillStyle = '#3d4246'; for (let x = 0; x < w; x += 6) c.fillRect(x, 0, 2, h); }), 20, 4);
     g.add(mesh(box(.68, .74, .006), std({ map: tFin, roughness: .6, metalness: .4 }), -.17, .46, -D / 2 - .003));
     // attacchi acqua sul retro: ritorno (IN) sopra a 533 mm, mandata (OUT) sotto a 368 mm
-    const att = { ritorno: V(.455, .533, -D / 2 - .05), mandata: V(.455, .368, -D / 2 - .05) };
+    const att = { ritorno: V(.391, .533, -D / 2 - .05), mandata: V(.391, .368, -D / 2 - .05) };      // 911 mm dal fianco sinistro (manuale 00339595 p.10)
     for (const k in att) { const a = mesh(cyl(.016, .05, 14), ottone, att[k].x, att[k].y, -D / 2 - .02); a.rotation.x = PI / 2; g.add(a); }
     let ang = 0;
     return { group: g, attacchi: att, bocca: V(XF, YF, D / 2), tick(dt, carico = .4) { ang += dt * (1.2 + 9 * carico) * (carico > .02 ? 1 : 0); fan.rotation.z = -ang; } };

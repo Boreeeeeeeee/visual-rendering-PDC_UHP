@@ -154,6 +154,13 @@
     #freetop .btn { min-height: 36px; padding: 0 11px; letter-spacing: .08em } #freetop { gap: 6px } }
   @media (max-width: 560px) { #read { flex-wrap: wrap; row-gap: 6px } #rGen { flex-basis: 100% } }
   @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 30px) } #start h1 { font-size: 30px } .tab { min-height: 46px; flex-direction: row; gap: 6px } .tab svg { width: 18px; height: 18px } #panel { padding: 8px 12px } input[type=range] { height: 34px } }
+  /* telefono in orizzontale: strumenti in colonna a destra, l'impianto resta libero a sinistra */
+  @media (max-height: 460px) and (min-aspect-ratio: 3/2) {
+    #dock { left: auto; top: 0; width: min(44vw, 340px); padding: 8px 8px 8px 22px; justify-content: flex-end; background: linear-gradient(90deg, transparent, rgba(5,8,10,.9) 16%) }
+    #panel { width: 100%; max-height: calc(100% - 112px); overflow-y: auto; padding: 8px 10px } #panel section { gap: 7px }
+    #tabs { width: 100%; grid-template-columns: repeat(3, 1fr) } .keys { grid-template-columns: repeat(2, 1fr) } .key { min-height: 38px }
+    body.free #freetop { top: auto; bottom: var(--pad); right: auto; left: var(--pad) } body.free #brandrow > :last-child { visibility: hidden }
+  }
   @media (prefers-reduced-motion: reduce) { #cap.in, #tick.in, .gest::after, .tab.pulse { animation: none } }
 </style>
 </head>
@@ -522,7 +529,7 @@ function apply(t, E = 0, shr = 1, emit = false) {
 //   kit idronico (valvola di sicurezza 3 bar, sfogo aria, circolatore inverter, flussostato, vaso 5 l, filtro ingresso), kit antigelo dello scambiatore.
 // SCHEMA DI PRINCIPIO (il depliant nomina i componenti ma non dice dove stanno): tutta la disposizione interna, l'interno del compressore (un twin rotary generico),
 //   valvola a 4 vie e valvola di espansione (implicite in una macchina che scalda e raffresca), scheda elettronica, numero di pale (tre), batteria a L.
-const QX = -.55, QZ = .45, KX = .6, ZW = -.45, KY = 1.30, HY = .66;      // dove stanno nella scena: pompa di calore, parete, caldaia, kit
+const QX = -.95, QZ = .45, KX = .6, ZW = -.45, KY = 1.30, HY = .66;      // dove stanno nella scena: pompa di calore, parete, caldaia, kit
 const PIPE = {};
 const qBasis = (x, y) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, V().crossVectors(x, y)));
 const node = (x, y, z, s = 1) => { const n = new THREE.Group(); n.position.set(x, y, z); n.scale.setScalar(s); CUR.node.add(n); return n; };
@@ -540,7 +547,7 @@ T.plateQ = cv(512, 300, (g, w, h) => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0,
   [['Refrigerante', 'R32 · 1,25 kg'], ['Alimentazione', '220-240 V ~ 50 Hz'], ['Potenza max assorbita', '3,2 kW'], ['Corrente max', '18 A'], ['Attacchi acqua', 'G 1" BSP'], ['Peso in esercizio', '87 kg']].forEach((r, i) => { g.fillText(r[0], 22, 108 + i * 32); g.fillText(r[1], 300, 108 + i * 32); }); });
 T.plateK = cv(512, 300, (g, w, h) => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); drawUnicalLogo(g, 22, 22, 128); g.fillStyle = '#16191b'; g.font = '700 30px Barlow, Arial, sans-serif'; g.fillText('KONm C 24', 300, 54); g.fillRect(22, 72, w - 44, 3); g.font = '500 23px Barlow, Arial, sans-serif';
   [['Portata termica', '23,4 kW'], ['Potenza utile', '22,6 kW'], ['Riscaldamento', '0,5 – 3 bar · max 85 °C'], ['Alimentazione', '230 V ~ 50 Hz'], ['Protezione', 'IP X5D'], ['Classe NOx', '6']].forEach((r, i) => { g.fillText(r[0], 22, 108 + i * 32); g.fillText(r[1], 262, 108 + i * 32); }); });
-T.vesQ = cv(256, 256, (g, w, h) => { g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(48, 80, 160, 90); g.fillStyle = '#1b1e20'; g.font = '700 52px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('5 L', 128, 144); });
+T.vesQ = cv(256, 256, (g, w, h) => { g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(48, 80, 160, 90); g.fillStyle = '#1b1e20'; g.font = '700 52px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('5 L', 128, 144); }); T.vesQ.wrapS = THREE.RepeatWrapping; T.vesQ.repeat.set(3, 1);
 T.vesK = cv(256, 256, (g, w, h) => { g.fillStyle = '#a23a30'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(40, 70, 176, 116); g.fillStyle = '#1b1e20'; g.font = '700 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('8 L', 128, 122); g.font = '500 25px Barlow, Arial, sans-serif'; g.fillText('precarica 1 bar', 128, 162); });
 T.kpanel = cv(1024, 256, (g, w, h) => { g.fillStyle = '#eceeef'; g.fillRect(0, 0, w, h); g.strokeStyle = '#c2c7ca'; g.lineWidth = 4; g.beginPath(); g.roundRect(14, 14, w - 28, h - 28, 60); g.stroke(); drawUnicalLogo(g, 452, 16, 120);
   g.strokeStyle = '#8a9095'; g.lineWidth = 3; g.fillStyle = '#6a7075'; g.font = '500 20px Barlow, Arial, sans-serif'; g.textAlign = 'center';
@@ -586,7 +593,7 @@ Object.assign(M, {
   grey: std({ color: 0x8f969b, roughness: .55, metalness: .1 }),
   wRed: std({ color: 0xc8322a, roughness: .5 }), wBlue: std({ color: 0x2b62b8, roughness: .5 }), wYel: std({ color: 0xd9b23a, roughness: .45, metalness: .3 }), wOr: std({ color: 0xe07a1f, roughness: .5 }),
   pex: std({ color: 0xd8642c, roughness: .5 }), massetto: std({ color: 0x2c3138, roughness: .9, bumpMap: T.bugne, bumpScale: 2.5 }),
-  vesQ: std({ color: 0xbdbdbd, roughness: .5, metalness: .2, map: T.vesQ, envMapIntensity: .5 }), vesK: std({ color: 0xd0d0d0, roughness: .5, metalness: .2, map: T.vesK, envMapIntensity: .5 }),
+  vesQ: std({ color: 0xbdbdbd, roughness: .5, metalness: .2, map: T.vesQ, envMapIntensity: .5 }), vesQ2: std({ color: 0x96999b, roughness: .5, metalness: .2, envMapIntensity: .5 }), vesK: std({ color: 0xd0d0d0, roughness: .5, metalness: .2, map: T.vesK, envMapIntensity: .5 }),
   lcd: new THREE.MeshBasicMaterial({ map: T.lcd }), gauge: std({ color: 0xcccccc, roughness: .5, map: T.gauge, envMapIntensity: .4 }),
 });
 const FIAMMA = new THREE.MeshBasicMaterial({ color: new THREE.Color(.35, .9, 2.6), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });   // resta fuori da M: nel giro si deve vedere
@@ -596,13 +603,14 @@ const QW = 1.04, QH = .865, QD = .41, QB = .066, XP = .2, QFAN = { x: -.14, y: .
 const qHome = { off: [QX, .43, QZ], w: 1.75, h: 1.25 };
 
 // 1 ─ Basamento e batteria alettata
-group('qbase', 'Basamento e batteria', 'Fondo su due piedi a 656 mm di interasse e batteria a L: tubi in rame, alette in alluminio con trattamento anticorrosione.', 3.5, 7.0, { stage: [-.25, .2, .8], ex: [-.5, -.05, -.45], az: 150, el: 16, zoom: .82,
+group('qbase', 'Basamento e batteria', 'Fondo su due piedi a 656 mm di interasse e batteria a L: tubi in rame, alette in alluminio con trattamento anticorrosione.', 3.5, 7.0, { stage: [-.25, .2, .8], ex: [-.5, -.05, -.45], az: 26, el: 18, zoom: .82,
   info: { e: 'Il polmone della pompa di calore. L\'aria di fuori passa tra le alette e cede il suo calore al gas, anche d\'inverno.', s: 'HP_QOR 70 · tubi in rame con alette in alluminio, trattamento anticorrosione · piedi a 656 mm di interasse, profondi 458 mm · lavora fino a −25 °C esterni' } }).home = qHome;
 const qy0 = QB + .025, qcH = .72, qyc = qy0 + qcH / 2;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x);
   [-.329, .327].forEach((x, i) => P(mesh(G.rbox(.075, .05, .458, .005), M.zinc, x, .025, 0), o({ d: i * .04, from: [0, -.25, 0], spin: [0, .6, 0], n: i ? null : 'Piedi, interasse 656 mm' })));
-  const fe = []; for (const x of [-.329, .327]) for (const z of [-.212, .212]) fe.push({ p: [x, .05, z] }); screws(fe, o({ d0: .06, d1: .1, n: 'Fissaggi' }));
+  const fe = []; for (const x of [-.329, .327]) for (const z of [-.212, .212]) fe.push({ p: [x, .05, z] }); screws(fe, o({ d0: .06, d1: .1, n: 'Bulloni di fondazione Ø 10' }));
+  [-.329, .327].forEach((x, i) => P(mesh(G.rbox(.105, .008, .49, .003), M.rubber, x, .003, 0), o({ d: i * .03, from: [0, -.2, 0], spin: [0, 0, 0], n: i ? null : 'Tappetini antiurto in gomma' })));
   P(mesh(G.rbox(QW - .004, .016, QD - .004, .005), M.basePlate, 0, .058, 0), o({ d: .12, from: [0, .45, .1], spin: [.5, 0, 0], dur: .6, n: 'Fondo stampato' }));
   [[0, .016, QD / 2 - .002, QW, .004], [0, .016, -QD / 2 + .002, QW, .004]].forEach(([x, , z, w, d], i) => P(mesh(G.box(w, .026, d), M.zinc, x, QB + .011, z), o({ d: .18 + i * .02, from: [0, 0, z * 1.5], spin: [0, 0, 0] })));
   [-QW / 2 + .002, QW / 2 - .002].forEach((x, i) => P(mesh(G.box(.004, .026, QD), M.zinc, x, QB + .011, 0), o({ d: .22 + i * .02, from: [x * .6, 0, 0], spin: [0, 0, 0] })));
@@ -631,56 +639,74 @@ const qy0 = QB + .025, qcH = .72, qyc = qy0 + qcH / 2;
   [1, 4, 7, 10].forEach((k, i) => P(mesh(tubeGeo([[.186, QB + .136, -.186], [.192 + i * .002, QB + .2 + i * .02, -.184], [.184, ya(k) - .03, -.182], [.174, ya(k), -.178]], .0024, 24), M.copper), o({ d: .97 + i * .006, n: i ? null : 'Capillari' })));
 }
 
-// 2 ─ Scambiatore a piastre e kit idronico preassemblato (componenti dal depliant p.28)
-const QIN = [.455, .533, -QD / 2], QOUT = [.455, .368, -QD / 2];
+// 2 ─ Scambiatore a piastre e modulo idraulico: ogni componente è dove lo mostra il disegno del manuale 00339595 (p.20)
+const QPX = .391;                                     // attacchi sul retro a 911 mm dal fianco sinistro (p.10: E + F + G), a 368 e 533 mm da terra (K + J, + I)
+const QIN = [QPX, .533, -QD / 2], QOUT = [QPX, .368, -QD / 2];
+const HXX = .356, HXY = .2075, HXH = .275, ZHB = -.197, ZHF = -.135, XRF = HXX - .035, PZ = -.05, VX = .29, VZ = -.01, ACX = .343, ACZ = -.1, CMX = .37, CMZ = .125;
 const QP = {
-  wIn: [[.455, .533, -.2], [.455, .533, -.1], [.41, .51, -.08], [.33, .455, -.085], [.3, .43, -.1], [.3, .43, -.127]],
-  wHx: [[.3, .43, -.122], [.295, .31, -.122], [.3, .19, -.122]],          // i flussi corrono sulla faccia anteriore dello scambiatore, per restare visibili
-  wA: [[.3, .19, -.127], [.3, .19, -.09], [.34, .165, -.08], [.4, .16, -.09], [.43, .165, -.1]],
-  wB: [[.46, .2, -.1], [.46, .27, -.1], [.458, .33, -.12], [.455, .368, -.16], [.455, .368, -.2]],
-  a: [[.328, .427, .013], [.328, .52, .013], [.33, .63, .02], [.32, .665, .045], [.3, .66, .05], [.3, .622, .05]],
-  b: [[.33, .578, .05], [.34, .54, .04], [.31, .5, -.02], [.26, .46, -.08], [.24, .435, -.1], [.24, .43, -.127]],
-  rHx: [[.24, .43, -.122], [.245, .31, -.122], [.24, .19, -.122]],
-  c: [[.24, .19, -.127], [.24, .19, -.1], [.228, .16, -.07], [.225, .135, -.035]],
-  d: [[.225, .1, -.035], [.214, .096, -.09], [.2, .11, -.15], [.19, .14, -.18], [.186, QB + .135, -.186]],
+  // acqua: entra in alto, scende nel circolatore, entra in basso nello scambiatore, esce in testa e torna all'attacco basso
+  wIn: [[QPX, .533, -.2], [QPX, .533, -.1], [QPX, .526, -.07], [QPX, .5, PZ], [QPX, .3, PZ], [QPX, .15, PZ], [QPX, .122, -.06], [QPX, .115, -.085], [QPX, .115, ZHF]],
+  wHx: [[QPX, .115, ZHF + .006], [QPX + .008, .21, ZHF + .006], [QPX, .3, ZHF + .006]],          // i flussi corrono sulla faccia anteriore dello scambiatore, per restare visibili
+  wA: [[QPX, .3, ZHF], [QPX, .3, -.115], [QPX, .31, -.098], [QPX, .334, -.092], [QPX, .358, -.1], [QPX, .368, -.12], [QPX, .368, -.2]],
+  wB: [[QPX, .368, -.2], [QPX, .368, -.242]],
+  // R32 (allegato A, p.63): compressore → valvola a 4 vie → scambiatore a piastre → cilindro dell'accumulatore → filtro, valvola di espansione, capillare, filtro → batteria → valvola a 4 vie → compressore
+  a: [[.353, .427, .108], [.35, .47, .09], [.34, .56, .03], [.322, .65, .03], [.3, .662, .05], [.3, .622, .05]],
+  b: [[.33, .578, .05], [.335, .54, .02], [.324, .47, -.06], [XRF, .4, -.1], [XRF, .31, -.112], [XRF, .3, ZHF]],
+  rHx: [[XRF, .3, ZHF + .006], [XRF - .008, .21, ZHF + .006], [XRF, .115, ZHF + .006]],
+  c: [[XRF, .115, ZHF], [XRF, .115, -.112], [.33, .125, -.102], [ACX, .16, ACZ], [ACX, .34, ACZ], [.355, .41, -.11], [.34, .49, -.13], [.27, .522, -.15], [.242, .497, -.15]],
+  d: [[.228, .472, -.15], [.22, .4, -.17], [.212, .25, -.184], [.2, .2, -.186], [.186, QB + .135, -.186]],
   coil: (() => { const a = []; for (let i = 0; i < 6; i++) { const y = qy0 + .06 + i * .12, L = i % 2 === 0; a.push([L ? .15 : -.42, y, -.135], [L ? -.42 : .15, y, -.135]); } return a; })(),
   e: [[.186, .74, -.13], [.205, .73, -.09], [.235, .62, -.02], [.258, .555, .035], [.27, .56, .05], [.27, .578, .05]],
-  f: [[.3, .578, .05], [.3, .54, .07], [.295, .48, .12], [.293, .44, .142], [.293, QB + .4 * .86, .142]],
+  f: [[.3, .578, .05], [.31, .545, .08], [.38, .5, .14], [.45, .46, .14], [.4775, .43, .134], [.4775, .4, .134]],
 };
 for (const k in QP) PIPE['q' + k] = sposta(QP[k], QX, 0, QZ);
-group('qhyd', 'Scambiatore e kit idronico', 'Scambiatore a piastre inox brevettato per R32 e kit idronico preassemblato: circolatore inverter, vaso da 5 litri, valvola di sicurezza 3 bar, flussostato, sfogo aria e filtro.', 7.0, 11.0, { stage: [.6, .15, -.75], ex: [.55, .05, -.45], az: 158, el: 12, zoom: .95,
-  info: { e: 'Qui il calore passa dal gas all\'acqua di casa, che poi va al kit HYBREER.', s: 'Scambiatore a piastre inox brevettato per R32 · circolatore inverter ad alta prevalenza · vaso 5 l · valvola di sicurezza 3 bar · flussostato · sfogo aria · filtro in ingresso · kit antigelo integrato · portata 0,31 l/s' } }).home = qHome;
+group('qhyd', 'Scambiatore e modulo idraulico', 'Scambiatore a piastre inox brevettato per R32 e modulo idraulico: circolatore inverter, vaso da 5 litri, valvola di sicurezza 3 bar, flussostato e sfogo aria.', 7.0, 11.0, { stage: [.2, .15, .8], ex: [.15, .05, -.5], az: 40, el: 20, zoom: .95,
+  info: { e: 'Qui il calore passa dal gas all\'acqua di casa, che poi va al kit HYBREER.', s: 'Disposizione dal manuale 00339595 p.20 · scambiatore a piastre inox brevettato per R32 · circolatore inverter · vaso di espansione 5 l precaricato a 1,5 bar · valvola di sovrapressione 3 bar · flussostato · spurgo automatico dell\'aria · sensori Tw_in, Tw_out, T2, T2B · attacchi sul retro a 368 e 533 mm da terra · kit antigelo integrato' } }).home = qHome;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x);
-  P(mesh(G.box(.1, .3, .004), M.steel, .27, .31, -.1915), o({ d: 0, from: [0, 0, -.35], spin: [0, 0, 0], n: 'Piastra di fondo' }));
-  const pl = []; for (let i = 0; i < 22; i++) pl.push({ p: [.27, .31, -.188 + i * .0027] });
-  PIN(G.box(.1, .3, .0019), M.inox, pl, o({ d0: .03, d1: .27, dur: .3, from: [0, .05, .45], spin: [0, 0, 0], ease: eoc, n: 'Piastre in acciaio inox', snd: 'fin' }));
-  P(mesh(G.box(.1, .3, .004), M.steel, .27, .31, -.1275), o({ d: .3, from: [0, 0, .35], spin: [0, 0, 0] }));
-  [[.3, .43, M.steel, .013], [.3, .19, M.steel, .013], [.24, .43, M.copper, .009], [.24, .19, M.copper, .009]].forEach(([x, y, m, r], i) => P(mesh(G.cylZ(r, .028, 16), m, x, y, -.113), o({ d: .33 + i * .01, from: [0, 0, .3], spin: [0, 0, 3] })));
-  P(mesh(G.box(.004, .24, .05), M.heater, .2225, .31, -.16), o({ d: .37, from: [-.2, 0, 0], spin: [0, 0, 0], n: 'Kit antigelo dello scambiatore' }));
-  // circolatore
-  P(mesh(G.cylZ(.04, .036, 28), M.cast, .46, .17, -.1), o({ d: .41, n: 'Circolatore inverter' }));
-  P(mesh(G.cyl(.022, .09, 20), M.cast, .46, .185, -.1), o({ d: .42 }));
-  P(mesh(G.cylZ(.036, .052, 28), M.black, .46, .17, -.056), o({ d: .44, from: [0, 0, .4], spin: [0, 0, 3] }));
-  P(mesh(G.rbox(.062, .062, .022, .008), M.plastic, .46, .17, -.02), o({ d: .46, from: [0, 0, .4] }));
-  P(mesh(G.torus(.018, .003), M.led, .46, .17, -.008), o({ d: .48, from: [0, 0, .3] }));
-  // vaso di espansione da 5 litri
-  P(mesh(G.rbox(.25, .28, .07, .022), M.vesQ, .36, .7, -.16), o({ d: .5, from: [0, .3, -.2], spin: [.8, 0, 0], dur: .55, n: 'Vaso di espansione 5 l' }));
-  P(mesh(tubeGeo([[.36, .56, -.16], [.365, .53, -.13], [.39, .515, -.095], [.41, .51, -.082]], .006, 24), M.rubber), o({ d: .54 }));
-  // filtro, sfogo aria, valvola di sicurezza, flussostato
-  P(mesh(G.cylZ(.017, .06, 16), M.brass, .455, .533, -.155), o({ d: .57, n: 'Filtro in ingresso' }));
-  P(mesh(G.cyl(.012, .045, 14), M.brass, .455, .505, -.15, 0, 0, rad(-28)), o({ d: .58 }));
-  P(mesh(G.cyl(.008, .05, 12), M.copper, .455, .56, -.1), o({ d: .6 }));
-  P(mesh(G.cyl(.014, .04, 16), M.brass, .455, .6, -.1), o({ d: .61, n: 'Valvola di sfogo aria' }));
-  P(mesh(G.cyl(.009, .012, 12), M.black, .455, .626, -.1), o({ d: .62 }));
-  P(mesh(G.cylZ(.011, .04, 12), M.brass, .46, .3, -.078), o({ d: .64, n: 'Valvola di sicurezza 3 bar' }));
-  P(mesh(G.cylZ(.016, .018, 16), M.red, .46, .3, -.05), o({ d: .65 }));
-  P(mesh(G.cyl(.014, .04, 6), M.brass, .46, .245, -.1), o({ d: .67, n: 'Flussostato' }));
-  P(mesh(G.rbox(.03, .034, .03, .005), M.plastic, .495, .245, -.1), o({ d: .68 }));
+  // scambiatore a piastre, in piedi contro la schiena del vano
+  P(mesh(G.box(.12, HXH, .004), M.steel, HXX, HXY, ZHB + .002), o({ d: 0, from: [0, 0, -.35], spin: [0, 0, 0], n: 'Piastra di fondo' }));
+  const pl = []; for (let i = 0; i < 22; i++) pl.push({ p: [HXX, HXY, ZHB + .0055 + i * .0025] });
+  PIN(G.box(.12, HXH, .0018), M.inox, pl, o({ d0: .03, d1: .25, dur: .3, from: [0, .05, .45], spin: [0, 0, 0], ease: eoc, n: 'Piastre in acciaio inox', snd: 'fin' }));
+  P(mesh(G.box(.12, HXH, .004), M.steel, HXX, HXY, ZHF - .002), o({ d: .27, from: [0, 0, .35], spin: [0, 0, 0], n: 'Piastra di testa' }));
+  [[QPX, .3, M.steel, .013], [QPX, .115, M.steel, .013], [XRF, .3, M.copper, .009], [XRF, .115, M.copper, .009]].forEach(([x, y, m, r], i) => P(mesh(G.cylZ(r + .003, .014, 16), m, x, y, ZHF + .007), o({ d: .29 + i * .008, from: [0, 0, .3], spin: [0, 0, 3] })));
+  P(mesh(G.box(.004, .2, .05), M.heater, HXX - .0625, HXY, -.166), o({ d: .33, from: [-.2, 0, 0], spin: [0, 0, 0], n: 'Kit antigelo dello scambiatore' }));
+  // vaso di espansione da 5 litri, in piedi sulla sua staffa
+  P(mesh(G.box(.17, .004, .13), M.galv, VX, .196, VZ), o({ d: .35, from: [0, .3, 0], n: 'Staffa del vaso' }));
+  [-1, 1].forEach((sg, i) => P(mesh(G.box(.004, .13, .13), M.galv, VX + sg * .083, .131, VZ), o({ d: .36 + i * .008, from: [sg * .2, 0, 0], spin: [0, 0, 0] })));
+  P(mesh(G.cyl(.03, .012, 20), M.steel, VX, .204, VZ), o({ d: .38 }));
+  P(mesh(G.dome(.085, .5, false), M.vesQ2, VX, .25, VZ), o({ d: .39, from: [0, .35, 0], spin: [0, 1.5, 0] }));
+  P(mesh(G.cyl(.085, .17, 40), M.vesQ, VX, .335, VZ, 0, rad(-40), 0), o({ d: .4, from: [0, .35, 0], spin: [0, 1.5, 0], dur: .55, n: 'Vaso di espansione 5 l' }));
+  P(mesh(G.dome(.085, .5), M.vesQ2, VX, .42, VZ), o({ d: .41, from: [0, .35, 0], spin: [0, 1.5, 0] }));
+  P(mesh(G.torus(.0862, .0035), M.steel, VX, .268, VZ, PI / 2, 0, 0), o({ d: .42, from: [0, .3, 0] }));
+  P(mesh(G.cyl(.005, .014, 10), M.brass, VX + .02, .466, VZ), o({ d: .43, n: 'Valvola di precarica' }));
+  P(mesh(tubeGeo([[VX, .2, VZ], [VX + .012, .172, VZ - .02], [VX + .06, .165, PZ + .008], [QPX - .012, .17, PZ]], .006, 24), M.rubber), o({ d: .44 }));
+  // circolatore sul tratto verticale, motore verso il fianco destro
+  P(mesh(G.cyl(.022, .1, 20), M.cast, QPX, .22, PZ), o({ d: .47, n: 'Circolatore inverter' }));
+  P(mesh(G.cylX(.04, .036, 28), M.cast, QPX, .22, PZ), o({ d: .48 }));
+  [.277, .163].forEach((y, i) => P(mesh(G.cyl(.024, .016, 6), M.brass, QPX, y, PZ), o({ d: .49 + i * .008, spin: [0, 5, 0], snd: 'screw', n: i ? null : 'Bocchettoni del circolatore' })));
+  P(mesh(G.cylX(.036, .052, 28), M.black, QPX + .044, .22, PZ), o({ d: .51, from: [.4, 0, 0], spin: [3, 0, 0] }));
+  P(mesh(G.rbox(.022, .062, .062, .008), M.plastic, QPX + .081, .22, PZ), o({ d: .53, from: [.4, 0, 0] }));
+  P(mesh(G.torus(.018, .003), M.led, QPX + .093, .22, PZ, 0, PI / 2, 0), o({ d: .55, from: [.3, 0, 0] }));
+  // flussostato e spurgo dell'aria sul tratto alto, valvola di sovrapressione in testa allo scambiatore
+  P(mesh(G.cyl(.008, .03, 12), M.brass, QPX, .556, -.165), o({ d: .58 }));
+  P(mesh(G.cyl(.013, .02, 6), M.brass, QPX, .578, -.165), o({ d: .585, spin: [0, 5, 0], n: 'Flussostato' }));
+  P(mesh(G.rbox(.026, .03, .04, .005), M.plastic, QPX, .603, -.165), o({ d: .59 }));
+  P(mesh(G.cyl(.008, .024, 12), M.brass, QPX, .553, -.12), o({ d: .6 }));
+  P(mesh(G.cyl(.015, .04, 18), M.brass, QPX, .585, -.12), o({ d: .605, n: 'Valvola di spurgo automatico dell\'aria' }));
+  P(mesh(G.cyl(.009, .012, 12), M.black, QPX, .611, -.12), o({ d: .61 }));
+  P(mesh(G.cylX(.011, .04, 12), M.brass, QPX + .03, .3, -.108), o({ d: .63, n: 'Valvola di sovrapressione 3 bar' }));
+  P(mesh(G.cylX(.016, .02, 16), M.red, QPX + .058, .3, -.108), o({ d: .64 }));
+  // cilindro dell'accumulatore sulla linea del liquido, accanto al circolatore
+  P(mesh(G.cyl(.016, .15, 20), M.steel, ACX, .25, ACZ), o({ d: .66, from: [-.2, .2, .2], n: 'Cilindro dell\'accumulatore' }));
+  P(mesh(G.dome(.016, .6), M.steel, ACX, .325, ACZ), o({ d: .665 })); P(mesh(G.dome(.016, .6, false), M.steel, ACX, .175, ACZ), o({ d: .665 }));
   // tubi dell'acqua e attacchi sul retro
-  [['wIn', 'Ingresso acqua dal kit'], ['wA', null], ['wB', 'Uscita acqua verso il kit']].forEach(([k, n], i) => P(mesh(tubeGeo(QP[k], .0125, 40), M.copper), o({ d: .72 + i * .04, dur: .5, n })));
-  [QIN, QOUT].forEach((p, i) => { P(mesh(G.cylZ(.0185, .05, 20), M.brass, p[0], p[1], p[2] - .012), o({ d: .86 + i * .02, from: [0, 0, -.3], spin: [0, 0, 4], n: i ? null : 'Attacchi G 1"' })); P(mesh(G.cylZ(.024, .014, 6), M.brass, p[0], p[1], p[2] - .03), o({ d: .88 + i * .02, from: [0, 0, -.3], spin: [0, 0, 6], snd: 'screw' })); });
-  [[.3, .46, -.105], [.3, .16, -.105], [.458, .34, -.1]].forEach((p, i) => P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, ...p), o({ d: .94 + i * .012, n: i ? null : 'Sonde acqua' })));
+  P(mesh(tubeGeo(QP.wIn, .0125, 72), M.copper), o({ d: .7, dur: .55, n: 'Ingresso acqua: giù al circolatore e allo scambiatore' }));
+  P(mesh(G.cylZ(.0125, .05, 16), M.copper, QPX, .115, -.028), o({ d: .75 }));
+  P(mesh(tubeGeo(QP.wA, .0125, 48), M.copper), o({ d: .77, dur: .5, n: 'Uscita acqua: dalla testa dello scambiatore all\'attacco' }));
+  [QIN, QOUT].forEach((p, i) => { P(mesh(G.cylZ(.0185, .05, 20), M.brass, p[0], p[1], p[2] - .012), o({ d: .84 + i * .02, from: [0, 0, -.3], spin: [0, 0, 4], n: i ? 'Uscita acqua G 1"' : 'Ingresso acqua G 1"' })); P(mesh(G.cylZ(.024, .014, 6), M.brass, p[0], p[1], p[2] - .03), o({ d: .86 + i * .02, from: [0, 0, -.3], spin: [0, 0, 6], snd: 'screw' })); });
+  // i quattro sensori del modulo idraulico
+  [[QPX - .024, .3, -.108, 'Sensore Tw_out'], [QPX, .115, .001, 'Sensore Tw_in'], [ACX, .148, ACZ + .014, 'Sensore T2, refrigerante liquido'], [XRF + .014, .36, -.106, 'Sensore T2B, refrigerante gas']].forEach(([x, y, z, n], i) => P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, x, y, z), o({ d: .92 + i * .015, n })));
 }
 
 // 3 ─ Compressore twin rotary, in sezione finché non arriva lo sportello (interno generico: schema di principio)
@@ -690,7 +716,8 @@ const gC = group('qcomp', 'Compressore twin rotary', 'DC inverter a doppia camer
 gC.home = qHome;
 let cmp, crank;
 {
-  const q = node(QX, 0, QZ); cmp = new THREE.Group(); cmp.position.set(.345, QB, .03); cmp.scale.setScalar(.86); q.add(cmp); crank = new THREE.Group(); cmp.add(crank);
+  const q = node(QX, 0, QZ); cmp = new THREE.Group(); cmp.position.set(CMX, QB, CMZ); cmp.scale.setScalar(.86); q.add(cmp); crank = new THREE.Group(); cmp.add(crank);
+  const AX = .125, AZ = .01;      // separatore di liquido sul fianco destro del compressore
   const cp = (m, o) => P(m, Object.assign({ parent: cmp }, o)), ck = (m, o) => P(m, Object.assign({ parent: crank, spin: [0, 4, 0], from: [0, .35, 0] }, o));
   cp(mesh(G.rbox(.22, .012, .22, .004), M.galv, 0, .006, 0), { d: 0, from: [0, -.2, 0], n: 'Piattaforma antivibrante' });
   const gr = [0, 1, 2].map(i => { const a = rad(90 + i * 120); return { p: [Math.cos(a) * .088, .027, Math.sin(a) * .088] }; });
@@ -715,11 +742,11 @@ let cmp, crank;
   cp(mesh(annulus(.0615, .0375, .075), M.lam, 0, .235, 0), { d: .52, from: [0, .45, 0], spin: [0, 1.5, 0], dur: .6, n: 'Statore' });
   [.283, .187].forEach((y, i) => cp(mesh(G.torus(.0495, .0115), M.copper, 0, y, 0, PI / 2, 0, 0), { d: .54 + i * .01, n: i ? null : 'Avvolgimenti in rame' }));
   cp(mesh(G.open(.066, .26, PI / 2, rad(250)), M.shellC, 0, .205, 0), { d: .56, from: [-.2, .35, -.25], spin: [0, 2.5, 0], dur: .65, n: 'Mantello' });
-  cp(mesh(G.cyl(.03, .19, 28), M.shellC, -.06, .225, .13), { d: .6, n: 'Separatore di liquido' });
-  cp(mesh(G.dome(.03, .5), M.shellC, -.06, .32, .13), { d: .61 }); cp(mesh(G.dome(.03, .5, false), M.shellC, -.06, .13, .13), { d: .61 });
-  cp(mesh(annulus(.0325, .03, .014), M.steel, -.06, .25, .13), { d: .62 });
-  [[.105, .64], [.136, .66]].forEach(([y, d], i) => cp(mesh(tubeGeo([[-.06 + (i ? .012 : -.012), .118, .13], [-.06 + (i ? .012 : -.012), y - .012, .12], [-.05, y, .1], [-.028, y, .06]], .0062, 28), M.copper), { d, n: i ? null : 'Due aspirazioni, una per camera' }));
-  cp(mesh(G.cyl(.008, .05, 14), M.copper, -.06, .36, .13), { d: .66 });
+  cp(mesh(G.cyl(.03, .19, 28), M.shellC, AX, .225, AZ), { d: .6, n: 'Separatore di liquido' });
+  cp(mesh(G.dome(.03, .5), M.shellC, AX, .32, AZ), { d: .61 }); cp(mesh(G.dome(.03, .5, false), M.shellC, AX, .13, AZ), { d: .61 });
+  cp(mesh(annulus(.0325, .03, .014), M.steel, AX, .25, AZ), { d: .62 });
+  [[.105, .64], [.136, .66]].forEach(([y, d], i) => cp(mesh(tubeGeo([[AX, .118, AZ + (i ? .012 : -.012)], [AX - .008, y - .012, AZ + (i ? .012 : -.012)], [.1, y, AZ * .6], [.062, y, .004]], .0062, 28), M.copper), { d, n: i ? null : 'Due aspirazioni, una per camera' }));
+  cp(mesh(G.cyl(.008, .05, 14), M.copper, AX, .36, AZ), { d: .66 });
   cp(mesh(G.dome(.066, .45), M.shellC, 0, .335, 0), { d: .68, from: [0, .4, 0], spin: [0, 2, 0], n: 'Calotta' });
   cp(mesh(G.rbox(.052, .03, .05, .006), M.plastic, .012, .366, .026), { d: .7, n: 'Scatola morsetti' });
   cp(mesh(G.cyl(.008, .06, 14), M.copper, -.02, .385, -.02), { d: .72, n: 'Mandata' });
@@ -729,8 +756,8 @@ let cmp, crank;
   cp(mesh(G.open(.0725, .275, -PI / 2, PI), M.sFelt, 0, .2, 0), { d: .92, from: [0, 0, .35], spin: [0, 0, 0], ease: eoc });
   cp(mesh(annulus(.0725, .034, .01), M.sFelt, 0, .345, 0), { d: .96, from: [0, .3, 0], spin: [0, 0, 0] });
 }
-PIPE.comp = [[-.06, .4, .13], [-.06, .3, .13], [-.06, .14, .13], [-.05, .112, .1], [-.028, .118, .06], [0, .12, .01], [.012, .16, -.01], [0, .21, .012], [-.012, .27, 0], [0, .32, -.01], [-.02, .36, -.02], [-.02, .42, -.02]];
-const qcw = p => [QX + .345 + p[0] * .86, QB + p[1] * .86, QZ + .03 + p[2] * .86];      // dal compressore alla scena
+PIPE.comp = [[.125, .4, .01], [.125, .3, .01], [.125, .14, .01], [.105, .112, .008], [.062, .118, .004], [.012, .12, 0], [.012, .16, -.01], [0, .21, .012], [-.012, .27, 0], [0, .32, -.01], [-.02, .36, -.02], [-.02, .42, -.02]];
+const qcw = p => [QX + CMX + p[0] * .86, QB + p[1] * .86, QZ + CMZ + p[2] * .86];      // dal compressore alla scena
 
 // 4 ─ Ventilatore
 const fanRot = new THREE.Group();
@@ -755,24 +782,32 @@ group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e
   P(mesh(tubeGeo([[F.x + .045, F.y + .02, -.045], [F.x + .18, F.y + .24, -.08], [XP - .02, .76, -.06], [XP + .02, .79, -.04]], .004, 30), M.plastic), o({ d: .92, n: 'Cablaggio' }));
 }
 
-// 5 ─ Circuito del gas R32 ed elettronica (valvola a 4 vie, valvola di espansione e scheda: schema di principio)
+// 5 ─ Circuito del gas R32 ed elettronica: i componenti sono quelli dell'allegato A (p.63) e delle schede di p.21-25; la loro posizione nel vano è ricostruita
 group('qref', 'Circuito R32 ed elettronica', 'Il gas R32 gira in un circuito chiuso tra compressore, scambiatore a piastre e batteria. La scheda inverter decide la velocità.', 19.0, 22.0, { stage: [.3, .5, .8], ex: [.2, .5, .45], az: 28, el: 18, zoom: .9,
-  info: { e: 'Il percorso chiuso del gas: gira sempre lo stesso, senza consumarsi. D\'estate il giro si inverte e la casa si raffresca.', s: 'R32, 1,25 kg · full inverter · porta Modbus · ingresso per il fotovoltaico · limitazione della potenza assorbita · valvola a 4 vie, valvola di espansione e scheda: schema di principio' } }).home = qHome;
+  info: { e: 'Il percorso chiuso del gas: gira sempre lo stesso, senza consumarsi. D\'estate il giro si inverte e la casa si raffresca.', s: 'R32, 1,25 kg · ciclo dal manuale 00339595, allegato A: valvola a 4 vie, valvola di espansione elettronica, capillare, due filtri, pressostati di alta e di bassa, sensore di pressione · tre schede: modulo inverter, controllo principale, modulo idraulico · porta Modbus · ingresso per il fotovoltaico' } }).home = qHome;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x);
   P(mesh(G.cylX(.014, .09, 20), M.brass, .3, .6, .05), o({ d: 0, spin: [2, 0, 0], n: 'Valvola a 4 vie' }));
   P(mesh(G.cyl(.0075, .028, 12), M.copper, .3, .62, .05), o({ d: .03 }));
   [.27, .3, .33].forEach((x, i) => P(mesh(G.cyl(.0075, .028, 12), M.copper, x, .582, .05), o({ d: .04 + i * .01 })));
   P(mesh(G.rbox(.03, .032, .028, .004), M.blue, .345, .622, .066), o({ d: .08, n: 'Bobina di inversione' }));
-  P(mesh(G.cyl(.011, .036, 14), M.brass, .225, .118, -.035), o({ d: .12, n: 'Valvola di espansione elettronica' }));
-  P(mesh(G.cyl(.018, .03, 20), M.plastic, .225, .152, -.035), o({ d: .14 }));
+  P(mesh(G.cyl(.011, .036, 14), M.brass, .228, .49, -.15), o({ d: .12, n: 'Valvola di espansione elettronica' }));
+  P(mesh(G.cyl(.018, .03, 20), M.plastic, .228, .523, -.15), o({ d: .14 }));
   [['a', .008, 'Mandata del gas caldo'], ['b', .008, null], ['c', .006, 'Linea del liquido'], ['d', .006, null], ['e', .008, null], ['f', .008, 'Aspirazione']].forEach(([k, r, n], i) => P(mesh(tubeGeo(QP[k], r, 44), M.copper), o({ d: .18 + i * .05, dur: .5, n })));
   P(mesh(tubeGeo(QP.f.slice(1), .012, 26), M.foam), o({ d: .5, n: 'Isolamento' }));
-  [[.329, .5, .013, 'Pressostato di alta'], [.297, .5, .1, 'Pressostato di bassa']].forEach(([x, y, z, n], i) => { P(mesh(G.cyl(.0065, .02, 6), M.brass, x, y, z + .012, PI / 2, 0, 0), o({ d: .54 + i * .03, n })); P(mesh(G.cyl(.0085, .018, 12), M.plastic, x, y, z + .028, PI / 2, 0, 0), o({ d: .55 + i * .03 })); });
-  // scheda inverter in alto nel vano tecnico, con il dissipatore nel flusso d'aria
+  P(mesh(G.cylX(.0105, .036, 14), M.copper, .305, .507, -.14, 0, rad(-16), rad(22)), o({ d: .5, n: 'Filtro' })); P(mesh(G.cyl(.0105, .036, 14), M.copper, .22, .4, -.17), o({ d: .51 }));
+  PIN(G.torus(.012, .0022), M.copper, [0, 1, 2, 3].map(i => ({ p: [.214, .3 + i * .008, -.181], r: [PI / 2, 0, 0] })), o({ d0: .52, d1: .53, n: 'Capillare' }));
+  [[.352, .448, .1, 'Sensore di temperatura di scarico'], [.45, .46, .152, 'Sensore di temperatura di aspirazione'], [.186, .3, -.118, 'Sensore della batteria'], [-.3, .52, -QD / 2 + .012, 'Sensore di temperatura ambiente']].forEach(([x, y, z, n], i) => P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, x, y, z), o({ d: .535 + i * .004, n })));
+  P(mesh(G.cyl(.0065, .02, 6), M.brass, .335, .54, .034, PI / 2, 0, 0), o({ d: .552, n: 'Sensore di pressione' })); P(mesh(G.cyl(.0085, .018, 12), M.blue, .335, .54, .05, PI / 2, 0, 0), o({ d: .556 }));
+  [[.345, .515, .06, 'Pressostato di alta'], [.38, .5, .14, 'Pressostato di bassa']].forEach(([x, y, z, n], i) => { P(mesh(G.cyl(.0065, .02, 6), M.brass, x, y, z + .012, PI / 2, 0, 0), o({ d: .56 + i * .015, n })); P(mesh(G.cyl(.0085, .018, 12), M.plastic, x, y, z + .028, PI / 2, 0, 0), o({ d: .565 + i * .015 })); });
+  // elettronica in alto nel vano tecnico: modulo inverter (con il dissipatore nel flusso d'aria) e scheda di controllo principale; la scheda del modulo idraulico sta dietro il coperchio dei collegamenti
   const ix = .36, iy = .795;
   P(mesh(G.rbox(.29, .008, .3, .003), M.galv, ix, iy, .045), o({ d: .6, n: 'Vassoio dell\'elettronica' }));
-  P(mesh(G.box(.26, .003, .27), M.pcb, ix, iy + .007, .045), o({ d: .64, from: [0, .3, 0], spin: [0, 1, 0], n: 'Scheda inverter' }));
+  P(mesh(G.box(.26, .003, .155), M.pcb, ix, iy + .007, -.0125), o({ d: .64, from: [0, .3, 0], spin: [0, 1, 0], n: 'Modulo inverter' }));
+  P(mesh(G.box(.26, .003, .105), M.pcb, ix, iy + .007, .1275), o({ d: .66, from: [0, .3, 0], spin: [0, 1, 0], n: 'Scheda di controllo principale' }));
+  PIN(G.box(.016, .012, .008), M.white, [-.1, -.07, -.04, -.01, .02].map(x => ({ p: [ix + x, iy + .015, .17] })), o({ d0: .67, d1: .68, from: [0, .2, 0], n: 'Connettori dei sensori' }));
+  P(mesh(G.box(.003, .17, .15), M.pcb, .5, .64, .03), o({ d: .87, from: [.3, 0, 0], spin: [0, 0, 0], n: 'Scheda del modulo idraulico' }));
+  PIN(G.box(.01, .012, .016), M.white, [-.05, -.02, .01, .04].map(z => ({ p: [.494, .7, .03 + z] })).concat([-.04, 0, .04].map(z => ({ p: [.494, .58, .03 + z] }))), o({ d0: .875, d1: .88, from: [-.2, 0, 0], spin: [0, 0, 0] }));
   PIN(G.cyl(.014, .04, 18), M.cap, [[-.09, -.06], [-.05, -.06], [-.09, -.02], [-.05, -.02]].map(a => ({ p: [ix + a[0], iy + .028, .045 + a[1]] })), o({ d0: .68, d1: .72, from: [0, .25, 0], n: 'Condensatori' }));
   P(mesh(G.torus(.022, .01), M.copper, ix + .06, iy + .02, -.02, PI / 2, 0, 0), o({ d: .74, n: 'Induttanza' }));
   P(mesh(G.rbox(.06, .026, .045, .004), M.black, ix + .08, iy + .022, .12), o({ d: .76 }));
@@ -792,7 +827,7 @@ group('qshell', 'Involucro', 'Pannelli bianchi: griglia tonda del ventilatore, c
   // schiena del vano tecnico con gli attacchi
   P(mesh(G.rbox(XR - XP, QHP, .006, .003), M.sWhite, (XP + XR) / 2, QYC, ZB + .003), o(Object.assign({ d: 0, from: [0, 0, -.6], k: [0, 0, -.8], dur: .6, n: 'Schiena del vano tecnico' }, F0)));
   [[QIN, M.sIn], [QOUT, M.sOut]].forEach(([p, m]) => P(mesh(G.plane(.05, .025), m, p[0] - .06, p[1], ZB - .001, 0, PI, 0), o(Object.assign({ d: .04, from: [0, 0, -.3], k: [0, 0, -.8] }, F0))));
-  P(mesh(G.cylZ(.02, .02, 16), M.grey, .455, .089, ZB - .008), o({ d: .05, from: [0, 0, -.3], k: [0, 0, -.82], n: 'Scarico' }));
+  P(mesh(G.cylZ(.02, .02, 16), M.grey, QPX, .089, ZB - .008), o({ d: .05, from: [0, 0, -.3], k: [0, 0, -.82], n: 'Scarico' }));
   const gb = []; for (let i = 0; i < 20; i++) gb.push({ p: [XL + .02 + i * .034, QYC, ZB + .002] });
   PIN(G.box(.004, QHP, .004), M.sGrid, gb, o({ d0: .07, d1: .17, from: [0, .1, -.5], spin: [0, 0, 0], k: [0, 0, -.8], ease: eoc, n: 'Griglia posteriore', snd: 'fin' }));
   PIN(G.box(XP - XL, .004, .004), M.sGrid, [0, 1, 2, 3].map(i => ({ p: [(XL + XP) / 2, QB + .1 + i * .2, ZB - .001] })), o({ d0: .17, d1: .2, from: [0, 0, -.5], spin: [0, 0, 0], k: [0, 0, -.82], ease: eoc }));
@@ -1063,7 +1098,7 @@ group('kit', 'Kit HYBREER', 'Doppio collettore coibentato: sopra arrivano pompa 
 }
 
 // 11 ─ Collegamenti e impianto
-const qIn = [QX + .455, .533, QZ - QD / 2 - .037], qOut = [QX + .455, .368, QZ - QD / 2 - .037], ZT = ZW + HZ;
+const qIn = [QX + QPX, .533, QZ - QD / 2 - .037], qOut = [QX + QPX, .368, QZ - QD / 2 - .037], ZT = ZW + HZ;
 const LP = {
   Mp: [qOut, [qOut[0], .368, -.2], [qOut[0], .368, ZT], [.25, .368, ZT], [.25, 1.13, ZT], [KX + HK.Mpdc, 1.13, ZT], [KX + HK.Mpdc, HY + .315, ZT]],
   Rp: [qIn, [qIn[0], .533, -.14], [qIn[0], .533, ZT + .06], [.19, .533, ZT + .06], [.19, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT], [KX + HK.Rpdc, HY + .29, ZT]],
@@ -1075,16 +1110,16 @@ const LP = {
   cond: [kwp(.012, -.035, .2), kwp(.03, -.1, .1), [KX + .2, 1.1, ZW + .03], [.87, .9, ZW + .03], [.87, .06, ZW + .03]],
 };
 // pavimento radiante: dodici file, andata e ritorno
-const FL = { x0: .08, x1: 1.17, z0: -.25, dz: .083, n: 12, y: .05 };
+const FL = { x0: .22, x1: 1.17, z0: -.25, dz: .083, n: 12, y: .05 };
 LP.floor = (() => { const a = []; for (let i = 0; i < FL.n; i++) { const z = FL.z0 + i * FL.dz, L = i % 2 === 0; a.push([L ? FL.x1 : FL.x0, FL.y, z], [L ? FL.x0 : FL.x1, FL.y, z]); } a.push([1.23, FL.y, FL.z0 + (FL.n - 1) * FL.dz], [1.23, FL.y, -.3]); return a; })();
 for (const k in LP) PIPE['l' + k] = LP[k];
 PIPE.fumiExt = [kwp(0, .72, .225), kwp(0, .93, .225), kwp(0, .98, .19), kwp(0, 1.0, .1), kwp(0, 1.0, -.06)];
 group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, kit e caldaia, sonda T1 sulla mandata, gas, scarico fumi e pavimento radiante.', 42.0, 45.5, { stage: [0, 0, .9], ex: [0, -.1, .7], az: 4, el: 16, zoom: .82,
-  info: { e: 'Quello che unisce tutto: l\'acqua va e torna tra i due generatori, il kit e il pavimento di casa.', s: 'Pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal, impianto su R imp / M imp · sonda di mandata globale T1 00470021 sull\'attacco della pompa di calore · tubi coibentati per il raffrescamento · gas, fumi e pavimento: percorso indicativo' } }).home = { off: [.1, 1.02, 0], w: 2.75, h: 2.5 };
+  info: { e: 'Quello che unisce tutto: l\'acqua va e torna tra i due generatori, il kit e il pavimento di casa.', s: 'Pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal, impianto su R imp / M imp · sonda di mandata globale T1 00470021 sull\'attacco della pompa di calore · tubi coibentati per il raffrescamento · gas, fumi e pavimento: percorso indicativo' } }).home = { off: [-.03, 1.02, 0], w: 3.15, h: 2.5 };
 {
   const o = x => x, tubo = (k, r, m, opt) => P(mesh(tubeGeo(LP[k], r, LP[k].length * 14), m), opt);
   // pavimento radiante: pannello isolante con le bugne, tubo a serpentina
-  P(mesh(G.box(1.27, .03, 1.08), M.massetto, .64, .015, .2), o({ d: 0, from: [0, -.2, .3], spin: [0, 0, 0], dur: .55, k: [0, -.25, .1], n: 'Pannello isolante del pavimento' }));
+  P(mesh(G.box(1.12, .03, 1.08), M.massetto, .715, .015, .2), o({ d: 0, from: [0, -.2, .3], spin: [0, 0, 0], dur: .55, k: [0, -.25, .1], n: 'Pannello isolante del pavimento' }));
   PIN(G.cylX(.0085, FL.x1 - FL.x0, 10), M.pex, Array.from({ length: FL.n }, (_, i) => ({ p: [(FL.x0 + FL.x1) / 2, FL.y, FL.z0 + i * FL.dz] })), o({ d0: .05, d1: .2, dur: .35, from: [0, .2, .4], spin: [0, 0, 0], ease: eoc, k: [0, -.2, .1], n: 'Tubo del pavimento radiante', snd: 'fin' }));
   PIN(new THREE.TorusGeometry(FL.dz / 2, .0085, 8, 14, PI), M.pex, Array.from({ length: FL.n - 1 }, (_, i) => ({ p: [i % 2 ? FL.x1 : FL.x0, FL.y, FL.z0 + (i + .5) * FL.dz], r: [PI / 2, 0, i % 2 ? -PI / 2 : PI / 2] })), o({ d0: .2, d1: .26, from: [0, .2, .3], spin: [0, 0, 0], k: [0, -.2, .1], snd: 'fin' }));
   P(mesh(tubeGeo([[FL.x1, FL.y, FL.z0 + (FL.n - 1) * FL.dz], [1.21, FL.y, FL.z0 + (FL.n - 1) * FL.dz - .01], [1.23, FL.y, .55], [1.23, FL.y, -.3]], .0085, 30), M.pex), o({ d: .27, k: [0, -.2, .1] }));
@@ -1119,20 +1154,33 @@ finalize();
 // Logica dal manuale HYBREER 00339200 p.19 (HP_QOR): sopra T4_AHS_ON riscalda solo la pompa di calore; tra T4HMIN e T4_AHS_ON pompa di calore e caldaia insieme;
 // sotto T4HMIN solo la caldaia. T4_AHS_ON consigliata: 5 °C (pavimento, mandata 35 °C), 7 °C (pavimento 40/45 °C), 10 °C (fan coil 55 °C e radiatori 70 °C).
 // T4HMIN di fabbrica: −15 °C. La caldaia è impostata solo in riscaldamento (7.8 FUNZIONE AHS = 1): d'estate raffresca solo la pompa di calore.
-const T_ASM = 3.5, T_RUN = 45.5, T_END = 59.5, MC = V(.1, 1.02, 0), BW = 2.75, BH = 2.5, T4HMIN = -15;
+const T_ASM = 3.5, T_RUN = 45.5, T_END = 59.5, MC = V(-.03, 1.02, 0), BW = 3.15, BH = 2.5, T4HMIN = -15;
 const AMB_B = .3, AMB_M = .42;
 const IMPIANTI = [{ n: 'Pavimento 35 °C', t: 35, s: 5 }, { n: 'Pavimento 40/45 °C', t: 45, s: 7 }, { n: 'Fan coil 55 °C', t: 55, s: 10 }, { n: 'Radiatori 70 °C', t: 70, s: 10 }];
 scene.fog.near = 9; scene.fog.far = 30;
 // Le superfici bianche e i metalli chiari qui sono grandi: con l'ambiente della scena sfonderebbero nel bagliore. L'intensità dell'ambiente si regola per materiale
 // solo se il materiale ha la sua mappa: gliela do io, più bassa.
 const ambiente = (keys, k) => { for (const n of keys) { const m = M[n]; m.envMap = scene.environment; m.envMapIntensity = k; } };
-ambiente(['sClear', 'sWhite', 'sWhite2', 'sQFront', 'sGrid', 'sKPanel', 'sCof', 'sPP', 'white', 'vesQ', 'vesK', 'gauge', 'sQLabel', 'sKLabel', 'sIn', 'sOut', 'grey', 'term'], AMB_B);
+ambiente(['sClear', 'sWhite', 'sWhite2', 'sQFront', 'sGrid', 'sKPanel', 'sCof', 'sPP', 'white', 'vesQ', 'vesQ2', 'vesK', 'gauge', 'sQLabel', 'sKLabel', 'sIn', 'sOut', 'grey', 'term'], AMB_B);
 ambiente(['galv', 'steel', 'inox', 'alu', 'fin', 'zinc', 'sBugne', 'backK', 'lam'], AMB_M); ambiente(['copper', 'brass'], .6);
+// nel Giro dell'acqua restano accesi solo l'acqua e la sua scia: rame, ottone e muri si fanno da parte
+let soloNow = 0; const SOLO = [];
+function soloAcqua(x) { if (x === soloNow) return; soloNow = x; for (const [m, o] of SOLO) { m.opacity = lerp(1, o, x); const tr = x > .004; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; } }
 const ground = mesh(new THREE.CircleGeometry(11, 64), new THREE.MeshBasicMaterial({ map: T.ground }), 0, 0, 0, -PI / 2); scene.add(ground);
-const shadow = mesh(G.plane(2.1, 1.2), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), QX, .003, QZ, -PI / 2); scene.add(shadow);
-// la parete in muratura dietro caldaia e kit: scenografia, non un pezzo
-// (un piano con una faccia sola: da dietro non si vede, così la camera può girare dietro alla pompa di calore)
-const muro = mesh(G.plane(1.8, 2.62), std({ color: 0x9aa0a4, roughness: .95, map: T.muro, bumpMap: T.noise, bumpScale: 1.5 }), KX - .08, 1.31, ZW); scene.add(muro);
+const shadow = mesh(G.plane(2.1, 1.2), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), QX, .004, QZ, -PI / 2); scene.add(shadow);
+// scenografia, non pezzi: fuori il basamento in calcestruzzo della pompa di calore, in mezzo il muro esterno della casa tagliato in sezione,
+// dentro la parete della lavanderia con caldaia e kit. Ogni faccia è un piano con un lato solo: da dietro non si vede, così la camera può girare intorno alle macchine.
+const WX0 = -.06, WX1 = .14, WZ1 = .25, WH = 2.62;
+const mMuro = std({ color: 0x9aa0a4, roughness: .95, map: T.muro, bumpMap: T.noise, bumpScale: 1.5 }), mFuori = std({ color: 0xa8a297, roughness: .97, bumpMap: T.noise, bumpScale: 2.2 });
+T.sezione = cv(128, 128, (g, w, h) => { g.fillStyle = '#b9b39a'; g.fillRect(0, 0, w * .3, h); g.fillStyle = '#8a5f4c'; g.fillRect(w * .3, 0, w * .62, h); g.fillStyle = '#c9c9c4'; g.fillRect(w * .92, 0, w * .08, h); g.strokeStyle = 'rgba(40,24,18,.5)'; g.lineWidth = 2; for (let i = -h; i < w; i += 14) { g.beginPath(); g.moveTo(w * .3 + Math.max(0, i), Math.max(0, -i)); g.lineTo(Math.min(w * .92, w * .3 + i + h), Math.min(h, h - Math.max(0, i + h - w * .62))); g.stroke(); } g.fillStyle = 'rgba(60,56,40,.35)'; for (let i = 0; i < 70; i++) g.fillRect((i * 37 % 100) / 100 * w * .28, (i * 53 % 100) / 100 * h, 2, 2); });
+T.sezione.wrapT = THREE.RepeatWrapping; T.sezione.repeat.set(1, 9);
+const mSez = std({ color: 0xb0b0b0, roughness: .95, map: T.sezione });
+const muro = mesh(G.plane(1.28, WH), mMuro, WX1 + .64, WH / 2, ZW); scene.add(muro);
+scene.add(mesh(G.plane(WZ1 - ZW, WH), mMuro, WX1, WH / 2, (WZ1 + ZW) / 2, 0, PI / 2, 0), mesh(G.plane(WZ1 - ZW, WH), mFuori, WX0, WH / 2, (WZ1 + ZW) / 2, 0, -PI / 2, 0), mesh(G.plane(WX1 - WX0, WH), mSez, (WX0 + WX1) / 2, WH / 2, WZ1));
+{ const cap = mesh(G.plane(WX1 - WX0, WZ1 - ZW), std({ color: 0x8c8c88, roughness: .95 }), (WX0 + WX1) / 2, WH, (WZ1 + ZW) / 2, -PI / 2); scene.add(cap);
+  SOLO.push([M.copper, .2], [M.brass, .25], [mMuro, .35], [mFuori, .18], [mSez, .18], [cap.material, .18]);
+  const pad = mesh(G.rbox(1.34, .004, .7, .002), std({ color: 0x3f4244, roughness: .96, bumpMap: T.noise, bumpScale: 2, envMapIntensity: .2 }), QX, 0, QZ); scene.add(pad);
+  const mm = std({ color: 0x3a3d40, roughness: .8 }); for (const [y, z] of [[.368, ZW + HZ], [.533, ZW + HZ + .06]]) for (const x of [WX0 - .003, WX1 + .003]) scene.add(mesh(annulus(.034, .017, .006), mm, x, y, z, 0, 0, PI / 2)); }
 
 function points(n, size, add = true) {
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
@@ -1206,7 +1254,7 @@ const PATH = {
   // il giro dell'acqua: dal pavimento al kit, nella pompa di calore, di nuovo al kit, nella caldaia, e giù verso il pavimento
   const r = fP.path([seg('lRi', W0, W0, 1), seg([hK(-.1182, .1), hK(-.1182, .19), hK(HK.Rpdc, .29)], W0, W0), seg('lRp', W0, W0, 1), seg('qwIn', W0, W0), seg('qwHx', W0, W1), seg('qwA', W1, W1), seg('qwB', W1, W1), seg('lMp', W1, W1),
     seg([hK(HK.Mpdc, .3), hK(HK.Mpdc, .19), hK(HK.RCal, .19), hK(HK.RCal, .29)], W1, W0), seg('lRc', W0, W0, 1), seg('kret1', W0, W0), seg('kret2', W0, W0), seg('khx', W0, WB), seg('kflow', WB, WB), seg('kmOut', WB, WB), seg('lMc', WB, WB),
-    seg([hK(HK.MCal, .3), hK(HK.MCal, .19), hK(.1182, .19), hK(.1182, .1)], WB, W1), seg('lMi', W1, W1), seg([[1.17, .05, -.25], [.2, .05, -.25]], W1, W0)], 900);
+    seg([hK(HK.MCal, .3), hK(HK.MCal, .19), hK(.1182, .19), hK(.1182, .1)], WB, W1), seg('lMi', W1, W1), seg([[1.17, .05, -.25], [.22, .05, -.25]], W1, W0)], 900);
   r.curve = new THREE.CatmullRomCurve3(Array.from({ length: 300 }, (_, i) => { const q = Math.round(i / 299 * (r.S - 1)); return V(r.P[q * 3], r.P[q * 3 + 1], r.P[q * 3 + 2]); }), false, 'centripetal'); PATH.ride = r; }
 // scintille all'arrivo dei pezzi
 const NK = 240, spark = points(NK, .011), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
@@ -1223,7 +1271,7 @@ function applyLook(now, dt) {
   scene.background.lerpColors(C_STUDIO, C_COLD, S.cold); scene.fog.color.copy(scene.background);
   ground.material.color.setRGB(1 + S.cold * .5, 1 + S.cold * 1.1, 1 + S.cold * 1.9); rimL.intensity = 1.5 + S.cold * 1.6; keyL.intensity = 2.3 - S.cold * .7;
   M.heater.emissiveIntensity = S.cold * 1.5;
-  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost);
+  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost); soloAcqua(S.ghost < .003 ? 0 : S.ghost);
   fanA += dt * S.fan * PI * 2; fanRot.rotation.z = -fanA; crankA += dt * S.comp * PI * 2; crank.rotation.y = crankA; bfA += dt * S.boil * 9 * PI * 2; bFan.rotation.x = bfA;
   const fl = S.boil * (1 - clamp(S.E * 4)); FIAMMA.opacity = fl * (.72 + .28 * Math.sin(now * 31) * Math.sin(now * 13)); fiamma.visible = fl > .01; fiamma.scale.set(1, 1 + .14 * Math.sin(now * 23), 1); M.fibra.emissiveIntensity = fl * 1.4;
   const lk = (S.boil > .5 ? 1 : 0) + '|' + S.watT; if (lk !== lcdK) { lcdK = lk; lcdCaldaia(S.watT, S.boil > .5); }
@@ -1355,7 +1403,7 @@ $('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $
 resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
 queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
 // per le prove: tempo, esplosione e vista comandabili da fuori
-window.__ibrido = { GROUPS, PIECES, M, vista(v) { vistaProva = v; }, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
+window.__ibrido = { GROUPS, PIECES, M, PATH, PIPE, vista(v) { vistaProva = v; }, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
   setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
   groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
   stato: () => ({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, who: S.who, outT: Math.round(S.outT), watT: S.watT, cool: S.cool, fan: +S.fan.toFixed(2), boil: +S.boil.toFixed(2), xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }) };
@@ -1368,7 +1416,7 @@ const IMS = []; machine.traverse(o => { if (o.isInstancedMesh) IMS.push(o); });
 const comet = pushed(points(40, .03), .04); comet.visible = false; machine.add(comet); const camP = V(), camL = V();
 const ray = new THREE.Raycaster(), ptr = new Map(), _n = new THREE.Vector2(), _t = V(), _d = V();
 // frasi del giro, per tratto del percorso (vedi PATH.ride in f_show.js)
-const RIDE = [[0, 'L\'acqua torna tiepida dal pavimento e sale al kit HYBREER'], [2, 'Una parte va alla pompa di calore, fuori casa'], [3, 'Passa dal filtro ed entra nello scambiatore a piastre'], [4, 'Tra le piastre prende il calore del gas R32'], [5, 'Il circolatore la spinge di nuovo verso il kit'], [7, 'Torna al kit più calda'],
+const RIDE = [[0, 'L\'acqua torna tiepida dal pavimento e sale al kit HYBREER'], [2, 'Una parte va alla pompa di calore, fuori casa'], [3, 'Passa dal flussostato, scende nel circolatore ed entra nello scambiatore a piastre'], [4, 'Tra le piastre prende il calore del gas R32'], [5, 'Esce dalla testa dello scambiatore e riparte verso il kit'], [7, 'Torna al kit più calda'],
   [8, 'Quando fuori gela, il kit ne manda una parte anche alla caldaia'], [10, 'Il circolatore della caldaia la spinge nello scambiatore'], [12, 'Sotto il bruciatore la scalda la fiamma del gas'], [13, 'Scende dal tubo di mandata e torna al kit'], [16, 'Dal kit riparte verso il pavimento di casa']];
 const SHORT = { qbase: 'Batteria', qhyd: 'Kit idronico', qcomp: 'Compressore', qfan: 'Ventilatore', qref: 'Circuito R32', qshell: 'Involucro', kcomb: 'Bruciatore', khyd: 'Idraulica caldaia', kshell: 'Mantello', kit: 'Kit HYBREER', link: 'Collegamenti' };
 const GUSCI = ['qshell', 'kshell'];
@@ -1467,7 +1515,9 @@ function uiTick(dt) {
   ease('air', pdc * calm * (U.ride ? 0 : 1)); ease('ref', pdc * calm * (inside && !U.ride ? 1 : 0), 3);
   ease('watP', (pdc || U.ride ? 1 : 0) * calm, 3); ease('watB', cal * calm, 3); ease('watI', (w || U.ride ? 1 : 0) * calm, 3);
   S.outT = U.outT; S.watT = S.cool ? 18 : IMPIANTI[U.imp].t; S.who = w; S.read = 1; readout();
-  const r = stage.getBoundingClientRect(), dockH = $('dock').offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height));
+  // col telefono in orizzontale la barra degli strumenti sta di fianco: sposto l'impianto nella parte libera invece di alzarlo
+  const r = stage.getBoundingClientRect(), dk = $('dock'), side = dk.offsetWidth < r.width - 4, dockH = side ? 0 : dk.offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height)), fx = side ? Math.min(.5, dk.offsetWidth / Math.max(1, r.width)) : 0;
+  { const key = fx + ':' + r.width + ':' + r.height; if (key !== U.vkey) { U.vkey = key; if (fx) camera.setViewOffset(r.width, r.height, r.width * fx / 2, 0, r.width, r.height); else camera.clearViewOffset(); } }
   // camera
   if (U.ride) {
     const pa = PATH.ride; U.ru += dt * .62 / pa.tot;                 // 62 cm al secondo
@@ -1490,12 +1540,12 @@ function uiTick(dt) {
     const g = g0; _t.copy(g ? _d.copy(g.node.position).add(g.c) : MC); free.t.lerp(_t, Math.min(1, dt * 4));
     const zs = g && g.key !== 'link' ? Math.max(.24, g.size * 2.5 / BW) : 1 + U.Ecur * .55;
     // la barra degli strumenti copre il fondo: alzo il modello di conseguenza
-    rig.az = free.az; rig.el = free.el; rig.w += (BW * zs * free.zoom - rig.w) * Math.min(1, dt * 4); rig.h += (BH * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
+    rig.az = free.az; rig.el = free.el; rig.w += (BW * zs * free.zoom / (1 - fx) - rig.w) * Math.min(1, dt * 4); rig.h += (BH * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
   }
   // lente: finché nessuno la tocca passa da sola sull'impianto, per far capire cosa fa
   if (U.lens) {
     const R = Math.min(r.width, r.height - dockH) * .2, pr = renderer.getPixelRatio(), L = $('lens'), cy = (r.height - dockH) * .5;
-    if (U.lensAuto) { U.lx = r.width * (.5 + .24 * Math.sin(now * .7)); U.ly = cy + (r.height - dockH) * .16 * Math.sin(now * 1.1 + 1); }
+    if (U.lensAuto) { U.lx = r.width * (1 - fx) * (.5 + .24 * Math.sin(now * .7)); U.ly = cy + (r.height - dockH) * .16 * Math.sin(now * 1.1 + 1); }
     LENS.value.set(U.lx * pr, (r.height - U.ly) * pr, R * pr); L.style.width = L.style.height = R * 2 + 'px'; L.style.transform = `translate(${U.lx - R}px, ${U.ly - R}px)`;
   }
   audioTick();
@@ -1505,7 +1555,7 @@ function uiEnter() {
   setTool('touch'); free.auto = true;
   [...$('tabs').children].forEach((b, i) => { b.classList.remove('pulse'); setTimeout(() => { b.classList.add('pulse'); }, 1500 + i * 130); });
 }
-function uiLeave() { if (U.lens) setLens(false); if (U.ride) setRide(false); closeCard(); setE(0); S.cool = false; S.ghost = 0; resize(); ptSizes(); freeTick = null; }
+function uiLeave() { camera.clearViewOffset(); U.vkey = ''; if (U.lens) setLens(false); if (U.ride) setRide(false); closeCard(); setE(0); S.cool = false; S.ghost = 0; resize(); ptSizes(); freeTick = null; }
 
 function initUI() {
   $('nP').textContent = PIECES.length;
