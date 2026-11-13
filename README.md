@@ -28,7 +28,8 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 | `src/app/` | Home, Casa e passaggio tra le scene: `shell.html` (pagina e stile), `a_base.js`, `b_home.js`, `c_casa.js`, `d_app.js`, `og.jpg`. |
 | `src/prodotti/<id>/` | Un prodotto: `leggero.js` (livello leggero e registrazione nel sito), `shell.html` e i file `?_*.js` della pagina completa. |
 | `src/comune/logo.js` | Logo Unical vettoriale, preso dai PDF dei manuali. |
-| `src/comune/kit.js` | Base comune alle pagine complete dei prodotti (tranne la UHP, che ha il suo motore): resa, scena, materiali, motore del montaggio. |
+| `src/comune/kit.js` | Base comune alle pagine complete di HP 300PSDX e fotovoltaico: resa, scena, materiali, motore del montaggio. |
+| `src/prodotti/uhp/a_core.js`, `b_engine.js` | Motore di montaggio della UHP (pezzi con nome, viti, pezzi ripetuti, raggi X). Lo riusa tale e quale la pagina dell'ibrido: l'elenco sta in `MOTORE_UHP` dentro `build.py`. |
 | `src/dati/` | Una scheda dati per prodotto, con documento e pagina di provenienza per ogni valore. |
 | `build.py` | Unisce i sorgenti. Solo Python 3, nessuna installazione. |
 | `prove/prova.mjs` | Prova automatica con Chrome senza finestra a 390×780, 844×390 e 1280×720. |

@@ -2,151 +2,764 @@
   "id": "ibrido",
   "prodotto": "HYBREER 3 KON 24 HPQ 70/90: pompa di calore HP_QOR 70 + caldaia KONm 24 C + kit HYBREER (collettore 00376907, cofano 00377132)",
   "tipo": "Sistema ibrido: pompa di calore aria-acqua, kit di connessione idraulica, caldaia murale a condensazione",
-  "stato": "tappa 4, scritta a mano il 13 novembre 2026: disegni quotati e tabelle letti a vista sul PDF reso come immagine",
+  "stato": "tappa 4, seconda passata del 13 novembre 2026 dopo l'arrivo dei tre documenti della KONm: disegni quotati, disegno dei componenti e tabelle letti a vista sul PDF reso come immagine",
   "documenti": {
-    "NT": { "titolo": "HYBREER 3, istruzioni per l'installatore e il manutentore", "codice": "00339200/a", "edizione": "1 ed. 09/2022", "pagine": 20, "file": "X4418allegatoMANUALE_INSTALLAZIONE2-1X_00339200a_nt-installazione-hybreer-3-1.pdf" },
-    "DE": { "titolo": "Depliant Sistemi ibridi e integrati, linea residenziale", "codice": "06-2026", "pagine": 40, "file": "X4418allegatoDEPLIANT2-1X_sistemi-ibridi-integrati-06-2026_it.pdf" }
+    "NT": {
+      "titolo": "HYBREER 3, istruzioni per l'installatore e il manutentore",
+      "codice": "00339200/a",
+      "edizione": "1 ed. 09/2022",
+      "pagine": 20,
+      "file": "X4418allegatoMANUALE_INSTALLAZIONE2-1X_00339200a_nt-installazione-hybreer-3-1.pdf"
+    },
+    "DE": {
+      "titolo": "Depliant Sistemi ibridi e integrati, linea residenziale",
+      "codice": "06-2026",
+      "pagine": 40,
+      "file": "X4418allegatoDEPLIANT2-1X_sistemi-ibridi-integrati-06-2026_it.pdf"
+    },
+    "KI": {
+      "titolo": "KONm R 18 - C 18 - R 24 - C 24 - R 28 - C 28 - R 35 - C 35, istruzioni per l'installatore e il manutentore",
+      "codice": "00335660/a, 2a ed. 11/19",
+      "pagine": 44,
+      "file": "X1509allegatoMANUALE_INSTALLAZIONE1-1X_00335660.pdf"
+    },
+    "KU": {
+      "titolo": "KONm, istruzioni per l'uso (manuale utente)",
+      "codice": "00334008",
+      "pagine": 40,
+      "file": "X1509allegatoMANUALE_UTENTE1-1X_00334008.pdf"
+    },
+    "KD": {
+      "titolo": "Depliant KONm",
+      "codice": "00335797, ed. 1 - 06/2025",
+      "pagine": 8,
+      "file": "X1509allegatoDEPLIANT1-1X_konm.pdf"
+    }
   },
   "nota_fonti": "Pagine stampate. Le pagine del depliant coincidono con quelle del PDF.",
   "scelte_di_bore": [
-    { "voce": "Composizione", "valore": "HP_QOR 70 + KONm 24 C + kit HYBREER (combinazione HYBREER 3 KON 24 HPQ 70/90 del listino)", "fonte": "DE p.6; chat 13 novembre 2026" },
-    { "voce": "Posto della caldaia e del kit", "valore": "lavanderia, parete di fondo", "fonte": "chat 13 novembre 2026" },
-    { "voce": "Acqua calda", "valore": "la caldaia lavora solo in riscaldamento, l'acqua calda resta all'HP 300PSDX", "fonte": "chat 13 novembre 2026; NT p.12 (r23 = 4: caldaia solo in riscaldamento), NT p.19 (7.8 FUNZIONE AHS = 1, CALDO)" },
-    { "voce": "Kit", "valore": "a vista, con cofano bianco", "fonte": "chat 13 novembre 2026; NT p.3" }
+    {
+      "voce": "Composizione",
+      "valore": "HP_QOR 70 + KONm 24 C + kit HYBREER (combinazione HYBREER 3 KON 24 HPQ 70/90 del listino)",
+      "fonte": "DE p.6; chat 13 novembre 2026"
+    },
+    {
+      "voce": "Posto della caldaia e del kit",
+      "valore": "lavanderia, parete di fondo",
+      "fonte": "chat 13 novembre 2026"
+    },
+    {
+      "voce": "Acqua calda",
+      "valore": "la caldaia lavora solo in riscaldamento, l'acqua calda resta all'HP 300PSDX",
+      "fonte": "chat 13 novembre 2026; NT p.12 (r23 = 4: caldaia solo in riscaldamento), NT p.19 (7.8 FUNZIONE AHS = 1, CALDO)"
+    },
+    {
+      "voce": "Kit",
+      "valore": "a vista, con cofano bianco",
+      "fonte": "chat 13 novembre 2026; NT p.3"
+    }
   ],
   "hp_qor_70": {
     "ingombro": [
-      { "voce": "Larghezza del corpo", "valore": 1040, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Sporgenza sul fianco destro", "valore": 65, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Altezza", "valore": 865, "unita": "mm", "fonte": "DE p.29 vista frontale" },
-      { "voce": "Profondità del corpo", "valore": 410, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Profondità ai piedi", "valore": 458, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Profondità massima", "valore": 523, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Interasse dei piedi", "valore": 656, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Primo piede dal fianco sinistro", "valore": 191, "unita": "mm", "fonte": "DE p.29 vista superiore" },
-      { "voce": "Attacco più basso sul retro, da terra", "valore": 89, "unita": "mm", "fonte": "DE p.29 vista retro" },
-      { "voce": "Dal più basso al secondo attacco", "valore": 279, "unita": "mm", "fonte": "DE p.29 vista retro" },
-      { "voce": "Tra i due attacchi acqua", "valore": 165, "unita": "mm", "fonte": "DE p.29 vista retro" },
-      { "voce": "Attacchi idraulici", "valore": "G1\" BSP", "unita": null, "fonte": "DE p.29" },
-      { "voce": "Ritorno (IN) in alto, mandata (OUT) in basso", "valore": "R pdc IN sopra, M pdc OUT sotto", "unita": null, "fonte": "NT p.14 schema" },
-      { "voce": "Peso in esercizio / di spedizione", "valore": "87 / 103", "unita": "kg", "fonte": "DE p.29" }
+      {
+        "voce": "Larghezza del corpo",
+        "valore": 1040,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Sporgenza sul fianco destro",
+        "valore": 65,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Altezza",
+        "valore": 865,
+        "unita": "mm",
+        "fonte": "DE p.29 vista frontale"
+      },
+      {
+        "voce": "Profondità del corpo",
+        "valore": 410,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Profondità ai piedi",
+        "valore": 458,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Profondità massima",
+        "valore": 523,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Interasse dei piedi",
+        "valore": 656,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Primo piede dal fianco sinistro",
+        "valore": 191,
+        "unita": "mm",
+        "fonte": "DE p.29 vista superiore"
+      },
+      {
+        "voce": "Attacco più basso sul retro, da terra",
+        "valore": 89,
+        "unita": "mm",
+        "fonte": "DE p.29 vista retro"
+      },
+      {
+        "voce": "Dal più basso al secondo attacco",
+        "valore": 279,
+        "unita": "mm",
+        "fonte": "DE p.29 vista retro"
+      },
+      {
+        "voce": "Tra i due attacchi acqua",
+        "valore": 165,
+        "unita": "mm",
+        "fonte": "DE p.29 vista retro"
+      },
+      {
+        "voce": "Attacchi idraulici",
+        "valore": "G1\" BSP",
+        "unita": null,
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Ritorno (IN) in alto, mandata (OUT) in basso",
+        "valore": "R pdc IN sopra, M pdc OUT sotto",
+        "unita": null,
+        "fonte": "NT p.14 schema"
+      },
+      {
+        "voce": "Peso in esercizio / di spedizione",
+        "valore": "87 / 103",
+        "unita": "kg",
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Sonda T1: raccordo con pozzetto sull'attacco di mandata della pompa di calore",
+        "valore": "kit 00470021",
+        "unita": null,
+        "fonte": "NT p.17"
+      }
     ],
     "aspetto": [
-      { "voce": "Frontale", "valore": "bianco; a sinistra griglia tonda del ventilatore in una cornice quadrata; a destra scritta Unical rossa e HP_QOR, feritoie orizzontali, scritta full inverter in basso", "fonte": "DE p.28-29 foto" },
-      { "voce": "Fianco destro", "valore": "coperchio dei collegamenti elettrici con tre passacavi in basso", "fonte": "DE p.29 vista laterale" },
-      { "voce": "Retro", "valore": "batteria alettata a destra (vista dal retro), riquadro degli attacchi a sinistra", "fonte": "DE p.29 vista retro" }
+      {
+        "voce": "Frontale",
+        "valore": "bianco; a sinistra griglia tonda del ventilatore in una cornice quadrata; a destra scritta Unical rossa e HP_QOR, feritoie orizzontali, scritta full inverter in basso",
+        "fonte": "DE p.28-29 foto"
+      },
+      {
+        "voce": "Fianco destro",
+        "valore": "coperchio dei collegamenti elettrici con tre passacavi in basso",
+        "fonte": "DE p.29 vista laterale"
+      },
+      {
+        "voce": "Retro",
+        "valore": "batteria alettata a destra (vista dal retro), riquadro degli attacchi a sinistra",
+        "fonte": "DE p.29 vista retro"
+      }
     ],
     "componenti": [
-      { "voce": "Compressore", "valore": "DC inverter twin rotary a doppia camera di compressione", "fonte": "DE p.28" },
-      { "voce": "Ventilatore", "valore": "brushless DC inverter", "fonte": "DE p.28" },
-      { "voce": "Scambiatore acqua-gas", "valore": "a piastre in acciaio inox, brevettato per R32", "fonte": "DE p.28" },
-      { "voce": "Scambiatore aria-gas", "valore": "tubi in rame con alette in alluminio, trattamento anticorrosione", "fonte": "DE p.28" },
-      { "voce": "Kit idronico preassemblato", "valore": "valvola di sicurezza 3 bar, valvola di sfogo aria, circolatore inverter, flussostato, vaso di espansione 5 litri, filtro ingresso acqua", "fonte": "DE p.28" },
-      { "voce": "Kit antigelo", "valore": "per lo scambiatore a piastre, integrato", "fonte": "DE p.28" },
-      { "voce": "Comando remoto digitale", "valore": "di serie", "fonte": "DE p.28" }
+      {
+        "voce": "Compressore",
+        "valore": "DC inverter twin rotary a doppia camera di compressione",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Ventilatore",
+        "valore": "brushless DC inverter",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Scambiatore acqua-gas",
+        "valore": "a piastre in acciaio inox, brevettato per R32",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Scambiatore aria-gas",
+        "valore": "tubi in rame con alette in alluminio, trattamento anticorrosione",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Kit idronico preassemblato",
+        "valore": "valvola di sicurezza 3 bar, valvola di sfogo aria, circolatore inverter, flussostato, vaso di espansione 5 litri, filtro ingresso acqua",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Kit antigelo",
+        "valore": "per lo scambiatore a piastre, integrato",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Comando remoto digitale",
+        "valore": "di serie",
+        "fonte": "DE p.28"
+      }
     ],
     "dati": [
-      { "voce": "Refrigerante", "valore": "R32", "unita": null, "fonte": "DE p.28" },
-      { "voce": "Quantità di refrigerante", "valore": 1.25, "unita": "kg", "fonte": "DE p.29 (dato indicativo, nota 7)" },
-      { "voce": "Potenza termica (A7 W30/35)", "valore": 6.50, "unita": "kW", "fonte": "DE p.29 (3)" },
-      { "voce": "COP (A7 W30/35)", "valore": 5.30, "unita": "W/W", "fonte": "DE p.29 (3)" },
-      { "voce": "Potenza termica (A7 W40/45)", "valore": 6.60, "unita": "kW", "fonte": "DE p.29 (4)" },
-      { "voce": "COP (A7 W40/45) / SCOP", "valore": "4,00 / 5,12", "unita": "W/W", "fonte": "DE p.29 (4)(6)" },
-      { "voce": "Potenza frigorifera (A35 W23/18)", "valore": 6.50, "unita": "kW", "fonte": "DE p.29 (1)" },
-      { "voce": "EER (A35 W23/18)", "valore": 5.10, "unita": "W/W", "fonte": "DE p.29 (1)" },
-      { "voce": "Potenza frigorifera (A35 W12/7)", "valore": 5.50, "unita": "kW", "fonte": "DE p.29 (2)" },
-      { "voce": "EER (A35 W12/7) / SEER", "valore": "3,25 / 5,09", "unita": "W/W", "fonte": "DE p.29 (2)(5)" },
-      { "voce": "Portata acqua", "valore": 0.31, "unita": "l/s", "fonte": "DE p.29" },
-      { "voce": "Alimentazione", "valore": "220-240/1/50", "unita": "V/Ph/Hz", "fonte": "DE p.29" },
-      { "voce": "Potenza massima assorbita", "valore": 3.2, "unita": "kW", "fonte": "DE p.29" },
-      { "voce": "Corrente massima assorbita", "valore": 18, "unita": "A", "fonte": "DE p.29" },
-      { "voce": "Prevalenza utile", "valore": 82, "unita": "kPa", "fonte": "DE p.29 (2)" },
-      { "voce": "Minimo volume d'acqua", "valore": 40, "unita": "l", "fonte": "DE p.29" },
-      { "voce": "Pressione sonora", "valore": 48, "unita": "dB(A)", "fonte": "DE p.29 (8)" },
-      { "voce": "Mandata fino a", "valore": 65, "unita": "°C", "fonte": "DE p.28" },
-      { "voce": "Funzionamento fino a", "valore": -25, "unita": "°C esterni", "fonte": "DE p.28" },
-      { "voce": "Classe di efficienza", "valore": "A+++", "unita": null, "fonte": "DE p.28" }
+      {
+        "voce": "Refrigerante",
+        "valore": "R32",
+        "unita": null,
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Quantità di refrigerante",
+        "valore": 1.25,
+        "unita": "kg",
+        "fonte": "DE p.29 (dato indicativo, nota 7)"
+      },
+      {
+        "voce": "Potenza termica (A7 W30/35)",
+        "valore": 6.5,
+        "unita": "kW",
+        "fonte": "DE p.29 (3)"
+      },
+      {
+        "voce": "COP (A7 W30/35)",
+        "valore": 5.3,
+        "unita": "W/W",
+        "fonte": "DE p.29 (3)"
+      },
+      {
+        "voce": "Potenza termica (A7 W40/45)",
+        "valore": 6.6,
+        "unita": "kW",
+        "fonte": "DE p.29 (4)"
+      },
+      {
+        "voce": "COP (A7 W40/45) / SCOP",
+        "valore": "4,00 / 5,12",
+        "unita": "W/W",
+        "fonte": "DE p.29 (4)(6)"
+      },
+      {
+        "voce": "Potenza frigorifera (A35 W23/18)",
+        "valore": 6.5,
+        "unita": "kW",
+        "fonte": "DE p.29 (1)"
+      },
+      {
+        "voce": "EER (A35 W23/18)",
+        "valore": 5.1,
+        "unita": "W/W",
+        "fonte": "DE p.29 (1)"
+      },
+      {
+        "voce": "Potenza frigorifera (A35 W12/7)",
+        "valore": 5.5,
+        "unita": "kW",
+        "fonte": "DE p.29 (2)"
+      },
+      {
+        "voce": "EER (A35 W12/7) / SEER",
+        "valore": "3,25 / 5,09",
+        "unita": "W/W",
+        "fonte": "DE p.29 (2)(5)"
+      },
+      {
+        "voce": "Portata acqua",
+        "valore": 0.31,
+        "unita": "l/s",
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Alimentazione",
+        "valore": "220-240/1/50",
+        "unita": "V/Ph/Hz",
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Potenza massima assorbita",
+        "valore": 3.2,
+        "unita": "kW",
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Corrente massima assorbita",
+        "valore": 18,
+        "unita": "A",
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Prevalenza utile",
+        "valore": 82,
+        "unita": "kPa",
+        "fonte": "DE p.29 (2)"
+      },
+      {
+        "voce": "Minimo volume d'acqua",
+        "valore": 40,
+        "unita": "l",
+        "fonte": "DE p.29"
+      },
+      {
+        "voce": "Pressione sonora",
+        "valore": 48,
+        "unita": "dB(A)",
+        "fonte": "DE p.29 (8)"
+      },
+      {
+        "voce": "Mandata fino a",
+        "valore": 65,
+        "unita": "°C",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Funzionamento fino a",
+        "valore": -25,
+        "unita": "°C esterni",
+        "fonte": "DE p.28"
+      },
+      {
+        "voce": "Classe di efficienza",
+        "valore": "A+++",
+        "unita": null,
+        "fonte": "DE p.28"
+      }
     ]
   },
   "konm_24_c": {
     "ingombro": [
-      { "voce": "Altezza", "valore": 700, "unita": "mm", "fonte": "DE p.31 disegno" },
-      { "voce": "Larghezza", "valore": 420, "unita": "mm", "fonte": "DE p.31 disegno" },
-      { "voce": "Profondità", "valore": 345, "unita": "mm", "fonte": "DE p.31 disegno" },
-      { "voce": "Attacchi sotto, da sinistra", "valore": "C (calda sanitaria), F (fredda), G (gas), scarico, R (ritorno), M (mandata)", "unita": null, "fonte": "NT p.14 schema" },
-      { "voce": "Peso netto", "valore": 34, "unita": "kg", "fonte": "DE p.31" }
+      {
+        "voce": "Altezza",
+        "valore": 700,
+        "unita": "mm",
+        "fonte": "KI p.12 disegno"
+      },
+      {
+        "voce": "Larghezza",
+        "valore": 420,
+        "unita": "mm",
+        "fonte": "KI p.12 disegno"
+      },
+      {
+        "voce": "Profondità",
+        "valore": 345,
+        "unita": "mm",
+        "fonte": "KI p.12 disegno"
+      },
+      {
+        "voce": "Attacchi sotto: distanza dalla parete",
+        "valore": 207,
+        "unita": "mm",
+        "fonte": "KI p.12, vista da sotto"
+      },
+      {
+        "voce": "Attacchi sotto, dal fianco sinistro: C, poi F, G, R, M",
+        "valore": "43 · +56 · +60 · +130 · +70 (restano 61 al fianco destro)",
+        "unita": "mm",
+        "fonte": "KI p.12, vista da sotto"
+      },
+      {
+        "voce": "C uscita acqua calda sanitaria / F ingresso acqua fredda",
+        "valore": "G ½",
+        "unita": null,
+        "fonte": "KI p.11 legenda"
+      },
+      {
+        "voce": "G ingresso gas / M mandata / R ritorno riscaldamento",
+        "valore": "G ¾",
+        "unita": null,
+        "fonte": "KI p.11 legenda"
+      },
+      {
+        "voce": "Scarico fumi: al centro, distanza dalla parete",
+        "valore": 225,
+        "unita": "mm",
+        "fonte": "KI p.12, vista dall'alto"
+      },
+      {
+        "voce": "Prese laterali: interasse dal centro e distanza dalla parete",
+        "valore": "±125 · 205",
+        "unita": "mm",
+        "fonte": "KI p.12, vista dall'alto"
+      },
+      {
+        "voce": "Scarico fumi omologato",
+        "valore": "coassiale Ø 60/100 o Ø 80/125, sdoppiato Ø 80 o Ø 60",
+        "unita": null,
+        "fonte": "KI p.20"
+      },
+      {
+        "voce": "Peso netto (versione C 24)",
+        "valore": 34,
+        "unita": "kg",
+        "fonte": "KI p.15"
+      }
     ],
     "aspetto": [
-      { "voce": "Mantello", "valore": "bianco, con il pannello frontale in rilievo", "fonte": "DE p.6, 30-31 foto" },
-      { "voce": "Pannello comandi", "valore": "in basso al centro: logo Unical, due manopole, display azzurro, scritta KON, manometro", "fonte": "DE p.30-31 foto; NT p.14 disegno" },
-      { "voce": "Sopra", "valore": "due imbocchi tondi (scarico fumi e aria)", "fonte": "DE p.31 foto" }
+      {
+        "voce": "Interno",
+        "valore": "schienale zincato con imbutiture tonde, fianchi bianchi con viti, condotto fumi bianco al centro, tubi in rame, scambiatore grigio scuro con piastra in alluminio a bugne, ventilatore in alluminio con motore nero, valvola gas con bobina rossa",
+        "fonte": "KD p.4, foto della KONm 24C"
+      },
+      {
+        "voce": "Mantello",
+        "valore": "bianco, con il pannello frontale in rilievo",
+        "fonte": "KD p.1-2 foto"
+      },
+      {
+        "voce": "Pannello comandi",
+        "valore": "A manometro · B selettore estate/inverno e temperatura riscaldamento · C temperatura acqua calda sanitaria · D pulsante di sblocco · E display (F riscaldamento attivo, L bruciatore in funzione, N temperatura)",
+        "fonte": "KU §6.1; KD p.1 foto"
+      }
     ],
     "componenti": [
-      { "voce": "Scambiatore primario", "valore": "Al/Si/Mg ultrapiatto", "fonte": "DE p.30" },
-      { "voce": "Bruciatore", "valore": "a premiscelazione totale, modulante, Low NOx classe 6", "fonte": "DE p.30, p.8" },
-      { "voce": "Scambiatore sanitario", "valore": "12 piastre in acciaio inox AISI 316L (mod. 24 C)", "fonte": "DE p.30" },
-      { "voce": "Circolatore", "valore": "modulante ad alta efficienza", "fonte": "DE p.30" },
-      { "voce": "Vaso di espansione", "valore": 8, "unita": "l", "fonte": "DE p.31" },
-      { "voce": "Pannello comandi", "valore": "semplice e intuitivo", "fonte": "DE p.30" },
-      { "voce": "Morsettiera", "valore": "SE, TA1/OT, TA2", "fonte": "NT p.9, 14 schema" }
+      {
+        "voce": "Disposizione",
+        "valore": "vista con l'indicazione dei componenti principali della KONm C18 - C24: le posizioni nel modello sono lette su questo disegno, in scala sul telaio 420 × 700",
+        "fonte": "KI p.10"
+      },
+      {
+        "voce": "1 Sensore temperatura acqua sanitaria · 2 Flussostato con filtro acqua fredda · 3 Valvola gas · 4 Elettrodo di accensione/rilevazione · 5 Bruciatore",
+        "valore": "presenti nel modello",
+        "fonte": "KI p.10 legenda"
+      },
+      {
+        "voce": "8 Vaso di espansione · 10 Termostato di sicurezza · 11 Sensore temperatura riscaldamento · 12 Circolatore · 13 Pressostato contro la mancanza acqua · 15 Rubinetto di carico",
+        "valore": "presenti nel modello (il n. 8 non è indicato sul disegno della C24: posizione ricostruita)",
+        "fonte": "KI p.10 legenda"
+      },
+      {
+        "voce": "16 Valvola deviatrice · 17 Scambiatore a piastre · 18 Ventilatore · 19 Pressostato ostruzione ventilatore · 20 Valvola di sicurezza",
+        "valore": "presenti nel modello",
+        "fonte": "KI p.11 legenda"
+      },
+      {
+        "voce": "22 Sensore temperatura ritorno · 23 Termostato di sicurezza collettore fumi · 24 Scambiatore/condensatore in alluminio · 25 Valvola di sfiato · 26 Sifone di scarico condensa · 27 Sensore di livello",
+        "valore": "presenti nel modello",
+        "fonte": "KI p.11 legenda"
+      },
+      {
+        "voce": "Scambiatore primario",
+        "valore": "lega Al/Si/Mg ultrapiatto",
+        "fonte": "KD p.2, p.4"
+      },
+      {
+        "voce": "Bruciatore",
+        "valore": "premix modulante tipo \"Flat\" in fibra FeCrAlloy, blocco a sgancio rapido \"Quick release\", Low NOx classe 6",
+        "fonte": "KD p.4"
+      },
+      {
+        "voce": "Ventilatore modulante e valvola gas elettropneumatica",
+        "valore": "modulazione 1:8",
+        "fonte": "KD p.4"
+      },
+      {
+        "voce": "Circolatore",
+        "valore": "modulante con disaeratore, integrato con valvola di sicurezza, by-pass e rubinetto di scarico",
+        "fonte": "KD p.4"
+      },
+      {
+        "voce": "Scambiatore sanitario",
+        "valore": "12 piastre in acciaio inox AISI 316L (mod. 24 C)",
+        "fonte": "DE p.30"
+      },
+      {
+        "voce": "Vaso di espansione",
+        "valore": "8 l, precarica 1 bar",
+        "fonte": "KI p.15"
+      },
+      {
+        "voce": "Contenuto del circuito primario",
+        "valore": 2.2,
+        "unita": "l",
+        "fonte": "KI p.15"
+      },
+      {
+        "voce": "Morsettiera",
+        "valore": "SE, TA1/OT, TA2",
+        "fonte": "NT p.9, 14, 16"
+      }
     ],
     "dati": [
-      { "voce": "Portata termica nominale / minima", "valore": "23,4 / 3,0", "unita": "kW", "fonte": "DE p.31" },
-      { "voce": "Potenza utile nominale / minima", "valore": "22,6 / 2,9", "unita": "kW", "fonte": "DE p.31" },
-      { "voce": "Potenza utile in condensazione 50-30 °C nominale / minima", "valore": "24 / 3,2", "unita": "kW", "fonte": "DE p.31" },
-      { "voce": "Rendimento utile 80-60 °C nominale / minimo", "valore": "96,6 / 96,7", "unita": "%", "fonte": "DE p.31" },
-      { "voce": "Rendimento utile 50-30 °C nominale / minimo", "valore": "102,6 / 106,7", "unita": "%", "fonte": "DE p.31" },
-      { "voce": "Efficienza stagionale riscaldamento ηs", "valore": 92, "unita": "%", "fonte": "DE p.31" },
-      { "voce": "Rapporto di modulazione", "valore": "fino a 1:8", "unita": null, "fonte": "DE p.30" },
-      { "voce": "Classe NOx", "valore": 6, "unita": null, "fonte": "DE p.31" },
-      { "voce": "Grado di protezione", "valore": "X5D", "unita": "IP", "fonte": "DE p.31" },
-      { "voce": "Pressione circuito di riscaldamento", "valore": "0,5-3,0", "unita": "bar", "fonte": "DE p.31" },
-      { "voce": "Post-circolazione", "valore": 5, "unita": "minuti", "fonte": "DE p.30" }
+      {
+        "voce": "Portata termica nominale / minima",
+        "valore": "23,4 / 3,0",
+        "unita": "kW",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Potenza utile nominale / minima",
+        "valore": "22,6 / 2,9",
+        "unita": "kW",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Potenza utile in condensazione 50-30 °C nominale / minima",
+        "valore": "24 / 3,2",
+        "unita": "kW",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Rendimento utile 80-60 °C nominale / minimo",
+        "valore": "96,6 / 96,7",
+        "unita": "%",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Rendimento utile 50-30 °C nominale / minimo",
+        "valore": "102,6 / 106,7",
+        "unita": "%",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Efficienza stagionale riscaldamento ηs",
+        "valore": 92,
+        "unita": "%",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Rapporto di modulazione",
+        "valore": "fino a 1:8",
+        "unita": null,
+        "fonte": "DE p.30"
+      },
+      {
+        "voce": "Classe NOx",
+        "valore": 6,
+        "unita": null,
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Grado di protezione",
+        "valore": "X5D",
+        "unita": "IP",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Pressione circuito di riscaldamento",
+        "valore": "0,5-3,0",
+        "unita": "bar",
+        "fonte": "DE p.31"
+      },
+      {
+        "voce": "Post-circolazione",
+        "valore": 5,
+        "unita": "minuti",
+        "fonte": "DE p.30"
+      },
+      {
+        "voce": "Temperatura massima / minima di funzionamento in riscaldamento",
+        "valore": "85 / 30",
+        "unita": "°C",
+        "fonte": "KI p.15"
+      },
+      {
+        "voce": "Alimentazione elettrica",
+        "valore": "230/50",
+        "unita": "V-Hz",
+        "fonte": "KI p.15"
+      },
+      {
+        "voce": "Produzione massima di condensa",
+        "valore": 3.7,
+        "unita": "kg/h",
+        "fonte": "KI p.15"
+      }
     ]
   },
   "kit_hybreer": {
     "ingombro": [
-      { "voce": "Cofano: larghezza con le alette di fissaggio", "valore": 380, "unita": "mm", "fonte": "NT p.3" },
-      { "voce": "Cofano: larghezza del frontale", "valore": 350, "unita": "mm", "fonte": "NT p.3" },
-      { "voce": "Cofano: altezza", "valore": 380, "unita": "mm", "fonte": "NT p.3" },
-      { "voce": "Cofano: profondità", "valore": 181, "unita": "mm", "fonte": "NT p.3" },
-      { "voce": "Cofano: pretranciatura sopra e sotto", "valore": "310 × 105", "unita": "mm", "fonte": "NT p.3" },
-      { "voce": "Collettore 00376907: lunghezza agli attacchi", "valore": 287.5, "unita": "mm", "fonte": "NT p.4" },
-      { "voce": "Collettore: passo degli attacchi sopra", "valore": "25,5 · 75 · 86,5 · 75 · 25,5", "unita": "mm", "fonte": "NT p.4" },
-      { "voce": "Collettore: interasse degli attacchi sotto", "valore": 236.4, "unita": "mm", "fonte": "NT p.4" },
-      { "voce": "Collettore: altezza del corpo", "valore": 70, "unita": "mm", "fonte": "NT p.4" },
-      { "voce": "Attacchi", "valore": "G 1\"", "unita": null, "fonte": "NT p.4; DE p.7" },
-      { "voce": "Peso del collettore", "valore": 4, "unita": "kg", "fonte": "DE p.7" }
+      {
+        "voce": "Cofano: larghezza con le alette di fissaggio",
+        "valore": 380,
+        "unita": "mm",
+        "fonte": "NT p.3"
+      },
+      {
+        "voce": "Cofano: larghezza del frontale",
+        "valore": 350,
+        "unita": "mm",
+        "fonte": "NT p.3"
+      },
+      {
+        "voce": "Cofano: altezza",
+        "valore": 380,
+        "unita": "mm",
+        "fonte": "NT p.3"
+      },
+      {
+        "voce": "Cofano: profondità",
+        "valore": 181,
+        "unita": "mm",
+        "fonte": "NT p.3"
+      },
+      {
+        "voce": "Cofano: pretranciatura sopra e sotto",
+        "valore": "310 × 105",
+        "unita": "mm",
+        "fonte": "NT p.3"
+      },
+      {
+        "voce": "Collettore 00376907: lunghezza agli attacchi",
+        "valore": 287.5,
+        "unita": "mm",
+        "fonte": "NT p.4"
+      },
+      {
+        "voce": "Collettore: passo degli attacchi sopra",
+        "valore": "25,5 · 75 · 86,5 · 75 · 25,5",
+        "unita": "mm",
+        "fonte": "NT p.4"
+      },
+      {
+        "voce": "Collettore: interasse degli attacchi sotto",
+        "valore": 236.4,
+        "unita": "mm",
+        "fonte": "NT p.4"
+      },
+      {
+        "voce": "Collettore: altezza del corpo",
+        "valore": 70,
+        "unita": "mm",
+        "fonte": "NT p.4"
+      },
+      {
+        "voce": "Attacchi",
+        "valore": "G 1\"",
+        "unita": null,
+        "fonte": "NT p.4; DE p.7"
+      },
+      {
+        "voce": "Peso del collettore",
+        "valore": 4,
+        "unita": "kg",
+        "fonte": "DE p.7"
+      }
     ],
     "aspetto": [
-      { "voce": "Cofano", "valore": "lamiera verniciata bianca, scritta HYBREER in alto a destra, logo Unical in basso a destra", "fonte": "NT p.3; DE p.7 foto" },
-      { "voce": "Collettore", "valore": "orizzontale, coibentato nero; sopra da sinistra R pdc, M pdc, R Cal, M Cal; sotto R imp a sinistra, M imp a destra; otturatore a vite sul frontale", "fonte": "NT p.4; DE p.7 foto" },
-      { "voce": "Valvole di non ritorno", "valore": "in ottone, sugli attacchi M pdc e M Cal", "fonte": "NT p.4" }
+      {
+        "voce": "Cofano",
+        "valore": "lamiera verniciata bianca, scritta HYBREER in alto a destra, logo Unical in basso a destra",
+        "fonte": "NT p.3; DE p.7 foto"
+      },
+      {
+        "voce": "Collettore",
+        "valore": "orizzontale, coibentato nero; sopra da sinistra R pdc, M pdc, R Cal, M Cal; sotto R imp a sinistra, M imp a destra; otturatore a vite sul frontale",
+        "fonte": "NT p.4; DE p.7 foto"
+      },
+      {
+        "voce": "Valvole di non ritorno",
+        "valore": "in ottone, sugli attacchi M pdc e M Cal",
+        "fonte": "NT p.4"
+      }
     ],
     "componenti": [
-      { "voce": "Collettore / compensatore idraulico", "valore": "collettore chiuso senza pompa di rilancio (condizione di fornitura); diventa compensatore svitando il detentore", "fonte": "NT p.4-5; DE p.7" },
-      { "voce": "Coibentazione per caldo e freddo", "valore": "sì", "fonte": "DE p.6" },
-      { "voce": "Staffa di fissaggio a muro", "valore": "sì", "fonte": "NT p.4, 9" },
-      { "voce": "Kit relè", "valore": "00378689, gestione della caldaia di soccorso in base alla temperatura esterna", "fonte": "NT p.14; DE p.6" },
-      { "voce": "Sonda di mandata globale T1", "valore": "00470021, nel pozzetto sulla mandata della pompa di calore (solo con HP_QOR)", "fonte": "NT p.14, 16" }
+      {
+        "voce": "Collettore / compensatore idraulico",
+        "valore": "collettore chiuso senza pompa di rilancio (condizione di fornitura); diventa compensatore svitando il detentore",
+        "fonte": "NT p.4-5; DE p.7"
+      },
+      {
+        "voce": "Coibentazione per caldo e freddo",
+        "valore": "sì",
+        "fonte": "DE p.6"
+      },
+      {
+        "voce": "Staffa di fissaggio a muro",
+        "valore": "sì",
+        "fonte": "NT p.4, 9"
+      },
+      {
+        "voce": "Kit relè",
+        "valore": "00378689, gestione della caldaia di soccorso in base alla temperatura esterna",
+        "fonte": "NT p.14; DE p.6"
+      },
+      {
+        "voce": "Sonda di mandata globale T1",
+        "valore": "00470021, nel pozzetto sulla mandata della pompa di calore (solo con HP_QOR)",
+        "fonte": "NT p.14, 16"
+      }
     ]
   },
   "logica_con_hp_qor": [
-    { "voce": "Sopra T4_AHS_ON", "valore": "riscalda solo la pompa di calore", "fonte": "NT p.19 grafico" },
-    { "voce": "Tra T4HMIN e T4_AHS_ON", "valore": "pompa di calore e caldaia insieme", "fonte": "NT p.19 grafico" },
-    { "voce": "Sotto T4HMIN", "valore": "riscalda solo la caldaia", "fonte": "NT p.19 grafico" },
-    { "voce": "T4_AHS_ON consigliata per impianti a pavimento con mandata a 35 °C", "valore": 5, "unita": "°C", "fonte": "NT p.19, impostazione A" },
-    { "voce": "T4HMIN di fabbrica", "valore": -15, "unita": "°C", "fonte": "NT p.19" },
-    { "voce": "dT1_AHS_ON", "valore": 5, "unita": "°C", "fonte": "NT p.19, 7.10" },
-    { "voce": "t_AHS_DELAY", "valore": 30, "unita": "min", "fonte": "NT p.19, 7.11" },
-    { "voce": "Funzione AHS", "valore": "1 = CALDO (caldaia solo in riscaldamento)", "unita": null, "fonte": "NT p.19, 7.8" },
-    { "voce": "Raffrescamento", "valore": "solo la pompa di calore; tubi di mandata e ritorno impianto da coibentare", "unita": null, "fonte": "NT p.14 nota" }
+    {
+      "voce": "Sopra T4_AHS_ON",
+      "valore": "riscalda solo la pompa di calore",
+      "fonte": "NT p.19 grafico"
+    },
+    {
+      "voce": "Tra T4HMIN e T4_AHS_ON",
+      "valore": "pompa di calore e caldaia insieme",
+      "fonte": "NT p.19 grafico"
+    },
+    {
+      "voce": "Sotto T4HMIN",
+      "valore": "riscalda solo la caldaia",
+      "fonte": "NT p.19 grafico"
+    },
+    {
+      "voce": "T4_AHS_ON consigliata per impianti a pavimento con mandata a 35 °C",
+      "valore": 5,
+      "unita": "°C",
+      "fonte": "NT p.19, impostazione A"
+    },
+    {
+      "voce": "T4HMIN di fabbrica",
+      "valore": -15,
+      "unita": "°C",
+      "fonte": "NT p.19"
+    },
+    {
+      "voce": "dT1_AHS_ON",
+      "valore": 5,
+      "unita": "°C",
+      "fonte": "NT p.19, 7.10"
+    },
+    {
+      "voce": "t_AHS_DELAY",
+      "valore": 30,
+      "unita": "min",
+      "fonte": "NT p.19, 7.11"
+    },
+    {
+      "voce": "Funzione AHS",
+      "valore": "1 = CALDO (caldaia solo in riscaldamento)",
+      "unita": null,
+      "fonte": "NT p.19, 7.8"
+    },
+    {
+      "voce": "Raffrescamento",
+      "valore": "solo la pompa di calore; tubi di mandata e ritorno impianto da coibentare",
+      "unita": null,
+      "fonte": "NT p.14 nota"
+    },
+    {
+      "voce": "T4_AHS_ON consigliata per impianti a pavimento con mandata a 40/45 °C",
+      "valore": 7,
+      "unita": "°C",
+      "fonte": "NT p.19, impostazione B"
+    },
+    {
+      "voce": "T4_AHS_ON consigliata per impianti con fan coil, mandata 55 °C",
+      "valore": 10,
+      "unita": "°C",
+      "fonte": "NT p.19, impostazione C"
+    },
+    {
+      "voce": "T4_AHS_ON consigliata per impianti con radiatori, mandata 70 °C",
+      "valore": 10,
+      "unita": "°C",
+      "fonte": "NT p.19, impostazione D"
+    }
   ],
   "ricostruito": [
-    "disposizione interna di HP_QOR e KONm (i documenti nominano i componenti, non dove stanno): schema di principio",
-    "ventilatore del bruciatore, valvola gas, valvola a tre vie e sifone della caldaia: impliciti nel bruciatore premiscelato e nella caldaia combinata, non nominati",
-    "posizione della caldaia e del kit sulla parete, distanza tra loro, percorso di tubi, gas e scarico fumi",
-    "contatore del gas e terminale dello scarico fumi",
+    "HP_QOR 70: tutta la disposizione interna (il depliant nomina i componenti, non dove stanno), l'interno del compressore (twin rotary generico), valvola a 4 vie, valvola di espansione, pressostati e scheda elettronica (impliciti, non nominati), numero di pale, batteria a L, posizione orizzontale degli attacchi sul retro (letta in proporzione sul disegno)",
+    "KONm C 24: le profondità dei componenti (il disegno di p.10 è una vista frontale), l'interno dello scambiatore (alettatura a piolini: schema di principio), il vaso di espansione dietro lo schienale, il percorso fine di tubi e cavi",
+    "kit HYBREER: forma dei gusci isolanti e della staffa (dalle foto), interno della scatola del kit relè (dal disegno di p.16)",
+    "parete, posizione reciproca di caldaia, kit e pompa di calore, percorso dei tubi, rubinetto e tubo del gas, tratto esterno dello scarico fumi, scarico della condensa, pavimento radiante",
     "colore esatto degli involucri (bianco dalle foto)",
     "andamento della temperatura esterna nella giornata della Casa (qualitativo, senza numeri)"
   ]

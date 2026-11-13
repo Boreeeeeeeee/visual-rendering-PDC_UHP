@@ -25,6 +25,7 @@ SRC = ROOT / "src"
 SITO = "https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/"
 
 THREE = "0.186.1"
+MOTORE_UHP = {"ibrido"}   # pagine complete costruite sul motore di montaggio della UHP (stesso livello di dettaglio)
 FONTS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
@@ -64,7 +65,11 @@ def sito(out_rel: str) -> dict:
     files = {"index.html": pagina(app / "shell.html", [logo, app / "a_base.js"] + [p / "leggero.js" for p in prodotti] + resto, base)}
     for p in prodotti:
         if (p / "shell.html").exists():
-            kit = [] if (p / "b_engine.js").exists() else [SRC / "comune" / "kit.js"]   # la UHP ha il suo motore
+            # la UHP ha il suo motore (a_core.js e b_engine.js); i prodotti in MOTORE_UHP lo riusano tale e quale, gli altri usano kit.js
+            if p.name in MOTORE_UHP:
+                kit = [SRC / "prodotti" / "uhp" / "a_core.js", SRC / "prodotti" / "uhp" / "b_engine.js"]
+            else:
+                kit = [] if (p / "b_engine.js").exists() else [SRC / "comune" / "kit.js"]
             files["%s/index.html" % p.name] = pagina(p / "shell.html", [logo] + kit + sorted(p.glob("?_*.js")), base + p.name + "/")
     if (app / "og.jpg").exists():
         files["og.jpg"] = (app / "og.jpg").read_bytes()

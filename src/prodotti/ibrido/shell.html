@@ -2,82 +2,238 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ibrido Unical HYBREER 3 pezzo per pezzo</title>
-<meta name="description" content="Pompa di calore HP_QOR, caldaia a condensazione KONm e kit HYBREER di Unical che si montano pezzo per pezzo. Guarda il film, poi abbassa la temperatura esterna.">
+<meta name="description" content="Il sistema ibrido Unical HYBREER 3 che si monta pezzo per pezzo: pompa di calore HP_QOR, caldaia a condensazione KONm e kit HYBREER. Guarda il film, poi smontalo, guardaci dentro e cambia il meteo.">
 <meta property="og:title" content="Ibrido Unical HYBREER 3 pezzo per pezzo">
-<meta property="og:description" content="Pompa di calore e caldaia che lavorano insieme: guardale montarsi pezzo per pezzo, poi fai scendere la temperatura esterna e guarda chi si accende.">
+<meta property="og:description" content="Pompa di calore e caldaia che lavorano insieme: guardale montarsi pezzo per pezzo, poi fai scendere la temperatura e guarda chi si accende.">
+<meta property="og:image" content="<!--BASE-->../og.jpg>
 <meta property="og:type" content="website">
-<meta property="og:image" content="<!--BASE-->../og.jpg">
 <meta name="theme-color" content="#0b0f13">
 <!--FONTS-->
 <!--IMPORTMAP-->
 <style>
-  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
+  /* Un solo mondo visivo, scuro: officina di notte. Scena 3D a tutto schermo; in basso una barra di sei strumenti
+     e sopra un pannello che dice in una riga cosa fare con lo strumento scelto. Pensato prima per il telefono. */
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --copper: #e08a52;
+    --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
     --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
-  * { box-sizing: border-box } html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent }
-  #stage { position: fixed; inset: 0 } #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden }
+  #stage { position: relative; height: 100%; width: 100%; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none }
+  canvas#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
   button { font: inherit; color: inherit }
-  .btn { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
-  .btn[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
-  #top { background: linear-gradient(rgba(5,8,10,.82), transparent); position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-bottom: 26px; padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; flex-wrap: wrap }
-  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase } .brand span { color: var(--green) }
+  [hidden] { display: none !important }
+
+  /* testi sopra la scena */
+  #hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: var(--pad);
+    background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%) }
+  #top { display: flex; flex-direction: column; gap: 9px }
+  #brandrow { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap }
+  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase }
+  .brand span { color: var(--green) }
   .back { position: relative; z-index: 60; pointer-events: auto; display: inline-block; margin-right: 12px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(13,18,22,.7); color: var(--ink); font-size: .78em; letter-spacing: .06em; text-decoration: none; vertical-align: middle }
-  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em } body.free .sub { display: none }
-  #bFilm { display: none } body.free #bFilm { display: inline-flex }
-  #set { pointer-events: none; position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 46px); font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) } #set b { display: block; margin-top: 4px; font-size: 30px; letter-spacing: .02em; color: var(--heat) }
-  body.start #set, body.film #set { display: none }
-  #cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 46px var(--pad) max(var(--pad), env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(5,8,10,.9) 60%); display: none; gap: 14px; align-items: flex-end; pointer-events: none; text-shadow: 0 2px 14px #000 } body.film #cap { display: flex }
-  #num { font: 700 clamp(44px, 9vmin, 76px)/.85 var(--display); color: var(--green) } #cap h2 { margin: 0; font: 700 clamp(22px, 4.4vmin, 34px)/1 var(--display); letter-spacing: .05em; text-transform: uppercase } #cap p { margin: 4px 0 0; max-width: 46ch; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; color: var(--ink) }
-  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 52px) var(--pad) calc(var(--pad) + 8px); background: linear-gradient(90deg, rgba(5,8,10,.82), rgba(5,8,10,.1) 70%) } body.start #start { display: flex }
-  #start small { font: 600 13px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--green) } #start h1 { margin: 8px 0; font: 700 clamp(34px, 7.6vmin, 60px)/.95 var(--display); letter-spacing: .03em; text-transform: uppercase; max-width: 9em } #start p { margin: 0; max-width: 34ch; color: var(--ink) }
-  .go { display: flex; flex-direction: column; gap: 10px; width: min(100%, 380px) } .big { pointer-events: auto; display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 22px; border: 0; border-radius: 16px; background: var(--green); color: #10140f; font: 700 20px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; text-align: left }
-  .big svg { width: 22px; height: 22px; fill: currentColor } .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
-  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; white-space: nowrap }
-  #toast.on { animation: toast 2.4s ease both } @keyframes toast { 0% { opacity: 0 } 12%, 78% { opacity: 1 } 100% { opacity: 0 } }
-  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px max(8px, env(safe-area-inset-bottom)); display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) } body.free #dock { display: flex }
-  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px) }
-  #panel section { display: none; flex-direction: column; gap: 10px } #panel section.on { display: flex } #panel p { margin: 0; font-size: 14px; line-height: 1.35 } #panel p small { color: var(--dim) }
-  .riga { display: flex; flex-wrap: wrap; gap: 8px } .riga .btn { min-height: 40px; padding: 0 13px; font-size: 13px }
-  #tabs { pointer-events: auto; display: flex; gap: 6px; width: min(100%, 640px) } .tab { flex: 1; min-height: 52px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer }
-  .tab[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent }
-  #barra { height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); overflow: hidden } #barra i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #4fd07a, #a6ff9a); transition: width .2s linear }
-  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent }
-  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) } input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0 } input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
-  @media (max-width: 520px) { #set { left: auto; right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); text-align: right } }
-  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 40px) } #start h1 { font-size: 28px } .tab { min-height: 40px } #panel { padding: 8px 12px } #panel p { font-size: 12.5px } .big { min-height: 48px } #set { display: none } #dock { flex-direction: row; align-items: flex-end; justify-content: center } #tabs { width: auto; flex: 0 0 auto } .tab { padding: 0 10px } }
+  .back:hover, .back:focus-visible { border-color: var(--green) }
+  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em }
+  #segs { display: flex; gap: 4px; height: 3px }
+  #segs i { background: var(--line); overflow: hidden; border-radius: 2px; min-width: 5px }
+  #segs b { display: block; height: 100%; background: var(--green); transform-origin: left; transform: scaleX(0) }
+  #read { display: flex; gap: clamp(12px, 2vmin, 22px); margin-top: 4px; opacity: 0; transition: opacity .5s }
+  #read.on { opacity: 1 }
+  #read div { display: flex; flex-direction: column; gap: 2px }
+  #read small { font: 600 clamp(10px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) }
+  #read b { font: 700 clamp(24px, 3.6vmin, 34px)/1 var(--display); font-variant-numeric: tabular-nums }
+  #rOut b { color: var(--ice) } #rWat b { color: var(--heat) } #rGen b { font-size: clamp(17px, 2.6vmin, 24px); line-height: 1.25; padding-top: .2em; color: var(--green); text-transform: uppercase; letter-spacing: .04em } #rGen b[data-w="2"], #rGen b[data-w="3"] { color: var(--heat) } #rGen b[data-w="0"] { color: var(--dim) }
+  #hook { position: absolute; left: 0; right: 0; top: 13%; text-align: center; opacity: 0; padding: 0 16px }
+  #hook b { display: block; font: 700 clamp(50px, 13vmin, 132px)/.9 var(--display); letter-spacing: .01em; font-variant-numeric: tabular-nums; text-shadow: 0 4px 40px rgba(0,0,0,.6) }
+  #hook span { display: block; margin-top: 8px; font: 600 clamp(15px, 2.7vmin, 26px)/1.1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--dim) }
+  #bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px }
+  #cap { display: flex; gap: clamp(10px, 1.6vmin, 18px); align-items: flex-start; max-width: min(100%, 560px); text-shadow: 0 2px 16px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.6) }
+  #cap.in { animation: rise .6s cubic-bezier(.2,.8,.2,1) both }
+  #num { font: 700 clamp(44px, 8.2vmin, 84px)/.82 var(--display); color: transparent; -webkit-text-stroke: 1.5px var(--green); font-variant-numeric: tabular-nums }
+  #name { margin: 0; font: 700 clamp(24px, 4.3vmin, 44px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase; text-wrap: balance }
+  #spec { margin: 6px 0 0; font-size: clamp(13px, 1.7vmin, 15px); line-height: 1.35; color: #c3cdca; text-wrap: pretty; max-width: 44ch }
+  #tick { margin: 9px 0 0; min-height: 1.3em; font: 600 clamp(13px, 1.9vmin, 17px)/1.3 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--copper) }
+  #tick:not(:empty)::before { content: ""; display: inline-block; width: 18px; height: 1.5px; background: var(--copper); vertical-align: middle; margin-right: 8px }
+  #tick.in { animation: rise .3s ease-out both }
+  #count { text-align: right; flex: none; margin-bottom: 50px }
+  #count b { display: block; font: 700 clamp(26px, 4.6vmin, 46px)/.9 var(--display); font-variant-numeric: tabular-nums }
+  #count span { font: 600 clamp(9px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+  #flash { position: absolute; inset: 0; background: #dff1ff; opacity: 0; pointer-events: none }
+  #lens { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ice); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 28px rgba(143,211,255,.5), inset 0 0 26px rgba(143,211,255,.22); pointer-events: none; display: none }
+
+  /* pulsanti */
+  .btn { pointer-events: auto; cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 0 15px; min-height: 40px; display: inline-flex; align-items: center; gap: 7px;
+    font: 600 clamp(13px, 1.7vmin, 14px)/1 var(--display); letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(8px); white-space: nowrap }
+  .btn:hover { border-color: rgba(255,255,255,.4) } .btn:focus-visible, .tab:focus-visible, .key:focus-visible, .chip:focus-visible, input:focus-visible, .big:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px }
+  .btn[aria-pressed="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .btn svg, .tab svg, .big svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none }
+  #film, #freetop { position: absolute; right: var(--pad); display: none; gap: 8px }
+  #film { bottom: var(--pad) } #freetop { top: calc(var(--pad) + 46px) }
+  body.film #film, body.free #freetop { display: flex }
+  body.start #bottom, body.free #bottom, body.start #read { display: none }
+  body.free #segs, body.start #segs { visibility: hidden }
+
+  /* schermata d'inizio */
+  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 44px) var(--pad) calc(var(--pad) + 8px);
+    background: linear-gradient(rgba(6,12,20,.7), transparent 34%, transparent 58%, rgba(6,10,14,.92)) }
+  body.start #start { display: flex }
+  #start small { font: 600 clamp(12px, 1.8vmin, 14px)/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--green) }
+  #start h1 { margin: 8px 0 8px; font: 700 clamp(34px, 7.4vmin, 76px)/.95 var(--display); letter-spacing: .01em; text-transform: uppercase; max-width: 13ch; text-wrap: balance; text-shadow: 0 3px 30px rgba(0,0,0,.6) }
+  #start p { margin: 0; font-size: clamp(15px, 2.2vmin, 19px); line-height: 1.35; max-width: 32ch; color: #d5dedb; text-shadow: 0 2px 14px rgba(0,0,0,.8) }
+  #start .go { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: min(100%, 380px) }
+  .big { cursor: pointer; border: 0; border-radius: 16px; background: var(--green); color: #10140f; min-height: 62px; padding: 10px 20px; display: flex; align-items: center; gap: 14px; text-align: left;
+    font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 40px rgba(0,0,0,.45) }
+  .big svg { width: 26px; height: 26px; fill: currentColor; stroke: none }
+  .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
+  #start .btn { justify-content: center; min-height: 46px }
+  #start .credit { margin: 2px 0 0; font-size: 12px; line-height: 1.3; color: var(--dim); max-width: none; text-shadow: none }
+
+  /* avviso di passaggio alla parte interattiva */
+  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+    opacity: 0; pointer-events: none; white-space: nowrap; box-shadow: 0 14px 50px rgba(0,0,0,.5) }
+  #toast.on { animation: toast 2.4s ease both }
+  @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.9) } 12%, 78% { opacity: 1; transform: translate(-50%, -50%) scale(1) } 100% { opacity: 0; transform: translate(-50%, -62%) scale(1) } }
+
+  /* barra degli strumenti e pannello */
+  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px 8px; display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) }
+  body.free #dock { display: flex }
+  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px); display: flex; flex-direction: column }
+  #panel section { display: flex; flex-direction: column; gap: 10px }
+  .how { display: flex; gap: 12px; align-items: center; font-size: clamp(15px, 2vmin, 16px); line-height: 1.3; text-wrap: pretty }
+  .how b { color: var(--green); font-weight: 600 }
+  .gest { flex: none; position: relative; width: 44px; height: 26px; border-radius: 13px; border: 1.5px solid var(--line) }
+  .gest::after { content: ""; position: absolute; left: 4px; top: 4px; width: 15px; height: 15px; border-radius: 50%; background: var(--green); animation: swipe 1.8s ease-in-out infinite }
+  .gest.tap::after { left: 13px; animation: tap 1.4s ease-in-out infinite }
+  @keyframes swipe { 0%, 100% { transform: translateX(0) } 50% { transform: translateX(19px) } }
+  @keyframes tap { 0%, 100% { transform: scale(.55); opacity: .5 } 50% { transform: scale(1.05); opacity: 1 } }
+  #tabs { pointer-events: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; width: min(100%, 640px) }
+  .tab { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 2px 7px; min-height: 58px; border-radius: 13px; border: 1px solid var(--line); background: var(--panel);
+    font: 600 clamp(10.5px, 2.8vw, 13px)/1 var(--display); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(8px) }
+  .tab svg { width: 24px; height: 24px }
+  .tab[aria-selected="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .tab.pulse { animation: pulse .7s ease both }
+  @keyframes pulse { 40% { transform: translateY(-7px); border-color: var(--green) } }
+  /* cursori */
+  .sl { display: flex; align-items: center; gap: 10px }
+  .sl svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; flex: none }
+  .sl output { font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); font-variant-numeric: tabular-nums; min-width: 3.3em; text-align: right }
+  input[type=range] { flex: 1; appearance: none; -webkit-appearance: none; height: 44px; background: transparent; margin: 0; min-width: 80px; touch-action: none }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--p, 0%), var(--line) var(--p, 0%)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -12px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); box-shadow: 0 0 0 2px var(--green) }
+  input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg) }
+  #sT::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  #sT::-moz-range-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  .note { margin: 0; font-size: 14px; line-height: 1.35; color: var(--dim); min-height: 1.35em; text-wrap: pretty }
+  /* pezzi */
+  .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; touch-action: pan-x }
+  .chips::-webkit-scrollbar { display: none }
+  .chip, .key { cursor: pointer; flex: none; border: 1px solid var(--line); background: rgba(255,255,255,.04); border-radius: 999px; min-height: 38px; padding: 0 13px; font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #10140f; border-color: var(--ink) }
+  #cardIn small { font: 600 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--green) }
+  #cardIn h3 { margin: 4px 0 5px; font: 700 clamp(22px, 3.4vmin, 28px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase }
+  #cardIn p { margin: 0; font-size: 15px; line-height: 1.35; text-wrap: pretty } #cardIn p + p { margin-top: 6px; color: var(--dim); font-size: 13px }
+  /* comando */
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+  .key { padding: 0 4px; min-height: 44px; border-radius: 12px; text-align: center; letter-spacing: .05em; font-size: clamp(12px, 3vw, 14px) }
+  .key[aria-pressed="true"] { border-color: var(--heat); color: var(--heat); background: rgba(255,154,77,.1) }
+  #kPw[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: rgba(169,189,143,.12) }
+  #kCool[aria-pressed="true"] { border-color: var(--ice); color: var(--ice); background: rgba(143,211,255,.1) }
+  /* giro */
+  #rT { font: 600 clamp(17px, 2.6vmin, 20px)/1.2 var(--display); letter-spacing: .03em; min-height: 2.4em; display: block; text-wrap: balance }
+  .prog { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden } .prog i { display: block; height: 100%; width: 0; background: var(--green) }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between }
+
+  @media (max-width: 560px) { #film { left: var(--pad); justify-content: flex-end } body.film #bottom { padding-bottom: 52px } #count { display: none } .sub { display: none } .keys { grid-template-columns: repeat(2, 1fr) }
+    #freetop .btn { min-height: 36px; padding: 0 11px; letter-spacing: .08em } #freetop { gap: 6px } }
+  @media (max-width: 560px) { #read { flex-wrap: wrap; row-gap: 6px } #rGen { flex-basis: 100% } }
+  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 30px) } #start h1 { font-size: 30px } .tab { min-height: 46px; flex-direction: row; gap: 6px } .tab svg { width: 18px; height: 18px } #panel { padding: 8px 12px } input[type=range] { height: 34px } }
+  @media (prefers-reduced-motion: reduce) { #cap.in, #tick.in, .gest::after, .tab.pulse { animation: none } }
 </style>
 </head>
 <body class="start">
 <div id="stage">
-  <canvas id="gl" aria-label="Sistema ibrido Unical che si monta pezzo per pezzo"></canvas>
-  <header id="top">
-    <div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>Ibrido <span>HYBREER 3</span></div>
-    <div class="sub">HP_QOR 70 · KONm 24 C · kit HYBREER</div>
-    <button class="btn" id="bFilm" type="button">Film</button>
-  </header>
-  <div id="set">Fuori<b id="setT">5 °C</b></div>
-  <div id="cap"><div id="num">01</div><div><h2 id="name"></h2><p id="spec"></p></div></div>
+  <canvas id="gl" aria-label="Sistema ibrido Unical HYBREER 3 che si monta pezzo per pezzo"></canvas>
+  <div id="hud">
+    <header id="top">
+      <div id="brandrow"><div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>Ibrido <span>HYBREER 3</span></div><div class="sub">Unical · HP_QOR 70 · KONm C 24 · kit HYBREER</div></div>
+      <div id="segs"></div>
+      <div id="read"><div id="rOut"><small>Aria fuori</small><b>7 °C</b></div><div id="rWat"><small>Acqua di casa</small><b>35 °C</b></div><div id="rGen"><small>Al lavoro</small><b>Pompa di calore</b></div></div>
+    </header>
+    <div id="hook"><b id="hk1">10 °C</b><span id="hk2">fuori: basta la pompa di calore</span></div>
+    <footer id="bottom">
+      <div id="cap"><div id="num">00</div><div><h2 id="name">Unical HYBREER 3</h2><p id="spec">Pompa di calore, caldaia a condensazione e kit idraulico</p><p id="tick"></p></div></div>
+      <div id="count"><b>0</b><span>pezzi</span></div>
+    </footer>
+  </div>
+  <div id="lens"></div>
+
+  <div id="film">
+    <button class="btn" id="bPlay" type="button">Pausa</button>
+    <button class="btn" id="bSkip" type="button">Salta il film</button>
+    <button class="btn" id="bSnd2" type="button" aria-pressed="false">Audio</button>
+  </div>
+  <div id="freetop">
+    <button class="btn" id="bFilm" type="button"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4"/></svg>Film</button>
+    <button class="btn" id="bSnd" type="button" aria-pressed="false">Audio</button>
+  </div>
+
   <div id="start">
-    <div><small>Pompa di calore, caldaia e kit Unical</small><h1>Guardalo montarsi pezzo per pezzo</h1><p>Poi provalo tu: smontalo, guardaci dentro e fai scendere la temperatura esterna, per vedere quando si accende la caldaia.</p></div>
+    <div><small>Sistema ibrido Unical HYBREER 3</small><h1>Guardalo montarsi pezzo per pezzo</h1><p>Pompa di calore e caldaia insieme. Poi provalo tu: smontalo, guardaci dentro, segui l'acqua, cambia il meteo.</p></div>
     <div class="go">
-      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>50 secondi</span></div></button>
+      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>1 minuto</span></div></button>
       <button class="btn" id="bExplore" type="button">Salta il film e provalo subito</button>
     </div>
   </div>
   <div id="toast">Ora provalo tu</div>
+
   <div id="dock">
     <div id="panel">
-      <section data-tool="tocca"><p id="pTocca">Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.</p><div class="riga" id="nomi"></div></section>
-      <section data-tool="smonta"><p>Sposta il cursore: prima si staccano pompa di calore, caldaia e kit, poi ogni pezzo dal suo vicino.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
-      <section data-tool="dentro"><p>Involucri trasparenti. Nella pompa di calore: compressore, ventilatore, batteria alettata, scambiatore a piastre e kit idronico. Nella caldaia: scambiatore in alluminio, bruciatore, circolatore e vaso di espansione. Nel kit: il collettore. <small>Componenti dai documenti Unical; la loro disposizione è uno schema di principio.</small></p></section>
-      <section data-tool="fuori"><p id="pFuori"></p><input type="range" id="sT" min="-20" max="15" step="1" value="10" aria-label="Temperatura esterna"><div class="riga"><button class="btn" id="kEst" type="button" aria-pressed="false">Estate: raffresca</button></div><p><small>Soglie dal manuale HYBREER (p.19) per un impianto a pavimento: la caldaia si accende sotto i 5 °C; sotto i −15 °C lavora da sola.</small></p></section>
+      <section id="pTouch">
+        <div class="how" id="howTouchRow"><i class="gest"></i><span id="howTouch">Trascina per girare. Tocca un pezzo per sapere cos'è.</span></div>
+        <div id="cardIn" hidden><small id="cK"></small><h3 id="cT"></h3><p id="cE"></p><p id="cS"></p></div>
+        <div class="chips" id="chips" aria-label="Gruppi dell'impianto"></div>
+      </section>
+      <section id="pExpl" hidden>
+        <div class="how"><i class="gest"></i><span>Trascina il cursore: l'impianto si smonta in <b id="nP">900</b> pezzi.</span></div>
+        <div class="sl"><input id="sE" type="range" min="0" max="100" value="0" aria-label="Quanto smontare"><output id="oE">0%</output></div>
+      </section>
+      <section id="pXray" hidden>
+        <div class="how"><i class="gest"></i><span id="howX">Muovi il dito sull'impianto: dentro il cerchio lo vedi lavorare.</span></div>
+        <p class="note">Arancio: acqua calda. Azzurro: acqua di ritorno. Giallo: gas. Grigio: fumi.</p>
+      </section>
+      <section id="pRide" hidden>
+        <div><small style="font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--green)">Segui l'acqua nel suo giro</small><b id="rT">Si parte dal pavimento di casa</b></div>
+        <div class="row"><div class="prog" style="flex:1"><i id="rP"></i></div><button class="btn" id="bRideGo" type="button">Ferma</button></div>
+      </section>
+      <section id="pRem" hidden>
+        <div class="how"><i class="gest tap"></i><span>Premi i tasti: l'impianto risponde.</span></div>
+        <div class="keys">
+          <button class="key" id="kPw" type="button" aria-pressed="true">Acceso</button>
+          <button class="key" id="kHeat" type="button" aria-pressed="true">Caldo</button><button class="key" id="kCool" type="button" aria-pressed="false">Freddo</button>
+          <button class="key" id="kSil" type="button" aria-pressed="false">Silenziata</button>
+        </div>
+        <div class="keys" id="kImp" role="group" aria-label="Tipo di impianto"></div>
+        <p class="note" id="lState"></p>
+      </section>
+      <section id="pMeteo" hidden>
+        <div class="how"><i class="gest"></i><span>Trascina: cambia la temperatura fuori casa.</span></div>
+        <div class="sl"><svg viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M20.7 7 3.3 17"/></svg><input id="sT" type="range" min="-25" max="35" value="7" aria-label="Temperatura esterna"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg><output id="oT">7 °C</output></div>
+        <p class="note" id="mHint"></p>
+      </section>
     </div>
-    <div id="tabs">
-      <button class="tab" data-tool="tocca" type="button">Tocca</button><button class="tab" data-tool="smonta" type="button">Smonta</button><button class="tab" data-tool="dentro" type="button">Dentro</button><button class="tab" data-tool="fuori" type="button">Fuori</button>
+    <div id="tabs" role="tablist" aria-label="Strumenti">
+      <button class="tab" role="tab" data-tool="touch" aria-selected="true" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="2.6"/><path d="M7.5 9.5a6.4 6.4 0 0 1 9 0M4.6 6.6a10.5 10.5 0 0 1 14.8 0"/></svg>Tocca</button>
+      <button class="tab" role="tab" data-tool="expl" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M8 8 3.5 3.5M16 8l4.5-4.5M8 16l-4.5 4.5M16 16l4.5 4.5M3.5 3.5h3M3.5 3.5v3M20.5 3.5h-3M20.5 3.5v3M3.5 20.5h3M3.5 20.5v-3M20.5 20.5h-3M20.5 20.5v-3"/></svg>Smonta</button>
+      <button class="tab" role="tab" data-tool="xray" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M7.5 10.5h6M10.5 7.5v6"/></svg>Raggi X</button>
+      <button class="tab" role="tab" data-tool="ride" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><path d="M5 8c0-3.4 14-3.4 14 0S5 12.600 5 16s14 3.400 14 0"/><circle cx="19" cy="16" r="1.800" fill="currentColor"/></svg>Giro</button>
+      <button class="tab" role="tab" data-tool="rem" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v8M6.300 6.800a8 8 0 1 0 11.400 0"/></svg>Accendi</button>
+      <button class="tab" role="tab" data-tool="meteo" aria-selected="false" type="button"><svg viewBox="0 0 24 24"><path d="M12 2v20M3.300 7l17.400 10M20.700 7 3.300 17M12 6.500 9.800 4.300M12 6.500l2.200-2.200M12 17.500l-2.200 2.200M12 17.500l2.200 2.200"/></svg>Meteo</button>
     </div>
   </div>
+  <div id="flash"></div>
 </div>
 <script type="module">
 /*SCRIPT*/
