@@ -218,6 +218,22 @@ registra({
   },
 });
 
+// ───────── F-COIL AGR 400 · livello leggero per Home e Casa ─────────
+// Misure dal manuale 00340791 p.5: 897 × 579 × 129 mm (taglia 400, da confermare con Bore); a parete, 140 mm minimo dal pavimento (p.6). Pochi pezzi.
+registra({
+  id: 'fcoil', nome: 'F-COIL AGR', riga: 'Ventilconvettore: scalda, raffresca e deumidifica', apri: 'Apri il ventilconvettore', pagina: 'fcoil/',
+  alto: .72, ordine: 5,
+  costruisci() {
+    const g = new THREE.Group(), W = .897, H = .579, D = .129, Y0 = .14;
+    const bianco = std({ color: 0xd7d9db, roughness: .6, metalness: .05 }), grig = std({ color: 0xb4b8bb, roughness: .7 }), nero = std({ color: 0x1b1d20, roughness: .5 });
+    g.add(mesh(rbox(W, H, D, .01), bianco, 0, Y0 + H / 2, D / 2));
+    for (let i = 0; i < 8; i++) g.add(mesh(box(W - .1, .006, .012), grig, .02, Y0 + .04 + i * .016, D + .002));
+    for (let i = 0; i < 9; i++) g.add(mesh(box(W - .14, .004, .008), grig, .04, Y0 + H + .002, .02 + i * .011));
+    g.add(mesh(box(.11, .004, .045), nero, W / 2 - .1, Y0 + H + .003, .085));
+    return { group: g, tick() {} };
+  },
+});
+
 // ───────── Fotovoltaico Unical · livello leggero per Home e Casa ─────────
 // MULTIVOLT 460 BF (scheda 00341524): 1762 x 1134 x 30 mm, 96 mezze celle 6 x 16, doppio vetro, telaio in alluminio.
 // ZOE1-6000 (manuale 00341435 p.22, 75): 540 x 450 x 185 mm, frontale chiaro con scritta Unical in alto e schermo LCD in basso al centro.
@@ -407,7 +423,6 @@ const Home = (() => {
     const sag = (nome, riga, alto, forma) => voci.push({ id: null, nome, riga, alto, fatto: false, costruisci: () => ({ group: forma(), tick() {} }) });
     const mat = () => std({ color: 0x39424a, roughness: .9, metalness: 0, transparent: true, opacity: .55 });
     const solido = (geo, y) => { const g = new THREE.Group(), m = mesh(geo, mat(), 0, y, 0); g.add(m, new THREE.LineSegments(new THREE.EdgesGeometry(geo, 30), new THREE.LineBasicMaterial({ color: 0x8fa3b0, transparent: true, opacity: .7 }))); g.children[1].position.y = y; return g; };
-    sag('Ventilconvettori', 'In arrivo con la tappa 5', .6, () => solido(box(1.0, .58, .2), .29));
     sag('Climatizzatori', 'In arrivo con la tappa 6', .6, () => solido(box(.85, .3, .22), .45));
   }
   const n = voci.length, R = n > 1 ? 2.15 : 0, passo = PI * 2 / n;
@@ -570,6 +585,14 @@ const Casa = (() => {
     tubo([V(.6, FM + 1.2, zc), V(.6, FM + .59, zc), V(-.02, FM + .59, zc)], .014, 1, 'bat');
     tubo([V(.92, FM + 1.2, zc), V(.92, FM + .06, zc), V(-.3, FM + .06, zc), V(-.3, yq + .2, zc)], .012, 1, 'casa');
     tubo([V(-.45, yq, zc), V(-HW + TW + .06, yq, zc), V(-HW + TW + .06, yq, 1.0), V(-HW - .06, yq, 1.0), V(-HW - .06, FY + 1.5, 1.0)], .012, 1, 'rete');
+  }
+  // ventilconvettore F-COIL AGR 400 (tappa 5): in soggiorno, sulla parete di sinistra, a 140 mm dal pavimento (manuale 00340791 p.6). Taglia e posto da confermare con Bore.
+  // Collegato alla distribuzione sotto il pavimento: percorso indicativo.
+  const fcDef = PRODOTTI.find(p => p.id === 'fcoil');
+  if (fcDef) {
+    const fc = fcDef.costruisci(); fc.group.position.set(-HW + TW + .002, FY, .55); fc.group.rotation.y = PI / 2; g.add(fc.group); fc.group.traverse(o => { o.userData.prodotto = 'fcoil'; });
+    viste.push({ def: fcDef, ist: fc, pos: V(-HW + TW + .3, FY + 1.15, .55) });
+    const rame = std({ color: 0xc47a45, roughness: .35, metalness: .9 }); for (const dz of [-.37, -.33]) add(cyl(.008, .2, 10), rame, -HW + TW + .06, FY + .05, .55 + dz);
   }
   // ibrido HYBREER 3 (tappa 4, scelte di Bore del 13 novembre 2026): HP_QOR 70 al posto della UHP; caldaia KONm 24 C e kit HYBREER a vista in lavanderia, sulla parete di fondo,
   // sopra il collettore dell'impianto. Collegamenti come nello schema del manuale HYBREER 00339200 p.14: pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal,

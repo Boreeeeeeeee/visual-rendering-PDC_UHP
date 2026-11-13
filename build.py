@@ -29,7 +29,7 @@ THREE = "0.186.1"
 MOTORE_UHP = {"ibrido"}   # pagine complete costruite sul motore di montaggio della UHP (stesso livello di dettaglio)
 # pagine complete sul motore della UHP che in più condividono pagina, film e strumenti (src/comune/prodotto.html, p1_base.js, p2_show.js, p3_ui.js):
 # di suo il prodotto ha solo i pezzi, la scena e la configurazione (CFG) nei file ?_*.js, e i testi dell'intestazione in meta.json
-MOTORE_COMUNE = {"acs", "fv", "clima"}
+MOTORE_COMUNE = {"acs", "fv", "fcoil", "clima"}
 FONTS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'

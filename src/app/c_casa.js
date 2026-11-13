@@ -112,6 +112,14 @@ const Casa = (() => {
     tubo([V(.92, FM + 1.2, zc), V(.92, FM + .06, zc), V(-.3, FM + .06, zc), V(-.3, yq + .2, zc)], .012, 1, 'casa');
     tubo([V(-.45, yq, zc), V(-HW + TW + .06, yq, zc), V(-HW + TW + .06, yq, 1.0), V(-HW - .06, yq, 1.0), V(-HW - .06, FY + 1.5, 1.0)], .012, 1, 'rete');
   }
+  // ventilconvettore F-COIL AGR 400 (tappa 5): in soggiorno, sulla parete di sinistra, a 140 mm dal pavimento (manuale 00340791 p.6). Taglia e posto da confermare con Bore.
+  // Collegato alla distribuzione sotto il pavimento: percorso indicativo.
+  const fcDef = PRODOTTI.find(p => p.id === 'fcoil');
+  if (fcDef) {
+    const fc = fcDef.costruisci(); fc.group.position.set(-HW + TW + .002, FY, .55); fc.group.rotation.y = PI / 2; g.add(fc.group); fc.group.traverse(o => { o.userData.prodotto = 'fcoil'; });
+    viste.push({ def: fcDef, ist: fc, pos: V(-HW + TW + .3, FY + 1.15, .55) });
+    const rame = std({ color: 0xc47a45, roughness: .35, metalness: .9 }); for (const dz of [-.37, -.33]) add(cyl(.008, .2, 10), rame, -HW + TW + .06, FY + .05, .55 + dz);
+  }
   // ibrido HYBREER 3 (tappa 4, scelte di Bore del 13 novembre 2026): HP_QOR 70 al posto della UHP; caldaia KONm 24 C e kit HYBREER a vista in lavanderia, sulla parete di fondo,
   // sopra il collettore dell'impianto. Collegamenti come nello schema del manuale HYBREER 00339200 p.14: pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal,
   // impianto su R imp / M imp. La caldaia lavora solo in riscaldamento (p.19, AHS = CALDO): i suoi attacchi C e F restano chiusi, l'acqua calda la fa l'HP 300PSDX.
