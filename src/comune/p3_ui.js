@@ -2,7 +2,7 @@
 // Dal prodotto (CFG): short { chiave del gruppo: nome corto }, gusci [chiavi degli involucri], aperti [gruppi che non serve rendere trasparenti],
 //   strumenti [...]: 'touch', 'expl', { k: 'xray', nota }, { k: 'ride', titolo, path(), vel, frasi [[tratto, testo]], fine, inizio },
 //                    oppure uno suo { k, nome, icona (path SVG), html, init(), entra(), esce() },
-//   tick(dt, { U, ease, inner, inside, calm }) lo stato dell'impianto nella parte libera, entra(U) all'ingresso, ronzio(S) per l'audio.
+//   trasparente(U) vero quando lo strumento scelto deve mostrare l'interno, tick(dt, { U, ease, inner, inside, calm }) lo stato dell'impianto nella parte libera, entra(U) all'ingresso, ronzio(S) per l'audio.
 const U = { tool: 'touch', E: 0, Ecur: 0, lens: false, lensAuto: true, lx: -1, ly: -1, ride: false, ru: 0, rinit: true, sel: -1, selK: 0, snd: false, vkey: '' };
 const IMS = []; machine.traverse(o => { if (o.isInstancedMesh) IMS.push(o); });
 const comet = pushed(points(40, .03), .04); comet.visible = false; machine.add(comet); const camP = V(), camL = V();
@@ -85,7 +85,7 @@ function uiTick(dt) {
   if (U.sel >= 0 && U.selK > .001) { const g = GROUPS[U.sel]; _d.copy(g.ex); if (_d.lengthSq() < .01) _d.set(0, 0, 0); else _d.normalize(); g.node.position.addScaledVector(_d, .16 * U.selK * (1 - U.Ecur)); }
   const ease = (key, v, r = 1.6) => { S[key] += (v - S[key]) * Math.min(1, dt * r); };
   const g0 = U.sel >= 0 ? GROUPS[U.sel] : null, inner = !!g0 && !CFG.gusci.includes(g0.key) && !(CFG.aperti || []).includes(g0.key), inside = U.lens || U.ride || inner, calm = 1 - clamp(U.Ecur * 4);
-  ease('xray', U.ride ? 1 : inner ? .92 : 0, 4); ease('ghost', U.ride ? 1 : 0, 3);
+  ease('xray', U.ride ? 1 : (inner || (CFG.trasparente && CFG.trasparente(U))) ? .92 : 0, 4); ease('ghost', U.ride ? 1 : 0, 3);
   CFG.tick(dt, { U, ease, inner, inside, calm }); S.read = 1; readout();
   // la barra degli strumenti copre il fondo (o, col telefono in orizzontale, il fianco destro): sposto il modello nella parte libera
   const r = stage.getBoundingClientRect(), dk = $('dock'), side = dk.offsetWidth < r.width - 4, dockH = side ? 0 : dk.offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height)), fx = side ? Math.min(.5, dk.offsetWidth / Math.max(1, r.width)) : 0;

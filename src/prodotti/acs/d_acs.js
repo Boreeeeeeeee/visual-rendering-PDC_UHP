@@ -55,7 +55,7 @@ const CFG = {
   },
   libero() { Object.assign(A, { caldo: .85, doccia: false, fv: false, anti: false, res: false, comp: true }); setPrima = 55; Object.assign(ST, { comp: 3, fan: 5, ref: 0, air: 1, demo: 0, water: 1, dw: 0, heat: 0, caldo: .85, set: 55, who: 1 }); },
   short: { tank: 'Serbatoio', coil: 'Serpentino', cond: 'Condensatore', iso: 'Rivestimento', comp: 'Compressore', frig: 'Evaporatore', cop: 'Coperchio' },
-  gusci: ['iso', 'cop'], aperti: [],
+  gusci: ['iso', 'cop'], aperti: [], trasparente: U => U.tool === 'doccia' || U.tool === 'modi',
   tick(dt, { U, ease, inside, calm }) {
     passoAcqua(dt); const run = A.comp || U.ride;
     ease('comp', run ? 3 * calm : 0); ease('fan', A.comp ? 5 * calm : 0); ease('ref', run && inside ? calm : 0, 3); ease('air', A.comp && !U.ride ? calm : 0); ease('water', 1); ease('dw', A.doccia ? calm : 0, 3); ease('heat', A.res && A.comp ? 1 : 0);

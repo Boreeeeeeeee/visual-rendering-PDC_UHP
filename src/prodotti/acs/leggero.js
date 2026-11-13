@@ -25,7 +25,7 @@ registra({
     const att = h => V(R + .012, B + h, 0);
     for (const h of [.0325, .235, .855, 1.17, 1.27, 1.37]) { const a = mesh(cyl(h === 1.37 ? .011 : .014, .03, 14), h === 1.17 ? nero : ottone); a.position.copy(att(h)); a.rotation.z = PI / 2; g.add(a); }
     // coperture posteriori di resistenza (950) e termostato (1150)
-    for (const h of [.95, 1.15]) { const a = rad(150), c = mesh(cyl(.05, .012, 20), nero, Math.sin(a) * (R + .004), B + h, Math.cos(a) * (R + .004)); c.rotation.order = 'YXZ'; c.rotation.set(PI / 2, a, 0); g.add(c); }
+    for (const h of [.95, 1.15]) { const a = rad(205), c = mesh(cyl(.05, .012, 20), nero, Math.sin(a) * (R + .004), B + h, Math.cos(a) * (R + .004)); c.rotation.order = 'YXZ'; c.rotation.set(PI / 2, a, 0); g.add(c); }
     const led = ui.material;
     return { group: g, attacchi: { fredda: att(.0325).setX(R + .03), calda: att(1.27).setX(R + .03) }, tick(dt, carico = 0) { led.color.setScalar(.75 + .25 * carico); } };
   },

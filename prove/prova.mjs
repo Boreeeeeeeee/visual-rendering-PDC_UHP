@@ -72,18 +72,22 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await page.locator('.tag').nth(1).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'acs', "l'etichetta dell'HP 300PSDX apre il prodotto"); ok(page.url().endsWith('#acs'), 'indirizzo #acs');
   ok(await fino(async () => await fr.locator('#kDoccia').count() > 0, 20000), "la pagina dell'HP 300PSDX si carica");
   const acs = f => fr.locator('body').evaluate((_, f) => (0, eval)(f), f), premi = id => fr.locator('#' + id).evaluate(b => b.click()), sa = () => acs('window.__acs.stato()');
-  await fino(async () => !!(await acs('!!window.__acs'))); await sleep(800); await foto('acs_inizio'); ok((await sa()).mode === 'start', "parte dalla schermata d'inizio");
-  await premi('bGo'); await acs('window.__acs.seek(9)'); ok((await sa()).mode === 'film', 'il film parte'); await acs('window.__acs.seek(24)'); await sleep(300); await foto('acs_film');
-  ok((await acs('window.__acs.seek(34.5); window.__acs.avanti(1); window.__acs.stato()')).caldo < .97, 'nel finale del film la doccia consuma acqua calda');   // in una sola chiamata: il film intanto va avanti da solo
-  await premi('bFilm').catch(() => {}); await acs('window.__acs.libero(false)'); ok((await sa()).mode === 'free', 'si passa alla parte libera');
+  await fino(async () => !!(await acs('!!window.__acs'))); await sleep(800); await foto('acs_inizio');
+  let a = await sa(); ok(a.mode === 'start' && a.pezzi > 200 && a.gruppi === 7, `l'HP 300PSDX parte dalla schermata d'inizio con ${a.pezzi} pezzi in 7 gruppi`);
+  a = await acs('window.__acs.seek(2.9); window.__acs.stato()'); ok(a.mode === 'film' && a.E > .5, 'il film parte con lo scaldacqua che si apre');
+  a = await acs('window.__acs.seek(24.6); window.__acs.stato()'); ok(a.posati > 100 && a.posati < 200, 'a metà film il compressore si monta in sezione'); await sleep(300); await foto('acs_film');
+  a = await acs('window.__acs.seek(41.5); window.__acs.stato()'); ok(a.xray > .9 && a.posati === a.pezzi && a.water > .9, 'in funzione: rivestimento ai raggi X e acqua nel serbatoio'); await sleep(300); await foto('acs_funzione');
+  a = await acs("document.getElementById('bSkip').click(); window.__acs.step(30, .05); window.__acs.stato()"); ok(a.mode === 'free', 'si passa alla parte libera');
   const strum = n => fr.locator(`.tab[data-tool=${n}]`).evaluate(b => b.click());
-  await strum('smonta'); await acs('window.__acs.avanti(2)'); ok((await sa()).e > .4, 'Smonta separa i gruppi'); await sleep(300); await foto('acs_smonta');
-  await strum('sezione'); await acs('window.__acs.avanti(2)'); let a = await sa(); ok(a.sez > .95 && a.e < .05, 'Sezione taglia a metà e richiude');
-  await strum('doccia'); await premi('kDoccia'); await acs('window.__acs.avanti(4)'); a = await sa(); ok(a.doccia && a.caldo < .8 && a.caldo > .3, "Doccia: l'acqua calda scende"); await sleep(300); await foto('acs_doccia');
-  await premi('kDoccia'); await acs('window.__acs.avanti(30)'); a = await sa(); ok(!a.doccia && a.caldo === 1 && !a.comp, 'chiusa la doccia il serbatoio si ricarica e la macchina si ferma');
-  await strum('modi'); ok((await sa()).set === 55, 'set di fabbrica 55 °C'); await premi('kFv'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 65, 'contatto fotovoltaico: 65 °C'); await premi('kFv');
-  await premi('kAnti'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 65, 'antilegionella: 65 °C'); await premi('kAnti'); await premi('kRes'); await acs('window.__acs.avanti(.2)'); ok((await sa()).set === 70, 'resistenza: 70 °C'); await sleep(300); await foto('acs_modi'); await premi('kRes');
-  await strum('tocca'); await fr.locator('#nomi .btn').nth(2).evaluate(b => b.click()); ok((await fr.locator('#pTocca').textContent()).includes('Condensatore'), 'la scheda del gruppo si apre');
+  await strum('expl'); a = await acs('window.__acs.step(40, .05); window.__acs.stato()'); ok(a.E > .45, 'Smonta separa i gruppi'); await sleep(300); await foto('acs_smonta');
+  await strum('xray'); ok(await acs("window.__acs.step(20, .05); getComputedStyle(document.getElementById('lens')).display") === 'block', 'Raggi X mostra la lente');
+  await strum('ride'); a = await acs("window.__acs.step(100, .05); [window.__ui.U.ride, window.__ui.U.ru, document.getElementById('rT').textContent]"); ok(a[0] && a[1] > .1 && a[2].length > 10, 'Giro: la camera segue il propano nei tubi'); await sleep(300); await foto('acs_giro');
+  a = await acs("window.__acs.step(500, .05); [window.__ui.U.ride, document.getElementById('rT').textContent]"); ok(!a[0] && a[1].startsWith('Giro finito'), 'il giro del propano arriva in fondo e si ferma');
+  await strum('doccia'); await premi('kDoccia'); a = await acs('window.__acs.step(40, .1); window.__acs.stato()'); ok(a.doccia && a.caldo < .8 && a.caldo > .3 && a.xray > .5, "Doccia: l'acqua calda scende e si vede nel serbatoio"); await sleep(300); await foto('acs_doccia');
+  await premi('kDoccia'); a = await acs('window.__acs.step(300, .1); window.__acs.stato()'); ok(!a.doccia && a.caldo === 1 && !a.comp, 'chiusa la doccia il serbatoio si ricarica e la macchina si ferma');
+  await strum('modi'); ok((await sa()).set === 55, 'set di fabbrica 55 °C'); await premi('kFv'); a = await acs('window.__acs.step(2, .1); window.__acs.stato()'); ok(a.set === 65 && a.comp, 'contatto fotovoltaico: 65 °C e la pompa di calore riparte'); await premi('kFv');
+  await premi('kAnti'); ok((await acs('window.__acs.step(2, .1); window.__acs.stato()')).set === 65, 'antilegionella: 65 °C'); await premi('kAnti'); await premi('kRes'); a = await acs('window.__acs.step(2, .1); window.__acs.stato()'); ok(a.set === 70 && a.who === 2, 'resistenza: 70 °C'); await sleep(300); await foto('acs_modi'); await premi('kRes');
+  await strum('touch'); ok((await acs("window.__ui.openCard(2); window.__acs.step(20, .05); document.getElementById('cT').textContent")).includes('Condensatore'), 'la scheda del gruppo si apre');
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), "il ritorno dall'HP 300PSDX riporta alla Casa");
   // fotovoltaico nella Casa e pagina completa
   await ora(12.5); c = await st(); ok(c.pv > .4 && c.bat >= 0 && c.sole, 'inverno, mezzogiorno: il fotovoltaico produce più di quanto serve');
@@ -93,14 +97,17 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await page.locator('.tag').nth(2).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'fv', "l'etichetta del fotovoltaico apre il prodotto");
   ok(await fino(async () => await fr.locator('#sS').count() > 0, 20000), 'la pagina del fotovoltaico si carica');
   const fv = q => fr.locator('body').evaluate((_, q) => (0, eval)(q), q); await fino(async () => !!(await fv('!!window.__fv'))); await sleep(800); await foto('fv_inizio');
-  ok((await fv('window.__fv.seek(21.5); window.__fv.stato()')).mode === 'film', 'il film del fotovoltaico parte'); await sleep(300); await foto('fv_film');
-  let f = await fv("window.__fv.libero(false); window.__fv.setTool('sole'); { const s = document.getElementById('sS'); s.value = 1; s.dispatchEvent(new Event('input')); } window.__fv.avanti(3); window.__fv.stato()");
+  let f = await fv('window.__fv.stato()'); ok(f.mode === 'start' && f.pezzi > 350 && f.gruppi === 6, `il fotovoltaico parte dalla schermata d'inizio con ${f.pezzi} pezzi in 6 gruppi`);
+  f = await fv('window.__fv.seek(13.4); window.__fv.stato()'); ok(f.mode === 'film' && f.posati > 100, 'il film monta il modulo strato per strato'); await sleep(300); await foto('fv_film');
+  f = await fv('window.__fv.seek(46.5); window.__fv.stato()'); ok(f.posati === f.pezzi && f.xray > .5, 'di notte, nel film, inverter e batteria si vedono dentro'); await sleep(300); await foto('fv_notte');
+  f = await fv("document.getElementById('bSkip').click(); window.__ui.setTool('sole'); { const s = document.getElementById('sS'); s.value = 100; s.dispatchEvent(new Event('input')); } window.__fv.step(30, .1); window.__fv.stato()");
   ok(f.mode === 'free' && f.bat > 0 && f.soc > .45, 'Sole: con il sole la batteria si carica'); await sleep(300); await foto('fv_sole');
-  f = await fv('window.__fv.avanti(60); window.__fv.stato()'); ok(f.soc === 1 && f.bat === 0 && f.rete > 0, 'batteria piena: il resto va in rete');
-  f = await fv("{ const s = document.getElementById('sS'); s.value = 0; s.dispatchEvent(new Event('input')); } window.__fv.avanti(2); window.__fv.stato()"); ok(f.bat < 0 && Math.abs(f.rete) < 1e-6, 'senza sole la batteria alimenta la casa');
-  f = await fv('window.__fv.avanti(120); window.__fv.stato()'); ok(f.soc <= .101 && f.bat === 0 && f.rete < 0, 'alla scarica minima si prende dalla rete');
-  f = await fv("window.__fv.setTool('smonta'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.e > .4, 'Smonta separa i gruppi del fotovoltaico');
-  f = await fv("window.__fv.setTool('dentro'); window.__fv.avanti(2); window.__fv.stato()"); ok(f.dentro > .95 && f.e < .05 && f.pezzi > 80, 'Dentro rende trasparenti gli involucri'); await sleep(300); await foto('fv_dentro');
+  f = await fv('window.__fv.step(600, .1); window.__fv.stato()'); ok(f.soc === 1 && f.bat === 0 && f.rete > 0, 'batteria piena: il resto va in rete');
+  f = await fv("{ const s = document.getElementById('sS'); s.value = 0; s.dispatchEvent(new Event('input')); } window.__fv.step(20, .1); window.__fv.stato()"); ok(f.bat < 0 && Math.abs(f.rete) < 1e-6, 'senza sole la batteria alimenta la casa');
+  f = await fv('window.__fv.step(1200, .1); window.__fv.stato()'); ok(f.soc <= .101 && f.bat === 0 && f.rete < 0, 'alla scarica minima si prende dalla rete');
+  f = await fv("window.__ui.setTool('expl'); window.__fv.step(40, .05); window.__fv.stato()"); ok(f.E > .45, 'Smonta separa i gruppi del fotovoltaico');
+  f = await fv("window.__ui.setTool('ride'); window.__fv.step(60, .05); [window.__ui.U.ride, document.getElementById('rT').textContent]"); ok(f[0] && f[1].length > 10, "Giro: la camera segue l'energia"); await sleep(300); await foto('fv_giro');
+  f = await fv("window.__ui.setTool('touch'); window.__ui.openCard(3); window.__fv.step(20, .05); document.getElementById('cT').textContent"); ok(f.includes('ZOE1'), "la scheda dell'inverter si apre");
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
   // ibrido (tappa 4): scambio del generatore nella Casa, caldaia nelle ore più fredde, pagina completa
   await page.click('#bIbr'); c = await st(); ok(c.gen === 'ibrido' && (await page.textContent('.tag')).startsWith('HYBREER 3'), "il pulsante Ibrido mette l'ibrido al posto della UHP");

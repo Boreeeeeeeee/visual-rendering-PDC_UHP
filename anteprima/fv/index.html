@@ -2,13 +2,13 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fotovoltaico Unical pezzo per pezzo</title>
-<meta name="description" content="Moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL di Unical che si montano pezzo per pezzo. Guarda il film, poi muovi il sole.">
+<meta name="description" content="Moduli MULTIVOLT 460 BF, inverter ZOE1-6000 e batteria SUM BL15P che si montano pezzo per pezzo. Guarda il film, poi smontali, guardaci dentro, segui l'energia e muovi il sole.">
 <meta property="og:title" content="Fotovoltaico Unical pezzo per pezzo">
-<meta property="og:description" content="Guarda l'impianto montarsi pezzo per pezzo, dentro e fuori, poi provalo tu: smontalo, guardaci dentro e muovi il sole.">
+<meta property="og:description" content="Dal tetto alla presa di casa: moduli, inverter e batteria che si montano pezzo per pezzo, poi muovi il sole e guarda dove va l'energia.">
+<meta property="og:image" content="https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/anteprima/fv/../og.jpg>
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/anteprima/fv/../og.jpg">
 <meta name="theme-color" content="#0b0f13">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,69 +17,213 @@
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
 </script>
 <style>
-  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
+  /* Un solo mondo visivo, scuro: officina di notte. Scena 3D a tutto schermo; in basso una barra di sei strumenti
+     e sopra un pannello che dice in una riga cosa fare con lo strumento scelto. Pensato prima per il telefono. */
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --copper: #e08a52;
+    --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
     --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
-  * { box-sizing: border-box } html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent }
-  #stage { position: fixed; inset: 0 } #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden }
+  #stage { position: relative; height: 100%; width: 100%; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none }
+  canvas#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
   button { font: inherit; color: inherit }
-  .btn { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
-  .btn[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
-  #top { background: linear-gradient(rgba(5,8,10,.82), transparent); position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-bottom: 26px; padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; flex-wrap: wrap }
-  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase } .brand span { color: var(--green) }
+  [hidden] { display: none !important }
+
+  /* testi sopra la scena */
+  #hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: var(--pad);
+    background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%) }
+  #top { display: flex; flex-direction: column; gap: 9px }
+  #brandrow { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap }
+  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase }
+  .brand span { color: var(--green) }
   .back { position: relative; z-index: 60; pointer-events: auto; display: inline-block; margin-right: 12px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(13,18,22,.7); color: var(--ink); font-size: .78em; letter-spacing: .06em; text-decoration: none; vertical-align: middle }
-  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em } body.free .sub { display: none }
-  #bFilm { display: none } body.free #bFilm { display: inline-flex }
-  #set { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 46px); font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) } #set b { display: block; margin-top: 4px; font-size: 30px; letter-spacing: .02em; color: var(--heat) }
-  body.start #set, body.film #set { display: none }
-  #cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 46px var(--pad) max(var(--pad), env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(5,8,10,.9) 60%); display: none; gap: 14px; align-items: flex-end; pointer-events: none; text-shadow: 0 2px 14px #000 } body.film #cap { display: flex }
-  #num { font: 700 clamp(44px, 9vmin, 76px)/.85 var(--display); color: var(--green) } #cap h2 { margin: 0; font: 700 clamp(22px, 4.4vmin, 34px)/1 var(--display); letter-spacing: .05em; text-transform: uppercase } #cap p { margin: 4px 0 0; max-width: 46ch; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; color: var(--ink) }
-  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 52px) var(--pad) calc(var(--pad) + 8px); background: linear-gradient(90deg, rgba(5,8,10,.82), rgba(5,8,10,.1) 70%) } body.start #start { display: flex }
-  #start small { font: 600 13px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--green) } #start h1 { margin: 8px 0; font: 700 clamp(34px, 7.6vmin, 60px)/.95 var(--display); letter-spacing: .03em; text-transform: uppercase; max-width: 9em } #start p { margin: 0; max-width: 34ch; color: var(--ink) }
-  .go { display: flex; flex-direction: column; gap: 10px; width: min(100%, 380px) } .big { pointer-events: auto; display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 22px; border: 0; border-radius: 16px; background: var(--green); color: #10140f; font: 700 20px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; text-align: left }
-  .big svg { width: 22px; height: 22px; fill: currentColor } .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
-  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; white-space: nowrap }
-  #toast.on { animation: toast 2.4s ease both } @keyframes toast { 0% { opacity: 0 } 12%, 78% { opacity: 1 } 100% { opacity: 0 } }
-  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px max(8px, env(safe-area-inset-bottom)); display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) } body.free #dock { display: flex }
-  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px) }
-  #panel section { display: none; flex-direction: column; gap: 10px } #panel section.on { display: flex } #panel p { margin: 0; font-size: 14px; line-height: 1.35 } #panel p small { color: var(--dim) }
-  .riga { display: flex; flex-wrap: wrap; gap: 8px } .riga .btn { min-height: 40px; padding: 0 13px; font-size: 13px }
-  #tabs { pointer-events: auto; display: flex; gap: 6px; width: min(100%, 640px) } .tab { flex: 1; min-height: 52px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer }
-  .tab[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent }
-  #barra { height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); overflow: hidden } #barra i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #4fd07a, #a6ff9a); transition: width .2s linear }
-  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent }
-  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) } input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0 } input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
-  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 40px) } #start h1 { font-size: 28px } .tab { min-height: 40px } #panel { padding: 8px 12px } #panel p { font-size: 12.5px } .big { min-height: 48px } #set { display: none } #dock { flex-direction: row; align-items: flex-end; justify-content: center } #tabs { width: auto; flex: 0 0 auto } .tab { padding: 0 10px } }
+  .back:hover, .back:focus-visible { border-color: var(--green) }
+  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em }
+  #segs { display: flex; gap: 4px; height: 3px }
+  #segs i { background: var(--line); overflow: hidden; border-radius: 2px; min-width: 5px }
+  #segs b { display: block; height: 100%; background: var(--green); transform-origin: left; transform: scaleX(0) }
+  #read { display: flex; gap: clamp(12px, 2vmin, 22px); margin-top: 4px; opacity: 0; transition: opacity .5s }
+  #read.on { opacity: 1 }
+  #read div { display: flex; flex-direction: column; gap: 2px }
+  #read small { font: 600 clamp(10px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) }
+  #read b { font: 700 clamp(24px, 3.6vmin, 34px)/1 var(--display); font-variant-numeric: tabular-nums }
+  #read .gen b { font-size: clamp(17px, 2.6vmin, 24px); line-height: 1.25; padding-top: .2em; color: var(--green); text-transform: uppercase; letter-spacing: .04em } #rGen b[data-w="2"], #rGen b[data-w="3"] { color: var(--heat) } #rGen b[data-w="0"] { color: var(--dim) }
+  #hook { position: absolute; left: 0; right: 0; top: 13%; text-align: center; opacity: 0; padding: 0 16px }
+  #hook b { display: block; font: 700 clamp(50px, 13vmin, 132px)/.9 var(--display); letter-spacing: .01em; font-variant-numeric: tabular-nums; text-shadow: 0 4px 40px rgba(0,0,0,.6) }
+  #hook span { display: block; margin-top: 8px; font: 600 clamp(15px, 2.7vmin, 26px)/1.1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--dim) }
+  #bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px }
+  #cap { display: flex; gap: clamp(10px, 1.6vmin, 18px); align-items: flex-start; max-width: min(100%, 560px); text-shadow: 0 2px 16px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.6) }
+  #cap.in { animation: rise .6s cubic-bezier(.2,.8,.2,1) both }
+  #num { font: 700 clamp(44px, 8.2vmin, 84px)/.82 var(--display); color: transparent; -webkit-text-stroke: 1.5px var(--green); font-variant-numeric: tabular-nums }
+  #name { margin: 0; font: 700 clamp(24px, 4.3vmin, 44px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase; text-wrap: balance }
+  #spec { margin: 6px 0 0; font-size: clamp(13px, 1.7vmin, 15px); line-height: 1.35; color: #c3cdca; text-wrap: pretty; max-width: 44ch }
+  #tick { margin: 9px 0 0; min-height: 1.3em; font: 600 clamp(13px, 1.9vmin, 17px)/1.3 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--copper) }
+  #tick:not(:empty)::before { content: ""; display: inline-block; width: 18px; height: 1.5px; background: var(--copper); vertical-align: middle; margin-right: 8px }
+  #tick.in { animation: rise .3s ease-out both }
+  #count { text-align: right; flex: none; margin-bottom: 50px }
+  #count b { display: block; font: 700 clamp(26px, 4.6vmin, 46px)/.9 var(--display); font-variant-numeric: tabular-nums }
+  #count span { font: 600 clamp(9px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+  #flash { position: absolute; inset: 0; background: #dff1ff; opacity: 0; pointer-events: none }
+  #lens { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ice); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 28px rgba(143,211,255,.5), inset 0 0 26px rgba(143,211,255,.22); pointer-events: none; display: none }
+
+  /* pulsanti */
+  .btn { pointer-events: auto; cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 0 15px; min-height: 40px; display: inline-flex; align-items: center; gap: 7px;
+    font: 600 clamp(13px, 1.7vmin, 14px)/1 var(--display); letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(8px); white-space: nowrap }
+  .btn:hover { border-color: rgba(255,255,255,.4) } .btn:focus-visible, .tab:focus-visible, .key:focus-visible, .chip:focus-visible, input:focus-visible, .big:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px }
+  .btn[aria-pressed="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .btn svg, .tab svg, .big svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none }
+  #film, #freetop { position: absolute; right: var(--pad); display: none; gap: 8px }
+  #film { bottom: var(--pad) } #freetop { top: calc(var(--pad) + 46px) }
+  body.film #film, body.free #freetop { display: flex }
+  body.start #bottom, body.free #bottom, body.start #read { display: none }
+  body.free #segs, body.start #segs { visibility: hidden }
+
+  /* schermata d'inizio */
+  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 44px) var(--pad) calc(var(--pad) + 8px);
+    background: linear-gradient(rgba(6,12,20,.7), transparent 34%, transparent 58%, rgba(6,10,14,.92)) }
+  body.start #start { display: flex }
+  #start small { font: 600 clamp(12px, 1.8vmin, 14px)/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--green) }
+  #start h1 { margin: 8px 0 8px; font: 700 clamp(34px, 7.4vmin, 76px)/.95 var(--display); letter-spacing: .01em; text-transform: uppercase; max-width: 13ch; text-wrap: balance; text-shadow: 0 3px 30px rgba(0,0,0,.6) }
+  #start p { margin: 0; font-size: clamp(15px, 2.2vmin, 19px); line-height: 1.35; max-width: 32ch; color: #d5dedb; text-shadow: 0 2px 14px rgba(0,0,0,.8) }
+  #start .go { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: min(100%, 380px) }
+  .big { cursor: pointer; border: 0; border-radius: 16px; background: var(--green); color: #10140f; min-height: 62px; padding: 10px 20px; display: flex; align-items: center; gap: 14px; text-align: left;
+    font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 40px rgba(0,0,0,.45) }
+  .big svg { width: 26px; height: 26px; fill: currentColor; stroke: none }
+  .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
+  #start .btn { justify-content: center; min-height: 46px }
+  #start .credit { margin: 2px 0 0; font-size: 12px; line-height: 1.3; color: var(--dim); max-width: none; text-shadow: none }
+
+  /* avviso di passaggio alla parte interattiva */
+  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+    opacity: 0; pointer-events: none; white-space: nowrap; box-shadow: 0 14px 50px rgba(0,0,0,.5) }
+  #toast.on { animation: toast 2.4s ease both }
+  @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.9) } 12%, 78% { opacity: 1; transform: translate(-50%, -50%) scale(1) } 100% { opacity: 0; transform: translate(-50%, -62%) scale(1) } }
+
+  /* barra degli strumenti e pannello */
+  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px 8px; display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) }
+  body.free #dock { display: flex }
+  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px); display: flex; flex-direction: column }
+  #panel section { display: flex; flex-direction: column; gap: 10px }
+  .how { display: flex; gap: 12px; align-items: center; font-size: clamp(15px, 2vmin, 16px); line-height: 1.3; text-wrap: pretty }
+  .how b { color: var(--green); font-weight: 600 }
+  .gest { flex: none; position: relative; width: 44px; height: 26px; border-radius: 13px; border: 1.5px solid var(--line) }
+  .gest::after { content: ""; position: absolute; left: 4px; top: 4px; width: 15px; height: 15px; border-radius: 50%; background: var(--green); animation: swipe 1.8s ease-in-out infinite }
+  .gest.tap::after { left: 13px; animation: tap 1.4s ease-in-out infinite }
+  @keyframes swipe { 0%, 100% { transform: translateX(0) } 50% { transform: translateX(19px) } }
+  @keyframes tap { 0%, 100% { transform: scale(.55); opacity: .5 } 50% { transform: scale(1.05); opacity: 1 } }
+  #tabs { pointer-events: auto; display: grid; grid-template-columns: repeat(var(--n, 6), 1fr); gap: 5px; width: min(100%, 640px) }
+  .tab { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 2px 7px; min-height: 58px; border-radius: 13px; border: 1px solid var(--line); background: var(--panel);
+    font: 600 clamp(10.5px, 2.8vw, 13px)/1 var(--display); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(8px) }
+  .tab svg { width: 24px; height: 24px }
+  .tab[aria-selected="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .tab.pulse { animation: pulse .7s ease both }
+  @keyframes pulse { 40% { transform: translateY(-7px); border-color: var(--green) } }
+  /* cursori */
+  .sl { display: flex; align-items: center; gap: 10px }
+  .sl svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; flex: none }
+  .sl output { font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); font-variant-numeric: tabular-nums; min-width: 3.3em; text-align: right }
+  input[type=range] { flex: 1; appearance: none; -webkit-appearance: none; height: 44px; background: transparent; margin: 0; min-width: 80px; touch-action: none }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--p, 0%), var(--line) var(--p, 0%)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -12px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); box-shadow: 0 0 0 2px var(--green) }
+  input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg) }
+  #sT::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  #sT::-moz-range-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  .note { margin: 0; font-size: 14px; line-height: 1.35; color: var(--dim); min-height: 1.35em; text-wrap: pretty }
+  /* pezzi */
+  .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; touch-action: pan-x }
+  .chips::-webkit-scrollbar { display: none }
+  .chip, .key { cursor: pointer; flex: none; border: 1px solid var(--line); background: rgba(255,255,255,.04); border-radius: 999px; min-height: 38px; padding: 0 13px; font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #10140f; border-color: var(--ink) }
+  #cardIn small { font: 600 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--green) }
+  #cardIn h3 { margin: 4px 0 5px; font: 700 clamp(22px, 3.4vmin, 28px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase }
+  #cardIn p { margin: 0; font-size: 15px; line-height: 1.35; text-wrap: pretty } #cardIn p + p { margin-top: 6px; color: var(--dim); font-size: 13px }
+  /* comando */
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+  .key { padding: 0 4px; min-height: 44px; border-radius: 12px; text-align: center; letter-spacing: .05em; font-size: clamp(12px, 3vw, 14px) }
+  .key[aria-pressed="true"] { border-color: var(--heat); color: var(--heat); background: rgba(255,154,77,.1) }
+  #kPw[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: rgba(169,189,143,.12) }
+  #kCool[aria-pressed="true"] { border-color: var(--ice); color: var(--ice); background: rgba(143,211,255,.1) }
+  /* giro */
+  #rT { font: 600 clamp(17px, 2.6vmin, 20px)/1.2 var(--display); letter-spacing: .03em; min-height: 2.4em; display: block; text-wrap: balance }
+  .prog { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden } .prog i { display: block; height: 100%; width: 0; background: var(--green) }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between }
+
+  @media (max-width: 560px) { #film { left: var(--pad); justify-content: flex-end } body.film #bottom { padding-bottom: 52px } #count { display: none } .sub { display: none } .keys { grid-template-columns: repeat(2, 1fr) }
+    #freetop .btn { min-height: 36px; padding: 0 11px; letter-spacing: .08em } #freetop { gap: 6px } }
+  @media (max-width: 560px) { #read { flex-wrap: wrap; row-gap: 6px } #read .gen { flex-basis: 100% } }
+  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 30px) } #start h1 { font-size: 30px } .tab { min-height: 46px; flex-direction: row; gap: 6px } .tab svg { width: 18px; height: 18px } #panel { padding: 8px 12px } input[type=range] { height: 34px } }
+  /* telefono in orizzontale: strumenti in colonna a destra, l'impianto resta libero a sinistra */
+  @media (max-height: 460px) and (min-aspect-ratio: 3/2) {
+    #dock { left: auto; top: 0; width: min(44vw, 340px); padding: 8px 8px 8px 22px; justify-content: flex-end; background: linear-gradient(90deg, transparent, rgba(5,8,10,.9) 16%) }
+    #panel { width: 100%; max-height: calc(100% - 112px); overflow-y: auto; padding: 8px 10px } #panel section { gap: 7px }
+    #tabs { width: 100%; grid-template-columns: repeat(3, 1fr) } .keys { grid-template-columns: repeat(2, 1fr) } .key { min-height: 36px; font-size: 11.5px; letter-spacing: .02em } #pRem .how { display: none } .note { font-size: 12.5px; line-height: 1.3 }
+    body.free #freetop { top: auto; bottom: var(--pad); right: auto; left: var(--pad) } body.free #brandrow > :last-child { visibility: hidden }
+  }
+  @media (prefers-reduced-motion: reduce) { #cap.in, #tick.in, .gest::after, .tab.pulse { animation: none } }
 </style>
 </head>
 <body class="start">
 <div id="stage">
-  <canvas id="gl" aria-label="Impianto fotovoltaico Unical che si monta pezzo per pezzo"></canvas>
-  <header id="top">
-    <div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>Fotovoltaico <span>Unical</span></div>
-    <div class="sub">MULTIVOLT 460 BF · ZOE1-6000 · SUM BL15P</div>
-    <button class="btn" id="bFilm" type="button">Film</button>
-  </header>
-  <div id="cap"><div id="num">01</div><div><h2 id="name"></h2><p id="spec"></p></div></div>
+  <canvas id="gl" aria-label="Impianto fotovoltaico Unical con accumulo che si monta pezzo per pezzo"></canvas>
+  <div id="hud">
+    <header id="top">
+      <div id="brandrow"><div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a><i id="bN" style="font-style:normal"></i></div><div class="sub" id="bSub"></div></div>
+      <div id="segs"></div>
+      <div id="read"></div>
+    </header>
+    <div id="hook"><b id="hk1"></b><span id="hk2"></span></div>
+    <footer id="bottom">
+      <div id="cap"><div id="num">00</div><div><h2 id="name"></h2><p id="spec"></p><p id="tick"></p></div></div>
+      <div id="count"><b>0</b><span>pezzi</span></div>
+    </footer>
+  </div>
+  <div id="lens"></div>
+
+  <div id="film">
+    <button class="btn" id="bPlay" type="button">Pausa</button>
+    <button class="btn" id="bSkip" type="button">Salta il film</button>
+    <button class="btn" id="bSnd2" type="button" aria-pressed="false">Audio</button>
+  </div>
+  <div id="freetop">
+    <button class="btn" id="bFilm" type="button"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4"/></svg>Film</button>
+    <button class="btn" id="bSnd" type="button" aria-pressed="false">Audio</button>
+  </div>
+
   <div id="start">
-    <div><small>Moduli, inverter e batteria Unical</small><h1>Guardalo montarsi pezzo per pezzo</h1><p>Poi provalo tu: smontalo e muovi il sole, per vedere dove va l'energia.</p></div>
+    <div><small id="sK"></small><h1>Guardalo montarsi pezzo per pezzo</h1><p id="sP"></p></div>
     <div class="go">
-      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>45 secondi</span></div></button>
+      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span id="sDur"></span></div></button>
       <button class="btn" id="bExplore" type="button">Salta il film e provalo subito</button>
     </div>
   </div>
   <div id="toast">Ora provalo tu</div>
+
   <div id="dock">
     <div id="panel">
-      <section data-tool="tocca"><p id="pTocca">Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.</p><div class="riga" id="nomi"></div></section>
-      <section data-tool="smonta"><p>Sposta il cursore: prima si staccano i gruppi, poi ogni pezzo dal suo vicino, fino alle singole celle.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
-      <section data-tool="dentro"><p>Involucri trasparenti. Nel modulo: vetro, celle, vetro. Nell'inverter: schede, condensatori, induttanze, relè e ventola. Nella batteria: sedici celle in fila, barre di rame e scheda di controllo. <small>L'interno di inverter e batteria è uno schema di principio.</small></p></section>
-      <section data-tool="sole"><p id="pSole"></p><input type="range" id="sS" min="0" max="1" step="0.01" value="0.8" aria-label="Quanto sole"><div id="barra" aria-label="Carica della batteria"><i id="bSoc"></i></div></section>
+      <section id="pTouch">
+        <div class="how" id="howTouchRow"><i class="gest"></i><span id="howTouch">Trascina per girare. Tocca un pezzo per sapere cos'è.</span></div>
+        <div id="cardIn" hidden><small id="cK"></small><h3 id="cT"></h3><p id="cE"></p><p id="cS"></p></div>
+        <div class="chips" id="chips" aria-label="Gruppi dell'impianto"></div>
+      </section>
+      <section id="pExpl" hidden>
+        <div class="how"><i class="gest"></i><span>Trascina il cursore: si smonta in <b id="nP"></b> pezzi.</span></div>
+        <div class="sl"><input id="sE" type="range" min="0" max="100" value="0" aria-label="Quanto smontare"><output id="oE">0%</output></div>
+      </section>
+      <section id="pXray" hidden>
+        <div class="how"><i class="gest"></i><span id="howX">Muovi il dito sull'impianto: dentro il cerchio lo vedi lavorare.</span></div>
+        <p class="note" id="xNote"></p>
+      </section>
+      <section id="pRide" hidden>
+        <div><small style="font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--green)" id="rK"></small><b id="rT"></b></div>
+        <div class="row"><div class="prog" style="flex:1"><i id="rP"></i></div><button class="btn" id="bRideGo" type="button">Ferma</button></div>
+      </section>
     </div>
-    <div id="tabs">
-      <button class="tab" data-tool="tocca" type="button">Tocca</button><button class="tab" data-tool="smonta" type="button">Smonta</button><button class="tab" data-tool="dentro" type="button">Dentro</button><button class="tab" data-tool="sole" type="button">Sole</button>
+    <div id="tabs" role="tablist" aria-label="Strumenti">
     </div>
   </div>
+  <div id="flash"></div>
 </div>
 <script type="module">
 // ───────── logo Unical ─────────
@@ -95,237 +239,893 @@ const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-// ───────── base comune alle pagine dei prodotti (non della UHP, che ha il suo motore) ─────────
-// Resa, scena da studio, materiali, piano di sezione e motore del montaggio: gruppo() apre un gruppo, P() gli aggiunge un pezzo che arriva in volo.
-const $ = id => document.getElementById(id), PI = Math.PI, rad = d => d * PI / 180;
+// ───────── base: utilità, renderer, scena ─────────
+const $ = id => document.getElementById(id);
+const PI = Math.PI, rad = d => d * PI / 180;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
-const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }, eoc = t => 1 - Math.pow(1 - t, 3);
+const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const eoc = t => 1 - Math.pow(1 - t, 3), eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eob = t => { const c = 1.25; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const eoe = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-try { await Promise.race([document.fonts.load('700 40px "Barlow Condensed"'), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+try { await Promise.race([Promise.all([document.fonts.load('800 60px Barlow'), document.fonts.load('700 60px "Barlow Condensed"')]), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
 
 const canvas = $('gl'), stage = $('stage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-const COARSE = matchMedia('(pointer: coarse)').matches; let PR = Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2); renderer.setPixelRatio(PR);
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1; renderer.localClippingEnabled = true;
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0f13); scene.fog = new THREE.Fog(0x0b0f13, 7, 20);
-scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture; scene.environmentIntensity = .85;
-const camera = new THREE.PerspectiveCamera(30, 1, .03, 60);
-const keyL = new THREE.DirectionalLight(0xffffff, 2.2); keyL.position.set(2.5, 4, 3.5); const rimL = new THREE.DirectionalLight(0x9fd0ff, 1.3); rimL.position.set(-3, 2.5, -3.5);
-scene.add(keyL, rimL, new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, .45));
-function cv(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
-const tGrid = cv(256, 256, (g, w, h) => { g.fillStyle = '#0c1115'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(150,190,220,.20)'; g.lineWidth = 2; g.strokeRect(0, 0, w, h); }); tGrid.wrapS = tGrid.wrapT = THREE.RepeatWrapping; tGrid.repeat.set(40, 40);
-const pav = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: tGrid, roughness: .7, metalness: .2, envMapIntensity: .15 })); pav.rotation.x = -PI / 2; scene.add(pav);
+const COARSE = matchMedia('(pointer: coarse)').matches;   // telefono o tablet: tengo più bassa la risoluzione di resa
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+const scene = new THREE.Scene();
+const C_STUDIO = new THREE.Color(0x0b0f13), C_COLD = new THREE.Color(0x0b2038);
+scene.background = C_STUDIO.clone(); scene.fog = new THREE.Fog(0x0b0f13, 5, 16);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture;
+scene.environmentIntensity = 0.85;
+const camera = new THREE.PerspectiveCamera(30, 1, 0.03, 60);
+const keyL = new THREE.DirectionalLight(0xffffff, 2.3); keyL.position.set(2.5, 4, 3.5); scene.add(keyL);
+const rimL = new THREE.DirectionalLight(0x9fd0ff, 1.5); rimL.position.set(-3, 2.5, -3.5); scene.add(rimL);
+scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, 0.45));
 
-// materiali; quelli "tagliabili" ricevono il piano di sezione, quelli "raggi X" diventano trasparenti in funzione
-const TAGLIO = new THREE.Plane(V(0, 0, -1), 0), std = o => new THREE.MeshStandardMaterial(o), TAGLIABILI = [], RAGGI = [];
-const tagl = (m, x = false) => { m.side = THREE.DoubleSide; TAGLIABILI.push(m); if (x) { m.userData.o = m.opacity; RAGGI.push(m); } return m; };
+let composer = null, bloom = null, HQ = true;
+function mkComposer() {
+  const s = renderer.getDrawingBufferSize(new THREE.Vector2());
+  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(s.x, s.y, { type: THREE.HalfFloatType, samples: 4 }));
+  composer.addPass(new RenderPass(scene, camera));
+  bloom = new UnrealBloomPass(new THREE.Vector2(s.x / 2, s.y / 2), 0.5, 0.55, 0.92); composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+}
+function resize() {
+  const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight);
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 36 : 30; camera.updateProjectionMatrix();
+  if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
+}
+
+// ───────── texture disegnate su canvas ─────────
+function cv(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const rep = (t, x, y) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(x, y); return t; };
+const T = {};
+T.noise = rep(cv(256, 256, (g, w, h) => { const r = rng(3); g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); for (let i = 0; i < 9000; i++) { const v = 100 + r() * 56 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); } }, false), 6, 6);
+T.brush = rep(cv(256, 256, (g, w, h) => { const r = rng(5); g.fillStyle = '#d9d9d9'; g.fillRect(0, 0, w, h); for (let i = 0; i < 1400; i++) { const v = 170 + r() * 85 | 0; g.fillStyle = `rgba(${v},${v},${v},.5)`; g.fillRect(0, r() * h, w, .6 + r()); } }), 1, 2);
+T.lam = rep(cv(64, 256, (g, w, h) => { for (let y = 0; y < h; y += 4) { g.fillStyle = y % 8 ? '#6d7479' : '#3c4146'; g.fillRect(0, y, w, 4); } }), 1, 3);
+T.spangle = rep(cv(256, 256, (g, w, h) => { const r = rng(11); g.fillStyle = '#c4c9cc'; g.fillRect(0, 0, w, h); for (let i = 0; i < 260; i++) { const v = 150 + r() * 90 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.55)`; g.beginPath(); const x = r() * w, y = r() * h; g.moveTo(x, y); for (let k = 0; k < 5; k++) g.lineTo(x + (r() - .5) * 60, y + (r() - .5) * 60); g.fill(); } }), 2, 2);
+T.base = cv(1024, 360, (g, w, h) => { // nervature stampate del fondo, come nel disegno del manuale
+  g.fillStyle = '#6a6a6a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#c8c8c8'; g.lineWidth = 9; g.lineJoin = 'round';
+  const rr = (x, y, a, b, r) => { g.beginPath(); g.roundRect(x, y, a, b, r); g.stroke(); };
+  rr(40, 30, 620, 46, 20); rr(40, 110, 300, 90, 20); rr(380, 110, 280, 60, 20); rr(380, 200, 280, 46, 20); rr(40, 240, 300, 80, 20); rr(700, 30, 280, 130, 24); rr(700, 190, 280, 130, 24); rr(380, 276, 280, 46, 20);
+  g.fillStyle = '#2a2a2a'; g.beginPath(); g.arc(275, 285, 15, 0, 7); g.fill();
+}, false);
+T.side = cv(512, 1024, (g, w, h) => { g.fillStyle = '#707070'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d0d0d0'; g.lineWidth = 12; g.beginPath(); g.roundRect(46, 60, w - 92, h - 150, 40); g.stroke(); g.fillStyle = '#383838'; g.beginPath(); g.roundRect(196, 700, 120, 50, 8); g.fill(); }, false);
+T.chev = rep(cv(128, 128, (g, w, h) => { g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d8d8d8'; g.lineWidth = 7; for (let y = -64; y < h + 64; y += 22) { g.beginPath(); g.moveTo(0, y + 40); g.lineTo(64, y); g.lineTo(128, y + 40); g.stroke(); } }, false), 1, 5);
+T.pcb = cv(512, 512, (g, w, h) => {
+  const r = rng(21); g.fillStyle = '#17503a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2c8660'; g.lineWidth = 2;
+  for (let i = 0; i < 70; i++) { let x = r() * w, y = r() * h; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { if (r() < .5) x += (r() - .5) * 150; else y += (r() - .5) * 150; g.lineTo(x, y); } g.stroke(); }
+  for (let i = 0; i < 26; i++) { const x = 20 + r() * (w - 90), y = 20 + r() * (h - 70), a = 20 + r() * 60, b = 14 + r() * 36; g.fillStyle = ['#15171a', '#22262b', '#0f1113'][i % 3]; g.fillRect(x, y, a, b); g.fillStyle = '#b9bec2'; for (let k = 0; k < a; k += 7) { g.fillRect(x + k, y - 3, 3, 3); g.fillRect(x + k, y + b, 3, 3); } }
+  g.fillStyle = '#d9c36a'; for (let i = 0; i < 120; i++) { g.beginPath(); g.arc(r() * w, r() * h, 2.4, 0, 7); g.fill(); }
+  g.fillStyle = '#e9efe9'; g.font = '600 13px sans-serif'; ['CN23', 'CN24', 'CN43', 'XT1', 'SW2', 'RS-485', 'DC FAN', 'EXV', 'IPM'].forEach((s, i) => g.fillText(s, 18 + (i % 3) * 170, 30 + (i / 3 | 0) * 160));
+});
+T.plate = cv(512, 300, (g, w, h) => { // targhetta: solo dati della scheda UHP 120
+  g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); drawUnicalLogo(g, 22, 22, 128); g.fillStyle = '#16191b';
+  g.font = '700 30px Barlow, Arial, sans-serif'; g.fillText('UHP 120', 330, 54); g.fillRect(22, 72, w - 44, 3); g.font = '500 23px Barlow, Arial, sans-serif';
+  [['Refrigerante', 'R290 · 1,35 kg'], ['Alimentazione', '230 V ~ 50 Hz'], ['Potenza max assorbita', '7 kW'], ['Corrente max', '45,15 A'], ['Acqua', 'max 80 °C · 3 bar'], ['Peso', '154 kg']].forEach((r, i) => { g.fillText(r[0], 22, 108 + i * 32); g.fillText(r[1], 300, 108 + i * 32); });
+});
+T.flame = cv(256, 256, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#f2c230'; g.strokeStyle = '#141414'; g.lineWidth = 14; g.lineJoin = 'round'; g.beginPath(); g.moveTo(128, 22); g.lineTo(238, 214); g.lineTo(18, 214); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#141414'; g.beginPath(); g.moveTo(128, 78); g.bezierCurveTo(176, 126, 168, 186, 128, 190); g.bezierCurveTo(84, 186, 84, 140, 108, 118); g.bezierCurveTo(112, 138, 124, 132, 128, 78); g.fill(); g.font = '700 26px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('R290', 128, 248); });
+T.letter = cv(256, 1100, (g, w, h) => { g.clearRect(0, 0, w, h); g.save(); g.translate(w / 2, h / 2); g.rotate(-PI / 2); drawUnicalLogo(g, -338, -100, 676, '#33383d'); g.restore(); });
+T.vessel = cv(256, 256, (g, w, h) => { g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(40, 60, 176, 120); g.fillStyle = '#1b1e20'; g.font = '700 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('5 L', 128, 118); g.font = '500 26px Barlow, Arial, sans-serif'; g.fillText('precarica 1 bar', 128, 158); });
+T.io = s => cv(128, 64, (g, w, h) => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); g.fillStyle = '#16191b'; g.font = '800 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText(s, 64, 48); });
+T.glow = cv(64, 64, (g) => { const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.55)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); });
+T.ground = cv(1024, 1024, (g, w, h) => { g.fillStyle = '#0b0f13'; g.fillRect(0, 0, w, h); const r = g.createRadialGradient(512, 512, 0, 512, 512, 512); r.addColorStop(0, 'rgba(120,140,150,.5)'); r.addColorStop(.35, 'rgba(60,72,80,.25)'); r.addColorStop(1, 'rgba(11,15,19,0)'); g.fillStyle = r; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(190,210,220,.10)'; g.lineWidth = 1; for (let i = 0; i <= 1024; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); }
+  const k = g.createRadialGradient(512, 512, 380, 512, 512, 512); k.addColorStop(0, 'rgba(11,15,19,0)'); k.addColorStop(1, 'rgba(11,15,19,1)'); g.fillStyle = k; g.fillRect(0, 0, w, h); });
+T.shadow = cv(256, 128, (g) => { const r = g.createRadialGradient(128, 64, 0, 128, 64, 128); r.addColorStop(0, 'rgba(0,0,0,.8)'); r.addColorStop(.6, 'rgba(0,0,0,.35)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.setTransform(1, 0, 0, .5, 0, 0); g.fillStyle = r; g.fillRect(0, 0, 256, 256); });
+
+// ───────── materiali ─────────
+const LENS = { value: new THREE.Vector3(-9999, -9999, 0) };   // lente a raggi X: x, y, raggio in pixel del buffer
+const XRM = [];                                              // materiali dell'involucro, che possono diventare trasparenti
+const std = o => new THREE.MeshStandardMaterial(o);
+function xr(mat) {
+  mat.userData.o = mat.opacity;
+  mat.onBeforeCompile = s => { s.uniforms.uLens = LENS; s.fragmentShader = 'uniform vec3 uLens;\n' + s.fragmentShader.replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n\tif (uLens.z > 0.0 && distance(gl_FragCoord.xy, uLens.xy) < uLens.z) discard;'); };
+  XRM.push(mat); return mat;
+}
 const M = {
-  inox: tagl(std({ color: 0xc9cdd1, roughness: .28, metalness: .9, transparent: true, opacity: 1 })), inox2: std({ color: 0xc9cdd1, roughness: .3, metalness: .9 }),
-  allu: tagl(std({ color: 0xaeb4b8, roughness: .45, metalness: .8, emissive: 0xff5a1c, emissiveIntensity: 0 })), schiuma: tagl(std({ color: 0xe6d9a8, roughness: .95, transparent: true, opacity: 1 }), true),
-  argento: tagl(std({ color: 0xb4b8bb, roughness: .38, metalness: .75, transparent: true, opacity: 1 }), true), nero: tagl(std({ color: 0x1b1d20, roughness: .45, metalness: .1, transparent: true, opacity: 1 }), true),
-  gomma: std({ color: 0x0c0c0d, roughness: .95 }), ottone: std({ color: 0xb08a3c, roughness: .35, metalness: .8 }), rame: std({ color: 0xc47a45, roughness: .35, metalness: .9 }),
-  acciaio: std({ color: 0x7d858c, roughness: .5, metalness: .7 }), scuro: std({ color: 0x15171a, roughness: .5, metalness: .4 }), plast: std({ color: 0x3b4046, roughness: .6 }),
-  magnesio: std({ color: 0x8f9499, roughness: .7, metalness: .4 }), res: std({ color: 0x6b5a4a, roughness: .5, metalness: .6, emissive: 0xff3a10, emissiveIntensity: 0 }),
+  dark: std({ color: 0x2a2d31, roughness: .58, metalness: .25, bumpMap: T.noise, bumpScale: .5 }),
+  basePlate: std({ color: 0x2c3034, roughness: .5, metalness: .35, bumpMap: T.base, bumpScale: 4 }),
+  galv: std({ color: 0xb4bbc0, roughness: .42, metalness: .85, map: T.spangle }),
+  steel: std({ color: 0xc3c9cd, roughness: .3, metalness: 1, map: T.brush }),
+  inox: std({ color: 0xd3d8dc, roughness: .24, metalness: 1, bumpMap: T.chev, bumpScale: 2.5 }),
+  cast: std({ color: 0x55595d, roughness: .7, metalness: .6, bumpMap: T.noise, bumpScale: 1.2 }),
+  lam: std({ color: 0x8b9298, roughness: .45, metalness: .8, map: T.lam }),
+  black: std({ color: 0x111316, roughness: .32, metalness: .35 }),
+  plastic: std({ color: 0x17191c, roughness: .62, metalness: .05 }),
+  blade: std({ color: 0x23272b, roughness: .38, metalness: .1, side: THREE.DoubleSide }),
+  rubber: std({ color: 0x0c0c0d, roughness: .95, metalness: 0 }),
+  foam: std({ color: 0x18191b, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2 }),
+  copper: std({ color: 0xc9743c, roughness: .28, metalness: 1 }),
+  brass: std({ color: 0xc9a245, roughness: .32, metalness: 1 }),
+  gold: std({ color: 0xc9a44c, roughness: .42, metalness: .9, emissive: 0x000000 }),
+  alu: std({ color: 0xcfd4d8, roughness: .35, metalness: .9 }),
+  red: std({ color: 0xb3261e, roughness: .45, metalness: .1 }),
+  blue: std({ color: 0x1f5fa8, roughness: .5, metalness: .1 }),
+  cap: std({ color: 0x20262c, roughness: .35, metalness: .3 }),
+  heater: std({ color: 0xb5622a, roughness: .6, metalness: .1, emissive: 0xff5a14, emissiveIntensity: 0 }),
+  vessel: std({ color: 0xffffff, roughness: .45, metalness: .3, map: T.vessel }),
+  pcb: std({ color: 0xffffff, roughness: .55, metalness: .2, map: T.pcb }),
+  plateLab: std({ color: 0xffffff, roughness: .5, metalness: .1, map: T.plate }),
+  flame: std({ color: 0xffffff, roughness: .6, map: T.flame, transparent: true }),
+  led: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 2.2, 0.9) }),
+  term: std({ color: 0x9aa39a, roughness: .6, metalness: .1 }),
+  shellC: std({ color: 0x0e1012, roughness: .28, metalness: .5, side: THREE.DoubleSide }),
+  // involucro (trasparente a comando)
+  sGreen: xr(std({ color: 0x4d613d, roughness: .58, metalness: .02, bumpMap: T.noise, bumpScale: .5 })),
+  sSlat: xr(std({ color: 0x546941, roughness: .52, metalness: .02 })),
+  sDark: xr(std({ color: 0x2a2d31, roughness: .55, metalness: .25, bumpMap: T.noise, bumpScale: .5 })),
+  sSide: xr(std({ color: 0x2c2f33, roughness: .52, metalness: .25, bumpMap: T.side, bumpScale: 5 })),
+  sGuard: xr(std({ color: 0x15171a, roughness: .5, metalness: .5 })),
+  sLetter: xr(std({ color: 0xffffff, roughness: .6, map: T.letter, transparent: true, polygonOffset: true, polygonOffsetFactor: -2 })),
+  sScrew: xr(std({ color: 0xaab0b4, roughness: .35, metalness: 1 })),
+  sFelt: xr(std({ color: 0x4b4f55, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 3, side: THREE.DoubleSide })),
+  sJacket: xr(std({ color: 0x141517, roughness: .85, metalness: 0, bumpMap: T.noise, bumpScale: 2, side: THREE.DoubleSide })),
+  sDoor: xr(std({ color: 0x0e1012, roughness: .28, metalness: .5, side: THREE.DoubleSide })),
+  sLid: xr(std({ color: 0x24282c, roughness: .5, metalness: .4 })),
+  sLabel: xr(std({ color: 0xffffff, roughness: .5, map: T.plate })),
 };
-const mesh = (g, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); return o; };
-const cyl = (r, h, n = 24, open = false) => new THREE.CylinderGeometry(r, r, h, n, 1, open), box = (w, h, d) => new THREE.BoxGeometry(w, h, d), rbox = (w, h, d, r = .01) => new RoundedBoxGeometry(w, h, d, 2, r);
-const tubo = (pts, r, n = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', .3), Math.max(12, pts.length * 6), r, n);
-const elica = (r, y0, y1, giri, k = 14) => { const p = []; for (let i = 0; i <= giri * k; i++) { const a = i / k * PI * 2; p.push(V(Math.sin(a) * r, lerp(y0, y1, i / (giri * k)), Math.cos(a) * r)); } return p; };
-const radiale = (o, az) => { o.rotation.order = 'YXZ'; o.rotation.set(PI / 2, az, 0); return o; };   // asse del cilindro verso l'esterno all'azimut dato
+// modalità fantasma per il giro nel circuito: tutto tranne tubi e rame diventa quasi trasparente
+let GHM = null, ghostNow = 0;
+function setGhost(x) {
+  if (!GHM) { const keep = [M.copper, M.brass, M.led]; GHM = Object.values(M).filter(m => !XRM.includes(m) && !keep.includes(m)); for (const m of GHM) { m.userData.o = m.opacity; m.userData.t = m.transparent; } }
+  if (x === ghostNow) return; ghostNow = x;
+  for (const m of GHM) { m.opacity = lerp(m.userData.o, .07, x); const tr = x > .004 || m.userData.t; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; }
+}
+function setXray(x) { for (const m of XRM) { const o = lerp(m.userData.o, 0.06, x); m.opacity = o; const tr = x > 0.004 || m.map === T.letter || m.map === T.flame; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < 0.5; } }
+
+// ───────── geometrie ─────────
+const G = {
+  box: (w, h, d) => new THREE.BoxGeometry(w, h, d),
+  rbox: (w, h, d, r = .005) => new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2.01, h / 2.01, d / 2.01)),
+  cyl: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s),
+  cylZ: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s).rotateX(PI / 2),
+  cylX: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s).rotateZ(PI / 2),
+  open: (r, h, a0, al, s = 40) => new THREE.CylinderGeometry(r, r, h, s, 1, true, a0, al),
+  dome: (r, k, up = true) => new THREE.SphereGeometry(r, 32, 12, 0, PI * 2, up ? 0 : PI / 2, PI / 2).scale(1, k, 1),
+  torus: (R, r, arc = PI * 2, s = 40) => new THREE.TorusGeometry(R, r, 10, s, arc),
+  plane: (w, h) => new THREE.PlaneGeometry(w, h),
+};
+function annulus(ro, ri, h, a0 = 0, a1 = PI * 2, seg = 44) {   // anello con asse Y, centrato
+  const s = new THREE.Shape(); s.absarc(0, 0, ro, a0, a1, false);
+  if (a1 - a0 >= PI * 2 - 1e-4) { const hl = new THREE.Path(); hl.absarc(0, 0, ri, 0, PI * 2, true); s.holes.push(hl); } else { s.absarc(0, 0, ri, a1, a0, true); s.closePath(); }
+  const g = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false, curveSegments: seg }); g.translate(0, 0, -h / 2); g.rotateX(PI / 2); return g;
+}
+const curveOf = pts => new THREE.CatmullRomCurve3(pts.map(p => V(p[0], p[1], p[2])), false, 'catmullrom', 0.12);
+const tubeGeo = (pts, r, seg) => new THREE.TubeGeometry(curveOf(pts), seg || Math.max(16, pts.length * 12), r, 10, false);
+function mesh(geo, mat, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); return m; }
+const screwGeo = mergeGeometries([new THREE.CylinderGeometry(.0062, .0062, .0042, 6).translate(0, .0031, 0), new THREE.CylinderGeometry(.0082, .0082, .001, 14).translate(0, .0005, 0), new THREE.CylinderGeometry(.0027, .0027, .014, 8).translate(0, -.007, 0)]);
+
 
 // ───────── motore del montaggio ─────────
-const root = new THREE.Group(); scene.add(root);
-const G = []; let cur;
-function gruppo(nome, facile, tecnico, t0, t1, vista, esp) { cur = { nome, facile, tecnico, t0, t1, vista, esp: V(...esp), pezzi: [] }; G.push(cur); }
-// liv = quanto si allontana il pezzo nello strumento Smonta (0 resta vicino, 1 va lontano); se manca vale l'ordine di arrivo
-function P(o, da = [0, .7, 0], rit = 0, liv = rit) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), dir: V(...da).normalize(), rit, liv }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
+// Ogni pezzo ha una posizione finale, un istante di partenza e uno di arrivo: lo stato della macchina è una funzione
+// pura del tempo t e del fattore di esplosione E, quindi si può scorrere avanti e indietro.
+const machine = new THREE.Group(); scene.add(machine);
+const GROUPS = [], PIECES = [];
+let CUR = null;
+const BEAT = 0.125;                       // i pezzi vanno in sede su una griglia di sedicesimi a 120 bpm
 
+function group(key, name, spec, t0, t1, o = {}) {
+  const node = new THREE.Group(); machine.add(node);
+  CUR = { key, name, spec, t0, t1, node, i: GROUPS.length, stage: V(...(o.stage || [0, .3, 1])), ex: V(...(o.ex || [0, 0, 0])), spread: o.spread ?? .9,
+    trav: o.trav ?? .45, pieces: [], c: V(), size: .3, az: o.az ?? 30, el: o.el ?? 14, zoom: o.zoom ?? 1, keys: o.keys || null, info: o.info || null };
+  GROUPS.push(CUR); return CUR;
+}
+function piece(o, base) {
+  const p = Object.assign({ g: CUR, st: -1, d: o.d ?? 0, dur: o.dur ?? .5, from: o.from ? V(...o.from) : null, spin: o.spin ? V(...o.spin) : null,
+    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click' }, base);
+  CUR.pieces.push(p); PIECES.push(p); return p;
+}
+function P(m, o = {}) { (o.parent || CUR.node).add(m); m.userData.g = CUR.i; piece(o, { m, im: null, inst: -1, fp: m.position.clone(), fq: m.quaternion.clone(), fs: m.scale.clone() }); return m; }
+// pezzi ripetuti: list = [{p:[x,y,z], r:[rx,ry,rz] | q:Quaternion, s:[sx,sy,sz]}]
+function PIN(geo, mat, list, o = {}) {
+  const im = new THREE.InstancedMesh(geo, mat, list.length); im.frustumCulled = false; im.userData.g = CUR.i; (o.parent || CUR.node).add(im);
+  const n = list.length, e = new THREE.Euler();
+  list.forEach((it, i) => {
+    const f = n > 1 ? i / (n - 1) : 0, q = it.q ? it.q.clone() : new THREE.Quaternion().setFromEuler(e.set(...(it.r || [0, 0, 0])));
+    const pick = v => typeof v === 'function' ? v(i, it, f) : v;
+    piece({ d: o.df ? o.df(i, f) : lerp(o.d0 ?? 0, o.d1 ?? (o.d0 ?? 0), f), dur: o.dur, from: pick(o.from), spin: pick(o.spin), k: pick(o.k), ease: o.ease, n: i === 0 ? o.n : null, snd: o.snd || 'tick' },
+      { m: null, im, inst: i, fp: V(...it.p), fq: q, fs: V(...(it.s || [1, 1, 1])) });
+  });
+  return im;
+}
+// viti: entrano lungo il proprio asse avvitandosi. list = [{p, r}] con l'asse della vite su +Y locale
+function screws(list, o = {}) {
+  const e = new THREE.Euler();
+  return PIN(screwGeo, o.mat || M.steel, list, Object.assign({ dur: .34, ease: eoc, snd: 'screw', spin: [0, 12, 0], from: (i, it) => { const a = V(0, 1, 0).applyEuler(e.set(...(it.r || [0, 0, 0]))).multiplyScalar(.11); return [a.x, a.y, a.z]; } }, o));
+}
 
-// ───────── Fotovoltaico Unical · pagina completa: film di installazione e strumenti ─────────
+function finalize() {
+  machine.updateMatrixWorld(true);
+  const R = rng(7), q = new THREE.Quaternion();
+  for (const g of GROUPS) {
+    const W = g.t1 - g.t0, box = new THREE.Box3();
+    g.ta = g.t0 + W * g.trav; g.tb = g.t1 - .12;
+    for (const p of g.pieces) {
+      const c = V();
+      if (p.im) c.copy(p.fp).applyMatrix4(p.im.parent.matrixWorld);
+      else { p.m.geometry.computeBoundingBox(); p.m.geometry.boundingBox.getCenter(c); p.m.updateMatrixWorld(true); c.applyMatrix4(p.m.matrixWorld); }
+      p.wc = c; box.expandByPoint(c);
+    }
+    box.getCenter(g.c); g.size = Math.max(.14, box.getSize(V()).length() / 2); g.box = box;
+    for (const p of g.pieces) {
+      p.ts = g.t0 + p.d * (W - .95);
+      p.te = Math.max(p.ts + .2, Math.round((p.ts + p.dur) / BEAT) * BEAT);
+      if (p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
+      if (!p.from) p.from = V((R() - .5) * .5, .16 + R() * .4, .12 + R() * .42);
+      if (!p.spin) p.spin = V((R() - .5) * 2.2, (R() - .5) * 2.2, (R() - .5) * 2.2);
+      if (!p.k) p.k = p.wc.clone().sub(g.c).multiplyScalar(g.spread);
+      const par = p.im ? p.im.parent : p.m.parent; par.getWorldQuaternion(q).invert(); p.from.applyQuaternion(q); p.k.applyQuaternion(q);
+    }
+  }
+}
+
+const _v = V(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4(), _s = V(), ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+let lastE = -1, lastShr = -1, onLand = null, onStart = null, placed = 0;
+function apply(t, E = 0, shr = 1, emit = false) {
+  for (const g of GROUPS) { g.q = eio(clamp((t - g.ta) / (g.tb - g.ta))); g.node.position.copy(g.stage).multiplyScalar(1 - g.q).addScaledVector(g.ex, E); }
+  const same = E === lastE && shr === lastShr, dirty = new Set(); let n = 0;
+  for (const p of PIECES) {
+    let a = (t - p.ts) / (p.te - p.ts); const st = a <= 0 ? 0 : a >= 1 ? 2 : 1;
+    if (st === 2) n++;
+    if (st === p.st && st !== 1 && same) continue;
+    if (emit && st === 2 && p.st === 1 && onLand) onLand(p);
+    if (emit && st >= 1 && p.st === 0 && p.n && onStart) onStart(p);
+    p.st = st;
+    if (st === 0) { if (p.im) { p.im.setMatrixAt(p.inst, ZERO); dirty.add(p.im); } else p.m.visible = false; continue; }
+    a = clamp(a); const r = 1 - p.ease(a), sc = Math.min(1, a * 5) * shr;
+    _v.copy(p.fp).addScaledVector(p.from, r).addScaledVector(p.k, E);
+    _q.setFromEuler(_e.set(p.spin.x * r, p.spin.y * r, p.spin.z * r)).premultiply(p.fq); _s.copy(p.fs).multiplyScalar(sc);
+    if (p.im) { _m.compose(_v, _q, _s); p.im.setMatrixAt(p.inst, _m); dirty.add(p.im); }
+    else { p.m.visible = sc > .001; p.m.position.copy(_v); p.m.quaternion.copy(_q); p.m.scale.copy(_s); }
+  }
+  dirty.forEach(im => { im.instanceMatrix.needsUpdate = true; }); lastE = E; lastShr = shr; placed = n;
+}
+
+// ───────── Pagine prodotto · base comune (dopo uhp/a_core.js e uhp/b_engine.js, prima dei pezzi del prodotto) ─────────
+// Tutto quello che la pagina dell'ibrido si era scritta da sé e che serve uguale agli altri prodotti: aiuti per i pezzi, bianchi che non sfondano,
+// particelle, flussi lungo i tubi, scintille. Il film e gli strumenti stanno in p2_show.js e p3_ui.js, dopo i pezzi.
+const PIPE = {};
+const qBasis = (x, y) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, V().crossVectors(x, y)));
+const node = (x, y, z, s = 1) => { const n = new THREE.Group(); n.position.set(x, y, z); n.scale.setScalar(s); CUR.node.add(n); return n; };
+const sposta = (pts, dx, dy, dz) => pts.map(p => [p[0] + dx, p[1] + dy, p[2] + dz]);
+// Rilievi (bumpMap) su facce viste di taglio: lo shader normalizza un vettore nullo e il bagliore allarga il pixel non valido a mezza schermata. Corretto una volta per tutti.
+THREE.ShaderChunk.bumpmap_pars_fragment = THREE.ShaderChunk.bumpmap_pars_fragment.replace('return normalize( abs( fDet ) * surf_norm - vGrad );', 'vec3 nb = abs( fDet ) * surf_norm - vGrad; return dot( nb, nb ) > 1e-14 ? normalize( nb ) : surf_norm;');
+const BIANCO = '#c9cccf', C_BIANCO = 0xc9cccf;     // bianco tenuto basso: con le luci della scena arriva al bianco senza sfondare nel bagliore
+Object.assign(M, {
+  sWhite: xr(std({ color: C_BIANCO, roughness: .8, metalness: 0, bumpMap: T.noise, bumpScale: .25 })),
+  sWhite2: xr(std({ color: C_BIANCO, roughness: .84, metalness: 0, side: THREE.DoubleSide })),
+  sGrid: xr(std({ color: 0xb4b8bb, roughness: .75, metalness: .05 })),
+  sClear: xr(std({ color: 0x8f9aa2, roughness: .35, metalness: 0, transparent: true, opacity: .3 })),
+  sFoam: xr(std({ color: 0x17181a, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2.2 })),
+  sGrey: xr(std({ color: 0x565b60, roughness: .7, metalness: .1 })),
+  fin: std({ color: 0x8f969b, roughness: .45, metalness: .8 }),
+  zinc: std({ color: 0xa3a9ad, roughness: .4, metalness: .85, map: T.spangle }),
+  white: std({ color: C_BIANCO, roughness: .84, metalness: 0 }),
+  grey: std({ color: 0x8f969b, roughness: .55, metalness: .1 }),
+  wRed: std({ color: 0xc8322a, roughness: .5 }), wBlue: std({ color: 0x2b62b8, roughness: .5 }), wYel: std({ color: 0xd9b23a, roughness: .45, metalness: .3 }), wOr: std({ color: 0xe07a1f, roughness: .5 }),
+});
+// l'intensità dell'ambiente si regola per materiale solo se il materiale ha la sua mappa: gliela do io, più bassa
+const AMB_B = .3, AMB_M = .42;
+const ambiente = (keys, k) => { for (const n of keys) { const m = M[n]; if (!m) continue; m.envMap = scene.environment; m.envMapIntensity = k; } };
+const ambienteBase = () => { ambiente(['sWhite', 'sWhite2', 'sGrid', 'sClear', 'white', 'grey', 'term', 'sGrey'], AMB_B); ambiente(['galv', 'steel', 'inox', 'alu', 'fin', 'zinc', 'lam'], AMB_M); ambiente(['copper', 'brass'], .6); };
+
+// particelle
+const PTS = [];
+function points(n, size, add = true) {
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  const p = new THREE.Points(g, new THREE.PointsMaterial({ size, map: T.glow, vertexColors: true, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }));
+  p.frustumCulled = false; p.userData.size = size; PTS.push(p); return p;
+}
+function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; }
+// i flussi corrono dentro i tubi: li disegno un po' più vicini alla camera, così non restano nascosti dalla parete del tubo
+function pushed(p, d = .022) { p.material.onBeforeCompile = s => { s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
+const R0 = rng(99);
+// flussi lungo i tubi: campioni di posizione e colore per ogni tratto
+class Flow {
+  constructor(parent, n, size, push) { this.pts = pushed(points(n, size), push); this.n = n; parent.add(this.pts); this.ph = new Float32Array(n); this.jit = new Float32Array(n * 3); this.pts.visible = false; for (let i = 0; i < n; i++) { this.ph[i] = (i + R0() * .6) / n; for (let k = 0; k < 3; k++) this.jit[i * 3 + k] = (R0() - .5) * .008; } }
+  path(segs, S = 420) {
+    const cs = segs.map(s => { const c = curveOf(s.rev ? s.pts.slice().reverse() : s.pts); return { c, L: c.getLength(), s }; }), tot = cs.reduce((a, b) => a + b.L, 0);
+    const P = new Float32Array(S * 3), C = new Float32Array(S * 3); let k = 0; const marks = [];
+    for (const o of cs) { const m = Math.max(2, Math.round(S * o.L / tot)); marks.push(k / S); for (let i = 0; i < m && k < S; i++, k++) { const f = i / (m - 1), v = o.c.getPointAt(f); P[k * 3] = v.x; P[k * 3 + 1] = v.y; P[k * 3 + 2] = v.z; for (let j = 0; j < 3; j++) C[k * 3 + j] = lerp(o.s.c0[j], o.s.c1[j], f); } }
+    for (; k < S; k++) for (let j = 0; j < 3; j++) { P[k * 3 + j] = P[(k - 1) * 3 + j]; C[k * 3 + j] = C[(k - 1) * 3 + j]; }
+    return { P, C, S, marks, tot };
+  }
+  upd(now, amt, spd, pa) {
+    this.pts.visible = amt > .01; if (!this.pts.visible) return; const p = this.pts.geometry.attributes.position, c = this.pts.geometry.attributes.color, S = pa.S;
+    for (let i = 0; i < this.n; i++) { const u = (((this.ph[i] + now * spd) % 1) + 1) % 1, f = u * (S - 1), a = f | 0, b = Math.min(S - 1, a + 1), t = f - a;
+      p.setXYZ(i, lerp(pa.P[a * 3], pa.P[b * 3], t) + this.jit[i * 3], lerp(pa.P[a * 3 + 1], pa.P[b * 3 + 1], t) + this.jit[i * 3 + 1], lerp(pa.P[a * 3 + 2], pa.P[b * 3 + 2], t) + this.jit[i * 3 + 2]);
+      c.setXYZ(i, pa.C[a * 3] * amt, pa.C[a * 3 + 1] * amt, pa.C[a * 3 + 2] * amt); }
+    p.needsUpdate = c.needsUpdate = true;
+  }
+}
+const seg = (k, c0, c1, rev) => ({ pts: Array.isArray(k) ? k : PIPE[k], c0, c1, rev: !!rev });
+// un percorso su cui far correre la camera (strumento Giro): la curva passa per i campioni del flusso
+const giroDi = r => { r.curve = new THREE.CatmullRomCurve3(Array.from({ length: 300 }, (_, i) => { const q = Math.round(i / 299 * (r.S - 1)); return V(r.P[q * 3], r.P[q * 3 + 1], r.P[q * 3 + 2]); }), false, 'centripetal'); return r; };
+const HOT = [1.7, .26, .06], WARM = [1.5, .7, .12], COLD = [.1, .5, 1.8], COOL = [.3, .9, 1.6], PALE = [.45, .8, 1.3], W0 = [.12, .45, 1.6], W1 = [1.7, .5, .08];
+// scintille all'arrivo dei pezzi e anello a terra quando un gruppo va al suo posto
+const NK = 240, spark = points(NK, .011), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
+function emitSpark(pos, n) { const p = spark.geometry.attributes.position; for (let k = 0; k < n; k++) { const i = spI = (spI + 1) % NK; p.setXYZ(i, pos.x, pos.y, pos.z); spV[i * 4] = (Math.random() - .5) * 1.1; spV[i * 4 + 1] = Math.random() * 1.0 + .2; spV[i * 4 + 2] = (Math.random() - .5) * 1.1; spV[i * 4 + 3] = 1; } }
+function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 3.2 * k, 1.5 * k * k, .4 * k * k); } p.needsUpdate = c.needsUpdate = true; }
+const ring = mesh(new THREE.RingGeometry(.93, 1, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(.7, 1.4, 1.1), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 0, .01, 0, -PI / 2); scene.add(ring); let ringT = 9;
+// nel Giro restano accesi solo il fluido e la sua scia: i materiali in SOLO si fanno da parte ([materiale, opacità])
+let soloNow = 0; const SOLO = [[M.copper, .2], [M.brass, .25]];
+function soloAcqua(x) { if (x === soloNow) return; soloNow = x; for (const [m, o] of SOLO) { m.opacity = lerp(1, o, x); const tr = x > .004; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; } }
+// terreno e ombra di base; ogni prodotto aggiunge la sua scenografia
+const ground = mesh(new THREE.CircleGeometry(11, 64), new THREE.MeshBasicMaterial({ map: T.ground }), 0, 0, 0, -PI / 2); scene.add(ground);
+
+// ───────── Fotovoltaico Unical · pezzi e scena (motore della UHP, pagina comune) ─────────
 // Dai documenti (vedi src/dati/fv-*.json):
-//  MULTIVOLT 460 BF, scheda 00341524: 1762 x 1134 x 30 mm, 96 mezze celle 6 x 16, 460 W; manuale 00340211SS p.12-14: almeno quattro morsetti per modulo
-//  sul lato lungo, lunghi almeno 50 mm, a S = 400 ± 50 mm dai lati corti (metodo C).
-//  ZOE1-6000, manuale 00341435: 540 x 450 x 185 mm, staffa a parete con fori a 400 mm, terminali sul lato inferiore nell'ordine di p.22, modalità Autoconsumo di p.14.
-//  SUM BL15P, manuale 00341436: tre moduli da 650 x 360 x 180 mm su una base, fissati a parete con staffe a L, porte sul fianco, 4 tacche di carica.
-// Su richiesta di Bore (13 novembre 2026) si mostra anche l'interno. Il modulo segue l'elenco dei componenti del suo manuale. Per inverter e batteria i manuali
-// nominano solo alcuni componenti: il resto è uno SCHEMA DI PRINCIPIO, dichiarato tale anche nelle schede a schermo, non il progetto Unical.
-// RICOSTRUITO o generico: ganci, profili e morsetti (accessori per tetti residenziali, senza un modello preciso), tegole, parete, percorso dei cavi,
-// forma delle staffe, altezza della base della batteria (50 mm), le due scatole "Casa" e "Rete". In questa pagina i moduli sono due, per mostrare il fissaggio da vicino.
-const AL = std({ color: 0xb9bec2, roughness: .4, metalness: .8 }), BI = std({ color: 0xe9ebec, roughness: .45, metalness: .05 }), GR = std({ color: 0x8f969b, roughness: .5, metalness: .4 });
-const tCel = cv(128, 256, (c, w, h) => { c.fillStyle = '#07090c'; c.fillRect(0, 0, w, h); const cw = (w - 8) / 6, ch = (h - 12) / 16; for (let i = 0; i < 6; i++) for (let j = 0; j < 16; j++) { c.fillStyle = (i + j) % 2 ? '#10161f' : '#0e141c'; c.fillRect(4 + i * cw + .6, 4 + j * ch + (j > 7 ? 4 : 0) + .6, cw - 1.2, ch - 1.2); } });
-const tTeg = cv(64, 64, (c) => { c.fillStyle = '#7a4a38'; c.fillRect(0, 0, 64, 64); c.fillStyle = '#5e3628'; for (let x = 0; x < 64; x += 16) c.fillRect(x, 0, 2, 64); c.fillRect(0, 0, 64, 4); }); tTeg.wrapS = tTeg.wrapT = THREE.RepeatWrapping; tTeg.repeat.set(9, 7);
-const tFlow = cv(64, 8, (c) => { const g = c.createLinearGradient(0, 0, 64, 0); g.addColorStop(0, '#777'); g.addColorStop(.5, '#fff'); g.addColorStop(.62, '#777'); g.addColorStop(1, '#777'); c.fillStyle = g; c.fillRect(0, 0, 64, 8); });
-const CAVI = {};
-function cavo(nome, pts, col) { const c = new THREE.CurvePath(); for (let i = 1; i < pts.length; i++) c.add(new THREE.LineCurve3(pts[i - 1], pts[i])); const tx = tFlow.clone(); tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(Math.max(1, c.getLength() / .25), 1); tx.needsUpdate = true;
-  const m = new THREE.MeshBasicMaterial({ map: tx, color: 0x6a7076 }); (CAVI[nome] = CAVI[nome] || []).push({ m, tx, col: new THREE.Color(col) }); return mesh(new THREE.TubeGeometry(c, Math.round(c.getLength() * 14), .012, 6), m); }
+//  MULTIVOLT 460 BF, scheda 00341524: 1762 × 1134 × 30 mm, 96 mezze celle 6 × 16 in due metà, doppio vetro da 2 mm, tre scatole di giunzione IP68 con tre diodi, 460 W;
+//  manuale 00340211SS p.12-14: almeno quattro morsetti per modulo sul lato lungo, a S = 400 ± 50 mm dai lati corti (metodo C).
+//  ZOE1-6000, manuale 00341435: 540 × 450 × 185 mm (p.22, p.75), staffa con fori a 400 mm (p.35), radiatore alettato e modulo di induttanza sul retro (p.22),
+//  terminali sul lato inferiore nell'ordine di p.22, relè sulle uscite (p.36), ventola interna (p.69), modalità Autoconsumo (p.14).
+//  SUM BL15P, manuale 00341436: tre moduli da 650 × 360 × 180 mm su una base, staffe a L, porte e interruttore sul fianco sotto un pannello, etichetta con 4 tacche (p.13-14, 19, 34-36).
+// SCHEMA DI PRINCIPIO (i manuali di inverter e batteria nominano solo alcuni componenti): schede, condensatori, stadio di potenza, induttanze e loro disposizione;
+//  celle della batteria (16 in serie, ricavate da 51,2 V / 3,2 V), barre e scheda BMS. RICOSTRUITO: ganci, profili e morsetti (accessori per tetti residenziali,
+//  senza modello), tegole, parete, percorso dei cavi, base della batteria (50 mm), le due targhe "Casa" e "Rete". I moduli in pagina sono due, per vedere il fissaggio da vicino.
+const SCENA = {};
+const RX0 = -1.5, RY0 = .85, RZ0 = .1, RA = rad(27), ZW = -.55, IX = 1.95, IY = 1.55, Z0 = ZW + .047, BX = .95, BZ = ZW + .11, BY1 = .05 + .18;
+const ROOF = new THREE.Matrix4().compose(V(RX0, RY0, RZ0), new THREE.Quaternion().setFromEuler(new THREE.Euler(RA, 0, 0)), V(1, 1, 1));
+const tw = (x, y, z) => V(x, y, z).applyMatrix4(ROOF).toArray();                       // dal tetto alla scena
+const NRM = [0, .8, .41];                                                                 // i pezzi del tetto arrivano dall'alto, perpendicolari alla falda
+const falda = () => { const n = node(RX0, RY0, RZ0); n.rotation.x = RA; return n; };
+const ZP = [-.481, .481], YM = .11, XA = [-.577, .577];
+// texture e materiali
+T.cella = cv(64, 64, g => { g.fillStyle = '#0b1424'; g.fillRect(0, 0, 64, 64); g.fillStyle = 'rgba(160,175,190,.14)'; for (let x = 2; x < 64; x += 4) g.fillRect(x, 0, 1, 64); g.fillStyle = 'rgba(210,220,230,.32)'; [16, 32, 48].forEach(x => g.fillRect(x - 1, 0, 2, 64)); });
+T.celle = cv(128, 256, g => { g.fillStyle = '#07090c'; g.fillRect(0, 0, 128, 256); const cw = 120 / 6, ch = 244 / 16; for (let i = 0; i < 6; i++) for (let j = 0; j < 16; j++) { g.fillStyle = '#0d1624'; g.fillRect(4 + i * cw + .6, 4 + j * ch + (j > 7 ? 4 : 0) + .6, cw - 1.2, ch - 1.2); g.fillStyle = 'rgba(200,210,220,.3)'; [.33, .66].forEach(f => g.fillRect(4 + i * cw + cw * f, 4 + j * ch + (j > 7 ? 4 : 0), 1, ch)); } });
+T.tegole = rep(cv(64, 64, g => { g.fillStyle = '#7a4a38'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#5e3628'; for (let x = 0; x < 64; x += 16) g.fillRect(x, 0, 2, 64); g.fillRect(0, 0, 64, 4); }), 9, 7);
+T.logoW = cv(256, 80, g => { g.clearRect(0, 0, 256, 80); drawUnicalLogo(g, 8, 6, 230); });
+T.lcdI = cv(128, 96, () => {}); T.ledB = cv(32, 128, () => {});
+T.targaCR = s => cv(128, 64, g => { g.fillStyle = '#2a2f34'; g.fillRect(0, 0, 128, 64); g.fillStyle = '#e9ecee'; g.font = '700 30px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText(s, 64, 42); });
+T.parete = rep(cv(256, 256, g => { const r = rng(31); g.fillStyle = '#4a4e52'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 62 + r() * 34 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 4, 4);
+Object.assign(M, {
+  cella: std({ color: 0xffffff, roughness: .25, metalness: .4, map: T.cella, emissive: 0x2a5aa0, emissiveIntensity: 0 }),
+  celle: std({ color: 0xffffff, roughness: .22, metalness: .35, map: T.celle, emissive: 0x2a5aa0, emissiveIntensity: 0 }),
+  vetro: std({ color: 0x9fbfd3, roughness: .04, metalness: 0, transparent: true, opacity: .16, depthWrite: false }),
+  eva: std({ color: 0xe8f0f2, roughness: .3, metalness: 0, transparent: true, opacity: .06, depthWrite: false }),
+  nastro: std({ color: 0xd8dde0, roughness: .3, metalness: .9 }),
+  telaio: std({ color: 0x15171a, roughness: .5, metalness: .6 }),
+  allu: std({ color: 0xb9bec2, roughness: .4, metalness: .8 }),
+  tegole: std({ color: 0xffffff, roughness: .9, map: T.tegole }),
+  sInv: xr(std({ color: 0xdde0e2, roughness: .35, metalness: .05 })), sBat: xr(std({ color: 0xdfe2e4, roughness: .4, metalness: .05 })), sPan: xr(std({ color: 0xc9cdd0, roughness: .6 })),
+  logoW: new THREE.MeshBasicMaterial({ map: T.logoW, transparent: true }), lcdI: new THREE.MeshBasicMaterial({ map: T.lcdI }), ledB: new THREE.MeshBasicMaterial({ map: T.ledB }),
+  cellaB: std({ color: 0x2f66c9, roughness: .45, metalness: .2, emissive: 0x3fbf6a, emissiveIntensity: 0 }),
+  giallo: std({ color: 0xe2b93b, roughness: .5 }), verde: std({ color: 0x2e8b57, roughness: .5 }), arancio: std({ color: 0xe08a2a, roughness: .6 }),
+  parete: std({ color: 0x9aa0a4, roughness: .95, map: T.parete, bumpMap: T.noise, bumpScale: 1.5 }),
+});
+ambienteBase(); ambiente(['allu', 'nastro', 'telaio'], AMB_M); ambiente(['vetro'], .12); ambiente(['cella', 'celle'], .25); ambiente(['sInv', 'sBat', 'sPan'], AMB_B);
+SOLO.push([M.parete, .3], [M.tegole, .3]);
+// scenografia: falda di tegole, parete con inverter e batteria, pavimento
+{ const t = mesh(G.box(2.8, .08, 3.0), M.tegole, 0, -.04, 0); t.applyMatrix4(ROOF); scene.add(t);
+  scene.add(mesh(G.plane(2.5, 2.6), M.parete, 1.45, 1.3, ZW));
+  const sole = mesh(new THREE.CircleGeometry(.28, 40), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 2.0, 1.1), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }), -2.6, 3.4, -1.6); scene.add(sole); SCENA.sole = sole; }
 
-// il tetto: una falda di tegole inclinata di 27°, con i pezzi nel suo sistema di riferimento (y sopra le tegole, z verso la gronda)
-const tetto = new THREE.Group(); tetto.position.set(-1.5, .85, .1); tetto.rotation.x = rad(27); root.add(tetto);
-tetto.add(mesh(box(2.8, .08, 3.0), std({ map: tTeg, roughness: .9 }), 0, -.04, 0));
-const sulTetto = o => { tetto.add(o); const w = o.getWorldPosition(V()), q = tetto.quaternion.clone(); tetto.remove(o); o.position.copy(w); o.quaternion.premultiply(q); return o; };   // porta un pezzo dal tetto alla scena, per il montaggio
-const N = V(0, 1, 0).applyQuaternion(tetto.quaternion).toArray().map(x => x * .9);   // i pezzi del tetto arrivano dall'alto, perpendicolari alla falda
-const ZP = [-.481, .481];                                                            // i due profili: a 400 mm dai lati corti del modulo (881 - 400)
-// Involucri che lo strumento "Dentro" rende trasparenti
-const COP = std({ color: 0xeef0f1, roughness: .32, metalness: .05, transparent: true, opacity: 1 }), PCB = std({ color: 0x1f6b45, roughness: .6 }), RAME = std({ color: 0xc47a45, roughness: .35, metalness: .9 }), NERO = std({ color: 0x15171a, roughness: .5, metalness: .3 });
-const INOX = std({ color: 0xa7adb2, roughness: .3, metalness: .9 }), VETRO = std({ color: 0x7f9fb3, roughness: .05, metalness: 0, transparent: true, opacity: .1, depthWrite: false });
-const estruso = (pts, lungo) => { const s = new THREE.Shape(); pts.forEach(([a, b], i) => i ? s.lineTo(a, b) : s.moveTo(a, b)); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: lungo, bevelEnabled: false }); g.translate(0, 0, -lungo / 2); g.rotateY(PI / 2); return g; };   // profilo disegnato in sezione (z, y), estruso lungo x
-// pezzi dettagliati fatti di più solidi fusi in un oggetto solo, colorati per vertice: tanto dettaglio, poche chiamate di disegno
-const VC = std({ vertexColors: true, roughness: .45, metalness: .25 });
-const pez = (g, hex, x = 0, y = 0, z = 0, rx = 0, rz = 0) => { g = g.index ? g.toNonIndexed() : g.clone(); if (rx) g.rotateX(rx); if (rz) g.rotateZ(rz); g.translate(x, y, z); const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) c.toArray(a, i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
-const fuso = (...gs) => mergeGeometries(gs), sei = [0, 1, 2, 3, 4, 5];
-// 1 ─ ganci e profili
-gruppo('Ganci e profili', 'Prima i ganci, fissati alla struttura del tetto e fatti passare tra le tegole. Poi due profili di alluminio per ogni fila di moduli.', 'Accessori per tetti residenziali · due profili per fila, a 400 mm dai lati corti dei moduli: è lì che il manuale vuole i morsetti (S = 400 ± 50 mm)', 2, 7, { az: -38, el: 26, d: 5.0, x: -1.5, y: 1.0 }, [0, .5, .35]);
-const gGancio = estruso([[.1, 0], [.02, 0], [.02, .049], [-.03, .049], [-.03, .055], [.026, .055], [.026, .006], [.1, .006]], .035);
-const gProfilo = estruso([[-.02, 0], [.02, 0], [.02, .04], [.007, .04], [.007, .034], [.014, .034], [.014, .006], [-.014, .006], [-.014, .034], [-.007, .034], [-.007, .04], [-.02, .04]], 2.6);
-for (const z of ZP) for (const [i, x] of [-1.05, -.35, .35, 1.05].entries()) P(sulTetto(mesh(gGancio, INOX, x, 0, z)), N, i * .1 + (z > 0 ? .3 : 0));
-for (const z of ZP) { P(sulTetto(mesh(gProfilo, AL, 0, .055, z)), N, z > 0 ? .85 : .7); for (const x of [-1.302, 1.302]) P(sulTetto(mesh(box(.004, .04, .04), NERO, x, .075, z)), N, .95); }
-// 2 ─ moduli: il primo si compone strato per strato, come nell'elenco dei componenti del manuale (§3, Informazioni generali); il secondo arriva già finito
-gruppo('Moduli', 'Un modulo è un panino: vetro, pellicola, celle, pellicola, vetro, chiusi in un telaio di alluminio. Sono bifacciali: prendono luce anche da dietro.', 'MULTIVOLT 460 BF · 460 W · 96 mezze celle N-Type 6 × 16 · doppio vetro da 2 mm · 1762 × 1134 × 30 mm · 24,5 kg · scatole di giunzione IP68 con 3 diodi · almeno quattro morsetti per modulo · nella casa sono 14: 6,44 kWp', 7, 15, { az: -34, el: 36, d: 4.2, x: -1.7, y: 1.1 }, [0, 1.05, .7]);
-const telaio = std({ color: 0x15171a, roughness: .5, metalness: .6 }), celle = std({ map: tCel, roughness: .2, metalness: .35, side: THREE.DoubleSide }), YM = .11, su = k => N.map(v => v * k);
-const gScatola = fuso(pez(box(.07, .014, .05), 0x15171a), pez(cyl(.004, .14, 6), 0x15171a, .1, 0, 0, 0, PI / 2), pez(cyl(.007, .03, 8), 0x2a2d31, .18, 0, 0, 0, PI / 2));     // scatola di giunzione con cavo e connettore
-function modulo(XA, r0, k) {      // i due moduli sono identici: stessi strati; il secondo si compone più in fretta
-  P(sulTetto(mesh(box(1.114, .002, 1.742), VETRO, XA, YM - .003, 0)), su(1.0), r0, 0);                                    // vetro posteriore
-  P(sulTetto(mesh(box(1.10, .0012, 1.73), celle, XA, YM, 0)), su(1.5), r0 + .12 * k, .16);                                 // celle tra due pellicole incapsulanti
-  P(sulTetto(mesh(box(1.114, .002, 1.742), VETRO, XA, YM + .003, 0)), su(2.0), r0 + .24 * k, .32);                         // vetro anteriore
-  for (const q of [-1, 1]) { P(sulTetto(mesh(box(.012, .03, 1.762), telaio, XA + q * .561, YM, 0)), [q * .5, .1, 0], r0 + .36 * k, .5); P(sulTetto(mesh(box(1.11, .03, .012), telaio, XA, YM, q * .875)), [0, .1 - q * .25, q * .45], r0 + .4 * k, .5); }
-  for (const x of [-.3, 0, .3]) P(sulTetto(mesh(gScatola, VC, XA + x, YM - .012, 0)), su(-.5), r0 + .5 * k, .25);         // tre scatole di giunzione sul retro
+// 1 ─ Ganci e profili
+group('tetto', 'Ganci e profili', 'Prima i ganci, avvitati alla struttura del tetto e fatti passare tra le tegole. Poi due profili di alluminio per ogni fila di moduli.', 3.5, 8.0, { stage: [0, 0, 0], ex: [0, .45, .3], az: -36, el: 30, zoom: .72,
+  info: { e: 'La base di tutto: i ganci reggono i profili, i profili reggono i moduli. Le tegole restano al loro posto.', s: 'Accessori per tetti residenziali · due profili per fila, a 400 mm dai lati corti dei moduli: lì il manuale vuole i morsetti (S = 400 ± 50 mm, manuale 00340211SS p.12-14) · modello di ganci e profili: ricostruito' } });
+{
+  const r = falda(), o = x => Object.assign({ parent: r }, x);
+  const gancio = new THREE.Shape(); [[.1, 0], [.02, 0], [.02, .049], [-.03, .049], [-.03, .055], [.026, .055], [.026, .006], [.1, .006]].forEach(([a, b], i) => i ? gancio.lineTo(a, b) : gancio.moveTo(a, b)); gancio.closePath();
+  const gG = new THREE.ExtrudeGeometry(gancio, { depth: .035, bevelEnabled: false }); gG.translate(0, 0, -.0175); gG.rotateY(PI / 2);
+  const hooks = []; for (const z of ZP) for (const x of [-1.05, -.35, .35, 1.05]) hooks.push({ p: [x, 0, z] });
+  PIN(gG, M.inox, hooks, o({ d0: 0, d1: .35, from: NRM, spin: [0, 0, 0], ease: eoc, n: 'Otto ganci in acciaio inox', snd: 'click' }));
+  screws(hooks.flatMap(h => [-.012, .012].map(dx => ({ p: [h.p[0] + dx, .006, h.p[2] - .07] }))), o({ d0: .1, d1: .45, n: 'Viti nelle travi' }));
+  const prof = new THREE.Shape(); [[-.02, 0], [.02, 0], [.02, .04], [.007, .04], [.007, .034], [.014, .034], [.014, .006], [-.014, .006], [-.014, .034], [-.007, .034], [-.007, .04], [-.02, .04]].forEach(([a, b], i) => i ? prof.lineTo(a, b) : prof.moveTo(a, b)); prof.closePath();
+  const gP = new THREE.ExtrudeGeometry(prof, { depth: 2.6, bevelEnabled: false }); gP.translate(0, 0, -1.3); gP.rotateY(PI / 2);
+  ZP.forEach((z, i) => P(mesh(gP, M.allu, 0, .055, z), o({ d: .55 + i * .12, from: [NRM[0], NRM[1], NRM[2] + .3], spin: [0, 0, 0], dur: .6, n: i ? null : 'Profili in alluminio' })));
+  PIN(G.box(.004, .04, .04), M.black, ZP.flatMap(z => [-1.302, 1.302].map(x => ({ p: [x, .075, z] }))), o({ d0: .82, d1: .88, from: NRM, n: 'Tappi' }));
+  screws(hooks.map(h => ({ p: [h.p[0], .055, h.p[2]] })), o({ d0: .88, d1: .98, n: 'Bulloni gancio-profilo' }));
 }
-modulo(-.577, 0, 1); modulo(.577, .5, .5);
-const morsetto = (x, z, fine) => { const g = new THREE.Group(); g.add(mesh(box(fine ? .03 : .044, .005, .06), AL, fine ? -Math.sign(x) * .008 : 0, .018, 0)); if (fine) g.add(mesh(box(.005, .034, .06), AL, Math.sign(x) * .0075, .002, 0)); g.add(mesh(cyl(.005, .03, 8), INOX, fine ? Math.sign(x) * .0005 : 0, .006, 0)); g.add(mesh(cyl(.008, .006, 6), INOX, fine ? Math.sign(x) * .0005 : 0, .024, 0)); g.position.set(x, YM, z); return sulTetto(g); };
-for (const z of ZP) for (const [i, x] of [-1.152, 0, 1.152].entries()) P(morsetto(x, z, x !== 0), N, .8 + i * .05);
-// la parete in muratura con inverter e batteria
-const ZW = -.55, parete = mesh(box(2.5, 2.6, .1), std({ color: 0x6f6c66, roughness: .95 }), 1.45, 1.3, ZW - .05); root.add(parete);
-// 3 ─ inverter. Documentati: staffa, radiatore alettato e modulo di induttanza sul retro, schermo, interruttore CC, ordine dei terminali (p.22), relè interni sulle uscite (p.36), ventola interna (ricerca guasti, p.69).
-//     Schema di principio, non il progetto Unical: schede, condensatori, stadio di potenza e loro disposizione.
-gruppo('Inverter', 'Trasforma la corrente dei moduli in quella di casa e decide dove mandarla: casa, batteria o rete. Dentro: uno stadio di potenza, i condensatori, le induttanze e una scheda che comanda tutto.', 'ZOE1-6000 · 6 kW · due MPPT, una stringa ciascuno · fino a 9 kW di moduli · IP66 · rendimento massimo 97,8 % · 540 × 450 × 185 mm · 27,5 kg · interno: schema di principio', 15, 24, { az: 20, el: 6, d: 1.55, x: 1.95, y: 1.52 }, [0, 0, .7]);
-const IX = 1.95, IY = 1.55, Z0 = ZW + .047, dz = z => [0, 0, z];
-P(mesh(box(.46, .1, .012), GR, IX, IY + .12, ZW + .006), dz(1), 0);                                                           // staffa, fori a 400 mm
-for (const x of [-.2, .2]) { const v = mesh(cyl(.008, .02, 8), NERO, IX + x, IY + .12, ZW + .016); v.rotation.x = PI / 2; P(v, dz(.8), .06); }
-{ const g = new THREE.Group(); g.add(mesh(box(.5, .42, .006), GR, 0, 0, .041)); for (let i = -7; i <= 7; i++) g.add(mesh(box(.005, .40, .026), GR, i * .032, 0, .025)); g.add(mesh(box(.16, .12, .03), NERO, .13, -.12, .024)); g.position.set(IX, IY, ZW); P(g, dz(1.1), .12); }   // radiatore e modulo di induttanza
-const I = (g, m, x, y, z, rit) => P(mesh(g, m, IX + x, IY + y, Z0 + z), dz(1.2), rit), ax = o => { o.rotation.x = PI / 2; return o; };
-I(fuso(pez(box(.52, .43, .004), 0x8f969b), pez(box(.52, .012, .05), 0x8f969b, 0, .209, .027), pez(box(.52, .012, .05), 0x8f969b, 0, -.209, .027), pez(box(.012, .43, .05), 0x8f969b, .254, 0, .027), pez(box(.012, .43, .05), 0x8f969b, -.254, 0, .027)), VC, 0, 0, .002, .2);   // vasca in alluminio
-I(fuso(pez(box(.44, .3, .003), 0x1f6b45), pez(box(.4, .004, .0035), 0xc9a227, 0, -.13, .001), pez(box(.004, .26, .0035), 0xc9a227, -.2, 0, .001), pez(box(.3, .003, .0035), 0xc9a227, .04, .02, .001)), VC, 0, .05, .008, .26);   // scheda di potenza con le piste
-const gCond = fuso(pez(cyl(.017, .042, 16), 0x1b1d20), pez(cyl(.0155, .003, 16), 0xcfd3d6, 0, .022, 0), pez(cyl(.0173, .01, 16), 0x7d858c, 0, -.01, 0));
-for (let i = 0; i < 8; i++) ax(I(gCond, VC, -.185 + (i % 4) * .04, .16 - (i / 4 | 0) * .04, .032, .3 + i * .008));       // otto condensatori
-I(fuso(pez(box(.2, .05, .012), 0xb9bec2), ...sei.map(i => pez(box(.018, .024, .006), 0x15171a, -.08 + i * .032, 0, .009)), ...sei.map(i => pez(box(.012, .008, .002), 0xcfd3d6, -.08 + i * .032, .017, .006))), VC, .09, .15, .016, .4);   // stadio di potenza: sei transistor su una barra di alluminio
-const gInd = fuso(pez(new THREE.TorusGeometry(.03, .013, 10, 24), 0xc47a45), pez(cyl(.044, .004, 20), 0x2a2d31, 0, 0, -.015, PI / 2), pez(cyl(.012, .02, 12), 0x3a3f44, 0, 0, 0, PI / 2));
-[[.02, .06], [.1, .06], [.18, .06], [.18, -.02]].forEach(([x, y], i) => I(gInd, VC, x, y, .025, .46 + i * .015));           // induttanze
-I(fuso(...[0, 1, 2].map(i => pez(box(.03, .034, .018), 0xe2b93b, i * .036, 0, 0)), pez(new THREE.TorusGeometry(.016, .008, 8, 16), 0x3d7a4a, .125, 0, 0)), VC, -.19, .045, .02, .53);   // filtro: condensatori gialli e bobina
-I(fuso(...[0, 1, 2, 3].map(i => pez(box(.024, .03, .022), 0x2456a6, i * .03, 0, 0)), ...[0, 1, 2, 3].map(i => pez(box(.02, .012, .001), 0xe9ebec, i * .03, 0, .0116))), VC, .08, -.085, .021, .57);   // relè delle uscite verso rete e BACK-UP
-I(fuso(pez(box(.07, .07, .016), 0x15171a), pez(cyl(.031, .017, 20), 0x2a2d31, 0, 0, 0, PI / 2)), VC, -.15, -.045, .018, .61);                                                                             // ventola interna
-const pale = I(fuso(pez(cyl(.012, .012, 12), 0x8f969b, 0, 0, 0, PI / 2), ...[0, 1, 2, 3, 4].map(i => { const g = pez(box(.022, .009, .002), 0x8f969b, .018, 0, .004); g.rotateZ(i * PI * 2 / 5); return g; })), VC, -.15, -.045, .024, .62);
-I(fuso(pez(box(.045, .055, .05), 0x15171a), pez(cyl(.016, .012, 16), 0xc0392b, 0, 0, .031, PI / 2), pez(box(.006, .026, .004), 0xe9ebec, 0, 0, .039)), VC, -.12, -.16, .03, .65);                         // interruttore CC con la manopola
-I(fuso(pez(box(.1, .03, .025), 0x2e8b57), ...[0, 1, 2, 3].map(i => pez(cyl(.005, .004, 8), 0xcfd3d6, -.036 + i * .024, 0, .014, PI / 2))), VC, .15, -.165, .02, .68);                                      // morsettiera delle uscite in alternata
-I(fuso(pez(box(.008, .19, .003), 0xc47a45), pez(box(.008, .19, .003), 0xc47a45, .02, 0, 0)), VC, .215, -.03, .014, .7);                                                                                       // barre di rame
-I(fuso(pez(box(.17, .11, .003), 0x1d4f7a), pez(box(.03, .03, .004), 0x15171a, -.03, .01, .003), pez(box(.028, .02, .005), 0xcfd3d6, .05, .03, .004), pez(box(.05, .008, .006), 0xe9ebec, 0, -.045, .004)), VC, 0, -.12, .085, .74);   // scheda di controllo
-I(pez(box(.04, .07, .001), 0xb9bec2), VC, 0, -.1, .11, .77);                                                                                                                                                  // cavo piatto verso lo schermo
-I(fuso(pez(box(.53, .006, .004), 0x0c0c0d, 0, .218, 0), pez(box(.53, .006, .004), 0x0c0c0d, 0, -.218, 0), pez(box(.006, .44, .004), 0x0c0c0d, .262, 0, 0), pez(box(.006, .44, .004), 0x0c0c0d, -.262, 0, 0)), VC, 0, 0, .054, .82);   // guarnizione
-{ const g = new THREE.Group();     // terminali sul lato inferiore, da sinistra: batteria +/-, interruttore CC, FV1 e FV2, COM, WiFi, rete, BACK-UP (manuale p.22)
-  [[-.22, 0x1b1d20], [-.18, 0xc0392b], [-.12, 0xb3261e], [-.06, 0x1b1d20], [-.02, 0x1b1d20], [.05, 0x30353a], [.1, 0xdfe3e6], [.16, 0x30353a], [.22, 0x30353a]].forEach(([x, c]) => { g.add(mesh(cyl(.012, .028, 12), std({ color: c, roughness: .5 }), x, 0, 0)); g.add(mesh(cyl(.015, .008, 6), GR, x, .012, 0)); });
-  g.position.set(IX, IY - .238, Z0 + .07); P(g, [0, -.5, .4], .8); }
-{ const g = new THREE.Group(); g.add(mesh(rbox(.54, .45, .138, .022), COP, 0, 0, .069)); g.add(mesh(box(.5, .05, .002), std({ color: 0xcfd3d6, roughness: .5 }), 0, -.19, .139));
-  const tL = cv(256, 80, c => drawUnicalLogo(c, 8, 6, 230)); g.add(mesh(new THREE.PlaneGeometry(.15, .047), std({ map: tL, transparent: true, roughness: .5 }), 0, .15, .1395));
-  const tD = cv(96, 72, c => { c.fillStyle = '#0d1114'; c.fillRect(0, 0, 96, 72); c.fillStyle = '#7fd0ff'; c.fillRect(10, 10, 76, 30); c.fillStyle = '#0d1114'; c.font = '700 20px sans-serif'; c.fillText('6.0 kW', 16, 32); c.fillStyle = '#4a5158'; for (let i = 0; i < 4; i++) c.fillRect(10 + i * 20, 50, 15, 13); });
-  g.add(mesh(new THREE.PlaneGeometry(.11, .083), new THREE.MeshBasicMaterial({ map: tD }), 0, -.1, .1395)); g.position.set(IX, IY, Z0); P(g, [0, .3, 1.3], .88); }
-// 4 ─ batteria. Documentati: tre moduli su una base, staffe a L, pannello laterale sopra le porte, interruttore automatico, porte BMS, etichetta con 4 tacche (p.13-14).
-//     Ricavato: 16 celle in serie, perché 51,2 V di tensione nominale diviso i 3,2 V di una cella LFP fa 16. Schema di principio: forma e disposizione di celle, barre e scheda.
-gruppo('Batteria', 'Tiene da parte l\'energia del giorno per la sera. In ogni modulo: sedici celle al litio-ferro-fosfato in fila, unite da barre di rame, e una scheda che le sorveglia una per una.', 'SUM BL15P · tre moduli LFP da 51,2 V · IP66 · interruttore automatico e porte BMS sul fianco · a pavimento con staffe a parete · interno: schema di principio (16 celle ricavate da 51,2 V)', 24, 33, { az: -18, el: 8, d: 2.3, x: .95, y: .55 }, [-.25, 0, .8]);
-const BX = .95, BZ = ZW + .02 + .09, tLed = cv(32, 128, () => {}), ledM = new THREE.MeshBasicMaterial({ map: tLed }), Y1 = .05 + .18;
-function tacche(soc) { const k = Math.round(clamp(soc) * 4), c = tLed.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 32, 128); for (let i = 0; i < 4; i++) { c.fillStyle = i < k ? '#7dff9a' : '#27302b'; c.fillRect(8, 78 - i * 20, 16, 12); } c.fillStyle = '#7fd0ff'; c.beginPath(); c.arc(16, 108, 6, 0, 7); c.fill(); tLed.needsUpdate = true; }
-P(mesh(rbox(.65, .05, .18, .01), GR, BX, .025, BZ), dz(1), 0);
-const Bm = (g, m, x, y, z, da, rit, liv) => P(mesh(g, m, BX + x, Y1 + y, BZ + z), da, rit, liv), ARA = std({ color: 0xe08a2a, roughness: .6 });
-// una cella prismatica: involucro blu con fascia, coperchio, i due poli (alluminio e rame) e la valvola di sfogo
-const gCella = fuso(pez(rbox(.034, .236, .12, .004), 0x2f66c9, 0, -.004, 0), pez(box(.0345, .06, .1205), 0xe9ebec, 0, -.03, 0), pez(box(.031, .006, .116), 0x2a2d31, 0, .117, 0), pez(cyl(.008, .008, 12), 0xd9dde0, 0, .124, .036), pez(cyl(.008, .008, 12), 0xc47a45, 0, .124, -.036), pez(box(.012, .002, .022), 0x9aa0a5, 0, .121, 0));
-const gBarra = fuso(pez(box(.03, .004, .022), 0xc47a45), pez(cyl(.006, .004, 6), 0xcfd3d6, -.011, .004, 0), pez(cyl(.006, .004, 6), 0xcfd3d6, .011, .004, 0));
-const gBms = fuso(pez(box(.5, .05, .003), 0x1f6b45), ...[-.18, -.06, .08].map(x => pez(box(.03, .02, .005), 0x15171a, x, 0, .004)), pez(box(.05, .03, .012), 0xb9bec2, .18, 0, .007), pez(box(.02, .012, .008), 0xe9ebec, -.23, .01, .005), pez(box(.02, .012, .008), 0xe9ebec, .01, -.012, .005));
-const gInt = fuso(pez(box(.03, .075, .05), 0x1b1d20), pez(box(.012, .02, .012), 0x3fbf6a, .018, .005, 0), pez(cyl(.011, .03, 12), 0xe67e22, .008, -.07, 0, 0, PI / 2), pez(cyl(.011, .03, 12), 0x1b1d20, .008, -.105, 0, 0, PI / 2), pez(box(.012, .014, .016), 0x8f969b, .012, .06, .012), pez(box(.012, .014, .016), 0x8f969b, .012, .06, -.012));
-const etichetta = () => mesh(new THREE.PlaneGeometry(.028, .11), ledM, 0, 0, .0906);
-function pacco(k) {      // un modulo batteria: nel primo le celle entrano una per una, negli altri due arrivano in blocco. Dentro sono uguali.
-  const y0 = k * .36, r0 = k ? .5 + k * .12 : .06, da = [0, .5, 1.0], m4 = new THREE.Matrix4(), r = d => r0 + (k ? d * .25 : d);
-  Bm(box(.62, .33, .006), AL, 0, y0, -.082, dz(1.1), r0, .02);                                                                    // fondo
-  if (!k) for (let i = 0; i < 16; i++) Bm(gCella, VC, -.281 + i * .0375, y0 - .03, -.015, da, r(.06 + i * .012), .3).rotation.y = i % 2 ? PI : 0;   // 16 celle, una dritta e una girata
-  else { const im = new THREE.InstancedMesh(gCella, VC, 16); for (let i = 0; i < 16; i++) { m4.makeRotationY(i % 2 ? PI : 0).setPosition(-.281 + i * .0375, 0, 0); im.setMatrixAt(i, m4); } im.position.set(BX, Y1 + y0 - .03, BZ - .015); P(im, da, r(.06), .3); }
-  for (const q of [-1, 1]) Bm(box(.012, .25, .125), AL, q * .305, y0 - .03, -.015, [q * .5, 0, .6], r(.28), .38);              // piastre di testa
-  for (const y of [-.09, .03]) Bm(box(.63, .012, .002), INOX, 0, y0 + y, .046, da, r(.3), .44);                                 // fasce che tengono strette le celle
-  { const im = new THREE.InstancedMesh(gBarra, VC, 15); for (let i = 0; i < 15; i++) { m4.makeTranslation(-.262 + i * .0375, 0, i % 2 ? .036 : -.036); im.setMatrixAt(i, m4); } im.position.set(BX, Y1 + y0 + .1, BZ - .015); P(im, [0, .4, .8], r(.34), .52); }   // barre di rame imbullonate
-  Bm(box(.56, .002, .012), ARA, 0, y0 + .104, -.015, [0, .4, .8], r(.38), .58);                                                 // cavetto piatto che misura ogni cella
-  Bm(gBms, VC, -.04, y0 + .135, .03, [0, .4, .9], r(.42), .66);                                                                  // scheda BMS
-  Bm(gInt, VC, .3, y0 + .09, 0, [.6, 0, .4], r(.46), .72);                                                                       // interruttore automatico, connettori BAT+/BAT- e porte
-  for (const [q, m] of [[-1, ARA], [1, NERO]]) P(mesh(tubo([V(BX + q * .29, Y1 + y0 + .1, BZ - .05), V(BX + q * .27, Y1 + y0 + .155, BZ - .06), V(BX + .2, Y1 + y0 + .16 - (q > 0 ? .02 : 0), BZ - .055), V(BX + .295, Y1 + y0 + .12, BZ - .02)], .005), m), [0, .4, .8], r(.48), .6);   // cavi di potenza
-  const g = new THREE.Group(); g.add(mesh(rbox(.65, .355, .18, .014), COP)); g.add(etichetta()); g.add(mesh(box(.012, .3, .14), std({ color: 0xd3d6d8, roughness: .6 }), .331, 0, 0)); g.position.set(BX, Y1 + y0, BZ); P(g, [0, k ? .6 : .2, 1.3], r(.52), 1);
-}
-for (let k = 0; k < 3; k++) pacco(k);
-for (const x of [-.25, .25]) P(mesh(box(.04, .05, .11), GR, BX + x, 1.13 + .025, ZW + .055), [0, .4, .5], .92);                // staffe a L in cima
-// 5 ─ cavi
-gruppo('Cavi', 'Due stringhe di moduli scendono all\'inverter, una per ingresso. Un cavo corto lo unisce alla batteria.', 'Due stringhe, una per MPPT · batteria collegata sul fianco, a meno di 3 m dall\'inverter · uscite verso la casa e verso la rete', 33, 37, { az: -6, el: 16, d: 7.4, x: .1, y: 1.0 }, [0, 0, .25]);
-const cI = (dx) => V(IX + dx, IY - .26, Z0 + .07), pT = (x, z) => sulTetto(mesh(box(.01, .01, .01), GR, x, .05, z)).position.clone(), zc = ZW + .12;
-// le stringhe corrono sotto i moduli fino al bordo della falda, scendono e raggiungono l'inverter lungo il pavimento (percorso generico: qui tetto e parete sono affiancati)
-for (const [i, x] of [-.577, .577].entries()) { const z = .2 + i * .08, b = pT(1.38, z), xi = IX - .06 + i * .04; P(cavo('fv', [pT(x, z), b, V(b.x, .03, b.z), V(xi, .03, b.z), V(xi, .03, zc), V(xi, IY - .26, zc)], 0xffd84a), [0, .3, .4], i * .2); }
-P(cavo('bat', [cI(-.2), V(IX - .2, Y1 + .02, zc), V(BX + .34, Y1 + .02, zc)], 0x7dff9a), [0, 0, .5], .45);
-P(cavo('casa', [cI(.22), V(IX + .22, .9, zc), V(IX + .35, .9, zc)], 0xfff2b0), [0, 0, .5], .6); P(cavo('rete', [cI(.16), V(IX + .16, .5, zc), V(IX + .35, .5, zc)], 0xc49bff), [0, 0, .5], .7);
-for (const [y, s] of [[.9, 'Casa'], [.5, 'Rete']]) { const t = cv(128, 64, c => { c.fillStyle = '#2a2f34'; c.fillRect(0, 0, 128, 64); c.fillStyle = '#e9ecee'; c.font = '700 30px sans-serif'; c.textAlign = 'center'; c.fillText(s, 64, 42); }); P(mesh(box(.3, .16, .08), [GR, GR, GR, GR, new THREE.MeshBasicMaterial({ map: t }), GR], IX + .5, y, zc), [.5, 0, .3], .8); }
 
-// ───────── stato e film ─────────
+// 2 ─ Un modulo, strato per strato (elenco dei componenti del manuale)
+const XM = XA[0];
+group('modulo', 'Modulo MULTIVOLT 460 BF', 'Un modulo è un panino: vetro, pellicola, 96 mezze celle, pellicola, vetro, chiusi in un telaio. È bifacciale: prende luce anche da dietro.', 8.0, 14.5, { stage: [0, 0, 0], ex: [0, .5, .9], az: -18, el: 42, zoom: .62,
+  keys: [[.03, -30, 46, .9, 0], [.3, -12, 58, .56, 0], [.55, -24, 40, .52, 0], [.8, -6, 50, .7, 0], [.95, -20, 36, .9, 0]],
+  info: { e: 'Il sole sulle celle muove gli elettroni: nasce una corrente continua. Il doppio vetro protegge le celle e lascia passare la luce anche da dietro.', s: 'MULTIVOLT 460 BF · 460 W · 96 mezze celle N-Type 6 × 16 · doppio vetro da 2 mm · 1762 × 1134 × 30 mm · 24,5 kg · tre scatole di giunzione IP68 con tre diodi · scheda 00341524' } });
+{
+  const r = falda(), o = x => Object.assign({ parent: r }, x), up = k => [NRM[0] * k, NRM[1] * k, NRM[2] * k];
+  P(mesh(G.box(1.114, .002, 1.742), M.vetro, XM, YM - .006, 0), o({ d: 0, from: up(1.2), spin: [0, 0, 0], ease: eoc, n: 'Vetro posteriore, 2 mm' }));
+  P(mesh(G.box(1.11, .0008, 1.738), M.eva, XM, YM - .0045, 0), o({ d: .06, from: up(1.1), spin: [0, 0, 0], ease: eoc, n: 'Pellicola incapsulante' }));
+  const cells = []; for (let j = 0; j < 16; j++) for (let i = 0; i < 6; i++) cells.push({ p: [XM - .4583 + i * .1833, YM - .0035, -.8325 + j * .1037 + (j > 7 ? .012 : 0)] });
+  PIN(G.box(.178, .0012, .1, ), M.cella, cells, o({ df: (k, f) => .12 + ((k % 6) * .02 + (k / 6 | 0) * .025), dur: .32, from: up(.7), spin: [0, 0, 0], ease: eoc, n: '96 mezze celle N-Type', snd: 'tick' }));
+  const rib = []; for (let h = 0; h < 2; h++) for (let i = 0; i < 6; i++) for (const dx of [-.06, 0, .06]) rib.push({ p: [XM - .4583 + i * .1833 + dx, YM - .0027, (h ? 1 : -1) * .43] });
+  PIN(G.box(.0025, .0005, .83), M.nastro, rib, o({ d0: .6, d1: .7, from: up(.5), spin: [0, 0, 0], ease: eoc, n: 'Nastri di collegamento', snd: 'fin' }));
+  PIN(G.box(1.08, .0008, .008), M.nastro, [-.865, -.005, .005, .865].map(z => ({ p: [XM, YM - .0027, z] })), o({ d0: .71, d1: .73, from: up(.5), n: 'Barre collettrici' }));
+  P(mesh(G.box(1.11, .0008, 1.738), M.eva, XM, YM - .0015, 0), o({ d: .75, from: up(1), spin: [0, 0, 0], ease: eoc }));
+  P(mesh(G.box(1.114, .002, 1.742), M.vetro, XM, YM, 0), o({ d: .78, from: up(1.2), spin: [0, 0, 0], ease: eoc, n: 'Vetro anteriore, 2 mm' }));
+  [-1, 1].forEach((q, i) => { P(mesh(G.box(.012, .03, 1.762), M.telaio, XM + q * .561, YM - .01, 0), o({ d: .82 + i * .02, from: [q * .4, .1, 0], spin: [0, 0, 0], n: i ? null : 'Telaio in alluminio' })); P(mesh(G.box(1.11, .03, .012), M.telaio, XM, YM - .01, q * .875), o({ d: .85 + i * .02, from: [0, .1, q * .4], spin: [0, 0, 0] })); });
+  // tre scatole di giunzione sul retro, in linea al centro, con i diodi e i cavi
+  [-.3, 0, .3].forEach((x, i) => { const bx = XM + x, by = YM - .02;
+    P(mesh(G.box(.07, .014, .05), M.black, bx, by, 0), o({ d: .88 + i * .02, from: up(-.5), spin: [0, 0, 0], n: i ? null : 'Scatole di giunzione IP68' }));
+    if (i === 1) PIN(G.box(.008, .004, .012), M.black, [-.02, 0, .02].map(dx => ({ p: [bx + dx, by - .009, 0] })), o({ d0: .92, d1: .93, from: up(-.3), n: 'Tre diodi di bypass' }));
+    if (i !== 1) { const s = i ? 1 : -1; P(mesh(G.cylX(.003, .1, 6), M.black, bx + s * .085, by, 0), o({ d: .94, from: [s * .2, 0, 0], spin: [0, 0, 0] })); P(mesh(G.cylX(.006, .03, 8), s > 0 ? M.red : M.black, bx + s * .145, by, 0), o({ d: .96, from: [s * .2, 0, 0], spin: [0, 0, 0], n: i === 2 ? 'Connettori' : null })); } });
+}
+
+// 3 ─ Secondo modulo e morsetti
+group('modulo2', 'Secondo modulo e morsetti', 'Il secondo modulo arriva finito. Quattro morsetti per modulo lo stringono ai profili: due a fine fila, uno in mezzo che ne tiene due.', 14.5, 17.5, { stage: [0, 0, 0], ex: [.0, .7, 1.2], az: -24, el: 34, zoom: .9,
+  info: { e: 'I morsetti stringono il telaio sul lato lungo, proprio sopra i profili: così il modulo regge vento e neve senza piegarsi.', s: 'Almeno quattro morsetti per modulo, sul lato lungo, lunghi almeno 50 mm, a 400 ± 50 mm dai lati corti · manuale 00340211SS p.12-14 · nella casa i moduli sono 14: 6,44 kWp' } });
+{
+  const r = falda(), o = x => Object.assign({ parent: r }, x), X2 = XA[1];
+  P(mesh(G.box(1.114, .002, 1.742), M.vetro, X2, YM - .006, 0), o({ d: 0, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc, n: 'Modulo già assemblato' }));
+  P(mesh(G.box(1.11, .0012, 1.73), M.celle, X2, YM - .0035, 0), o({ d: .06, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc }));
+  P(mesh(G.box(1.114, .002, 1.742), M.vetro, X2, YM, 0), o({ d: .1, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc }));
+  [-1, 1].forEach((q, i) => { P(mesh(G.box(.012, .03, 1.762), M.telaio, X2 + q * .561, YM - .01, 0), o({ d: .12, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc })); P(mesh(G.box(1.11, .03, .012), M.telaio, X2, YM - .01, q * .875), o({ d: .12, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc })); });
+  PIN(G.box(.07, .014, .05), M.black, [-.3, 0, .3].map(x => ({ p: [X2 + x, YM - .02, 0] })), o({ d0: .14, d1: .14, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc }));
+  // morsetti: di fine fila (due per profilo) e centrali (uno per profilo), con il bullone a martello
+  const fine = [], mid = [];
+  for (const z of ZP) { for (const x of [-1.152, 1.152]) fine.push({ p: [x, YM + .006, z], s: [Math.sign(x), 1, 1] }); mid.push({ p: [0, YM + .006, z] }); }
+  PIN(G.box(.03, .006, .06), M.allu, fine, o({ d0: .4, d1: .6, from: NRM, spin: [0, 0, 0], n: 'Morsetti di fine fila' }));
+  PIN(G.box(.006, .036, .06), M.allu, fine.map(f => ({ p: [f.p[0] + Math.sign(f.p[0]) * .012, YM - .012, f.p[2]] })), o({ d0: .41, d1: .61, from: NRM, spin: [0, 0, 0] }));
+  PIN(G.box(.044, .006, .06), M.allu, mid, o({ d0: .65, d1: .72, from: NRM, spin: [0, 0, 0], n: 'Morsetti centrali' }));
+  screws(fine.concat(mid).map(f => ({ p: [f.p[0], YM + .009, f.p[2]] })), o({ d0: .78, d1: .98, n: 'Bulloni a martello' }));
+}
+
+// 4 ─ Inverter ZOE1-6000 (componenti interni: schema di principio)
+group('inverter', 'Inverter ZOE1-6000', 'Trasforma la corrente continua dei moduli in quella alternata di casa e decide dove mandarla: casa, batteria o rete.', 17.5, 25.5, { stage: [0, 0, .9], ex: [.5, .15, .5], az: 18, el: 10, zoom: 1.0, trav: .62,
+  keys: [[.03, 24, 14, 1.25, 0], [.25, 10, 8, .75, 0], [.5, 26, 16, .8, 0], [.75, 8, 6, .85, 0], [.92, 20, 12, 1.2, 0]],
+  info: { e: 'Il cervello dell\'impianto: segue il punto di massima potenza di ogni stringa, carica la batteria con quello che avanza e manda in rete il resto.', s: 'ZOE1-6000 · 6 kW · due MPPT, una stringa ciascuno · fino a 9 kW di moduli · IP66 · 540 × 450 × 185 mm · 27,5 kg · manuale 00341435 p.14, 22, 35, 36, 69, 75 · interno: schema di principio' } });
+{
+  const n = node(IX, IY, Z0), o = x => Object.assign({ parent: n }, x), F = { from: [0, 0, .8], spin: [0, 0, 0], ease: eoc };
+  P(mesh(G.box(.46, .1, .012), M.grey, 0, .12, -.041), o(Object.assign({ d: 0, n: 'Staffa a parete, fori a 400 mm' }, F)));
+  screws([-.2, .2].map(x => ({ p: [x, .12, -.035], r: [PI / 2, 0, 0] })), o({ d0: .03, d1: .05 }));
+  P(mesh(G.box(.5, .42, .006), M.alu, 0, 0, -.005), o(Object.assign({ d: .07, n: 'Radiatore' }, F)));
+  PIN(G.box(.005, .4, .026), M.alu, Array.from({ length: 15 }, (_, i) => ({ p: [-.224 + i * .032, 0, -.022] })), o({ d0: .09, d1: .15, from: [0, 0, -.4], spin: [0, 0, 0], ease: eoc, n: 'Alette', snd: 'fin' }));
+  P(mesh(G.box(.16, .12, .03), M.black, .13, -.12, -.023), o(Object.assign({ d: .16, n: 'Modulo di induttanza, sul retro' }, F)));
+  P(mesh(G.box(.52, .43, .004), M.grey, 0, 0, .002), o(Object.assign({ d: .19, n: 'Fondo della cassa' }, F)));
+  P(mesh(G.box(.44, .3, .003), M.pcb, 0, .05, .008), o(Object.assign({ d: .23, n: 'Scheda di potenza' }, F)));
+  PIN(G.cyl(.017, .042, 16), M.cap, Array.from({ length: 8 }, (_, i) => ({ p: [-.185 + (i % 4) * .04, .16 - (i / 4 | 0) * .045, .032], r: [PI / 2, 0, 0] })), o({ d0: .27, d1: .33, from: [0, 0, .5], spin: [0, 0, 0], n: 'Condensatori del bus in continua', snd: 'tick' }));
+  PIN(G.box(.018, .024, .006), M.black, Array.from({ length: 6 }, (_, i) => ({ p: [.01 + i * .032, .15, .018] })), o({ d0: .35, d1: .4, from: [0, 0, .4], spin: [0, 0, 0], n: 'Stadio di potenza: sei interruttori', snd: 'tick' }));
+  PIN(G.torus(.03, .013, PI * 2, 24), M.copper, [[.02, .06], [.1, .06], [.18, .06], [.18, -.02]].map(([x, y]) => ({ p: [x, y, .025] })), o({ d0: .42, d1: .48, from: [0, 0, .5], spin: [0, 0, 3], n: 'Induttanze' }));
+  PIN(G.box(.03, .034, .018), M.giallo, [0, 1, 2].map(i => ({ p: [-.19 + i * .036, .045, .02] })), o({ d0: .5, d1: .52, n: 'Filtro di uscita' }));
+  PIN(G.box(.024, .03, .022), M.blue, [0, 1, 2, 3].map(i => ({ p: [.08 + i * .03, -.085, .021] })), o({ d0: .55, d1: .58, n: 'Relè delle uscite verso rete e BACK-UP' }));
+  P(mesh(G.box(.07, .07, .016), M.black, -.15, -.045, .018), o({ d: .6, n: 'Ventola interna' }));
+  const ventola = new THREE.Group(); ventola.position.set(-.15, -.045, .028); n.add(ventola);
+  PIN(G.box(.022, .009, .002), M.grey, [0, 1, 2, 3, 4].map(i => ({ p: [Math.cos(i * PI * 2 / 5) * .016, Math.sin(i * PI * 2 / 5) * .016, 0], r: [0, 0, i * PI * 2 / 5] })), { parent: ventola, d0: .62, d1: .64, from: [0, 0, .3], spin: [0, 0, 4] });
+  P(mesh(G.box(.045, .055, .05), M.black, -.12, -.16, .03), o({ d: .66, n: 'Interruttore CC' })); P(mesh(G.cylZ(.016, .012, 16), M.red, -.12, -.16, .061), o({ d: .67, from: [0, 0, .3], spin: [0, 0, 6], snd: 'screw' }));
+  P(mesh(G.box(.1, .03, .025), M.verde, .15, -.165, .02), o({ d: .69, n: 'Morsettiera in alternata' }));
+  PIN(G.box(.008, .19, .003), M.copper, [.215, .235].map(x => ({ p: [x, -.03, .014] })), o({ d0: .71, d1: .72, n: 'Barre di rame' }));
+  P(mesh(G.box(.17, .11, .003), M.pcb, 0, -.12, .085), o({ d: .74, from: [0, 0, .5], spin: [0, 0, 0], n: 'Scheda di controllo' }));
+  P(mesh(G.box(.04, .07, .001), M.allu, 0, -.1, .11), o({ d: .76 }));
+  PIN(G.cyl(.012, .028, 12), M.black, [-.22, -.18, -.12, -.06, -.02, .05, .1, .16, .22].map(x => ({ p: [x, -.238, .07] })), o({ d0: .78, d1: .84, from: [0, -.4, 0], spin: [0, 3, 0], n: 'Terminali: batteria, CC, FV1, FV2, COM, WiFi, rete, BACK-UP', snd: 'screw' }));
+  P(mesh(G.rbox(.54, .45, .138, .022), M.sInv, 0, 0, .069), o({ d: .88, from: [0, .2, 1.1], spin: [0, 0, 0], ease: eoc, dur: .6, n: 'Coperchio' }));
+  P(mesh(G.plane(.15, .047), M.logoW, 0, .15, .1395), o({ d: .92, from: [0, 0, .5], spin: [0, 0, 0] }));
+  P(mesh(G.plane(.11, .083), M.lcdI, 0, -.1, .1395), o({ d: .94, from: [0, 0, .5], spin: [0, 0, 0], n: 'Schermo e quattro pulsanti' }));
+  PIN(G.cylZ(.006, .004, 12), M.black, [-.03, -.01, .01, .03].map(x => ({ p: [x, -.155, .14] })), o({ d0: .96, d1: .98, from: [0, 0, .3] }));
+  SCENA.ventola = ventola;
+}
+
+// 5 ─ Batteria SUM BL15P (celle, barre e BMS: schema di principio)
+group('batteria', 'Batteria SUM BL15P', 'Tre moduli impilati. In ognuno sedici celle al litio-ferro-fosfato in fila, unite da barre di rame, e una scheda che le sorveglia una per una.', 25.5, 33.0, { stage: [0, 0, .9], ex: [-.4, .1, .6], az: -16, el: 12, zoom: .8, trav: .62,
+  keys: [[.03, -22, 16, 1.0, 0], [.22, -6, 18, .55, -.25], [.45, -24, 14, .62, -.2], [.7, -10, 10, .9, 0], [.92, -18, 12, 1.0, 0]],
+  info: { e: 'Tiene da parte l\'energia del giorno per la sera. Quando il sole cala, la casa va avanti con la batteria prima di chiedere alla rete.', s: 'SUM BL15P · tre moduli LFP da 51,2 V · 650 × 360 × 180 mm l\'uno · IP66 · interruttore e porte sul fianco · staffe a L a parete · manuale 00341436 p.13-14, 19, 34-36 · celle, barre e BMS: schema di principio (16 celle ricavate da 51,2 V)' } });
+{
+  const n = node(BX, 0, BZ), o = x => Object.assign({ parent: n }, x);
+  P(mesh(G.rbox(.65, .05, .18, .01), M.grey, 0, .025, 0), o({ d: 0, from: [0, 0, .8], spin: [0, 0, 0], n: 'Base' }));
+  for (let k = 0; k < 3; k++) {
+    const y0 = BY1 + k * .36, d0 = .04 + k * .3, sp = k ? .1 : .16, cs = [];
+    P(mesh(G.box(.62, .33, .006), M.allu, 0, y0, -.082), o({ d: d0, from: [0, 0, .9], spin: [0, 0, 0], n: k ? null : 'Fondo del modulo' }));
+    for (let i = 0; i < 16; i++) cs.push({ p: [-.281 + i * .0375, y0 - .03, -.015] });
+    PIN(G.rbox(.034, .236, .12, .004), M.cellaB, cs, o({ d0: d0 + .02, d1: d0 + sp, dur: .3, from: [0, .5, .6], spin: [0, 0, 0], ease: eoc, n: k ? null : 'Sedici celle LFP', snd: 'tick' }));
+    PIN(G.box(.012, .25, .125), M.allu, [-1, 1].map(q => ({ p: [q * .305, y0 - .03, -.015] })), o({ d0: d0 + sp + .01, d1: d0 + sp + .02, from: [0, 0, .6], spin: [0, 0, 0], n: k ? null : 'Piastre di testa' }));
+    PIN(G.box(.03, .004, .022), M.copper, Array.from({ length: 15 }, (_, i) => ({ p: [-.262 + i * .0375, y0 + .092, i % 2 ? .021 : -.051] })), o({ d0: d0 + sp + .03, d1: d0 + sp + .07, from: [0, .3, .4], spin: [0, 0, 0], n: k ? null : 'Barre di rame', snd: 'fin' }));
+    P(mesh(G.box(.56, .002, .012), M.arancio, 0, y0 + .097, -.015), o({ d: d0 + sp + .08, n: k ? null : 'Cavetto che misura ogni cella' }));
+    P(mesh(G.box(.5, .05, .003), M.pcb, -.04, y0 + .135, .03), o({ d: d0 + sp + .1, from: [0, .3, .5], spin: [0, 0, 0], n: k ? null : 'Scheda BMS' }));
+    P(mesh(G.box(.03, .075, .05), M.black, .3, y0 + .09, 0), o({ d: d0 + sp + .11, n: k ? null : 'Interruttore automatico e porte' }));
+    P(mesh(G.rbox(.65, .355, .18, .014), M.sBat, 0, y0, 0), o({ d: d0 + sp + .14, from: [0, .2, 1.0], spin: [0, 0, 0], ease: eoc, dur: .55, n: k ? null : 'Involucro' }));
+    P(mesh(G.plane(.028, .11), M.ledB, 0, y0, .0906), o({ d: d0 + sp + .16, from: [0, 0, .4], spin: [0, 0, 0], n: k ? null : 'Etichetta con 4 tacche di carica' }));
+    P(mesh(G.box(.012, .3, .14), M.sPan, .331, y0, 0), o({ d: d0 + sp + .18, from: [.4, 0, 0], spin: [0, 0, 0], n: k ? null : 'Pannello laterale' }));
+  }
+  PIN(G.box(.04, .05, .11), M.grey, [-.25, .25].map(x => ({ p: [x, 1.13 + .025, -.055] })), o({ d0: .96, d1: .98, from: [0, .4, .3], n: 'Staffe a L' }));
+}
+
+// 6 ─ Cavi (percorso indicativo: qui tetto e parete sono affiancati)
+const zc = ZW + .12, cI = dx => [IX + dx, IY - .26, Z0 + .07];
+const CV = {
+  s1: [tw(XA[0] + .3, YM - .03, .25), tw(1.38, .05, .25), [tw(1.38, .05, .25)[0], .03, tw(1.38, .05, .25)[2]], [IX - .06, .03, tw(1.38, .05, .25)[2]], [IX - .06, .03, zc], [IX - .06, IY - .26, zc]],
+  s2: [tw(XA[1] + .3, YM - .03, .33), tw(1.38, .05, .33), [tw(1.38, .05, .33)[0], .03, tw(1.38, .05, .33)[2]], [IX - .02, .03, tw(1.38, .05, .33)[2]], [IX - .02, .03, zc], [IX - .02, IY - .26, zc]],
+  bat: [cI(-.2), [IX - .2, BY1 + .02, zc], [BX + .34, BY1 + .02, zc]],
+  casa: [cI(.22), [IX + .22, .9, zc], [IX + .35, .9, zc]], rete: [cI(.16), [IX + .16, .5, zc], [IX + .35, .5, zc]],
+  dentro: [[IX - .04, IY - .2, Z0 + .03], [IX - .1, IY - .05, Z0 + .03], [IX - .15, IY + .16, Z0 + .035], [IX + .05, IY + .15, Z0 + .03], [IX + .1, IY + .06, Z0 + .03], [IX + .18, IY - .02, Z0 + .03], [IX + .2, IY - .17, Z0 + .03], [IX + .22, IY - .23, Z0 + .07]],
+};
+for (const k in CV) PIPE[k] = CV[k];
+group('cavi', 'Cavi', 'Due stringhe di moduli scendono all\'inverter, una per ingresso. Un cavo corto lo unisce alla batteria; due uscite vanno alla casa e alla rete.', 33.0, 36.5, { stage: [0, 0, 0], ex: [0, 0, .3], az: -4, el: 16, zoom: .8,
+  info: { e: 'Le strade dell\'energia: dal tetto all\'inverter in continua, dall\'inverter alla casa e alla rete in alternata, avanti e indietro con la batteria.', s: 'Due stringhe, una per MPPT · batteria sul fianco, a meno di 3 m dall\'inverter · uscite verso la casa e verso la rete · manuale 00341435 p.22 · percorso dei cavi: indicativo' } });
+{
+  [['s1', M.black, 'Stringa 1, verso FV1'], ['s2', M.black, 'Stringa 2, verso FV2'], ['bat', M.arancio, 'Cavo della batteria'], ['casa', M.grey, 'Uscita verso la casa'], ['rete', M.grey, 'Uscita verso la rete']].forEach(([k, m, n], i) => P(mesh(tubeGeo(CV[k], .011, CV[k].length * 16), m), { d: i * .15, dur: .55, from: [0, .3, .3], spin: [0, 0, 0], n }));
+  [[.9, 'Casa'], [.5, 'Rete']].forEach(([y, s], i) => P(mesh(G.box(.3, .16, .06), [M.grey, M.grey, M.grey, M.grey, new THREE.MeshBasicMaterial({ map: T.targaCR(s) }), M.grey], IX + .5, y, zc), { d: .8 + i * .08, from: [.4, 0, .3], spin: [0, 0, 0], n: i ? null : 'Casa e rete (targhe)' }));
+}
+finalize();
+function lcdInv(txt) { const c = T.lcdI.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 128, 96); c.fillStyle = '#7fd0ff'; c.fillRect(10, 10, 108, 40); c.fillStyle = '#0d1114'; c.font = '700 22px Barlow, Arial, sans-serif'; c.textAlign = 'center'; c.fillText(txt, 64, 38); c.fillStyle = '#4a5158'; for (let i = 0; i < 4; i++) c.fillRect(14 + i * 27, 66, 18, 14); T.lcdI.needsUpdate = true; }
+function tacche(soc) { const k = Math.round(clamp(soc) * 4), c = T.ledB.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 32, 128); for (let i = 0; i < 4; i++) { c.fillStyle = i < k ? '#7dff9a' : '#27302b'; c.fillRect(8, 78 - i * 20, 16, 12); } c.fillStyle = '#7fd0ff'; c.beginPath(); c.arc(16, 104, 5, 0, 7); c.fill(); T.ledB.needsUpdate = true; }
+
+// ───────── Fotovoltaico · energia, film e strumenti ─────────
 // Flussi secondo la modalità Autoconsumo (manuale ZOE1 p.14): il fotovoltaico alimenta la casa, l'avanzo carica la batteria e poi va in rete;
-// senza sole la batteria alimenta la casa fino alla scarica minima del 10%, poi si prende dalla rete. Intensità qualitative, nessun valore a schermo.
-const E = { sole: .8, soc: .45, bat: 0, rete: 0 }, CASA = .35, FINE_M = 37, FINE = 45;
-const U = { mode: 'start', t: 0, tool: 'tocca', e: 0, eTo: 0, dentro: 0, dentroTo: 0, az: rad(-10), el: rad(14), zoom: 1, auto: true };
-function energia(dt) { const av = E.sole - CASA; E.bat = av > 0 ? (E.soc < 1 ? Math.min(av, .5) : 0) : (E.soc > .1 ? Math.max(av, -.5) : 0); E.rete = av - E.bat; E.soc = clamp(E.soc + E.bat * dt * .12, .1, 1); }
-const VISTA_F = { az: -8, el: 14, d: 7.8, x: 0, y: 1.2 };
-function vistaFilm(t) { let v = G[0].vista; for (const g of G) { const k = sm(g.t0 - .5, g.t0 + .7, t), w = g.vista, o = {}; for (const q in w) o[q] = lerp(v[q], w[q], k); v = o; }
-  const k = sm(FINE_M - .3, FINE_M + 1.2, t), o = {}; for (const q in v) o[q] = lerp(v[q], VISTA_F[q], k); return o; }
-let stretto = false, ultSoc = -1;
-function posa(now, dt) {
-  const film = U.mode === 'film', t = film ? U.t : FINE;
-  for (const g of G) for (const p of g.pezzi) { const dur = (g.t1 - g.t0) * .42, k = film ? Math.max(1 - sm(1.2, 2.0, t), clamp((t - (g.t0 + p.rit * (g.t1 - g.t0 - dur))) / dur)) : 1;
-    p.o.visible = k > 0; p.o.position.copy(p.home).addScaledVector(p.da, 1 - eoc(k)).addScaledVector(g.esp, U.e).addScaledVector(p.dir, (.04 + .46 * p.liv) * U.e); }   // Smonta separa i gruppi e, dentro ogni gruppo, ogni pezzo
-  U.dentro = lerp(U.dentro, film ? 0 : U.dentroTo, 1 - Math.exp(-dt * 6)); COP.opacity = lerp(1, .1, U.dentro) * lerp(1, .45, sm(0, .3, U.e)); COP.depthWrite = COP.opacity > .9; pale.rotation.z -= dt * 12 * (E.sole > .02 ? 1 : 0);
-  if (film) { E.sole = t < FINE_M ? 0 : lerp(.95, 0, sm(FINE_M + 3.2, FINE_M + 5.5, t)); if (t < FINE_M) E.soc = .45; }
-  const vivo = !film || t > FINE_M ? 1 : 0; energia(dt * vivo);
-  const F = { fv: E.sole * vivo, bat: E.bat * vivo, casa: CASA * vivo, rete: E.rete * vivo };
-  for (const n in CAVI) for (const c of CAVI[n]) { const a = Math.abs(F[n]); c.m.color.setHex(0x6a7076).lerp(c.col, sm(0, .04, a)); c.tx.offset.x -= dt * (n === 'bat' || n === 'rete' ? Math.sign(F[n]) : 1) * (a > .01 ? .6 + 2 * a : 0); }
-  celle.emissive.setHex(0x16324a); celle.emissiveIntensity = .5 * E.sole * vivo;
-  if (Math.abs(E.soc - ultSoc) > .01) { ultSoc = E.soc; tacche(E.soc); $('bSoc').style.width = (E.soc * 100).toFixed(0) + '%'; }
-  let v; if (film) v = vistaFilm(t); else { if (U.auto) U.az = rad(-10) + Math.sin(now * .25) * rad(14); v = { az: U.az / PI * 180, el: U.el / PI * 180, d: 7.8 * U.zoom, x: 0, y: 1.2 }; }
-  const d = v.d * (stretto ? 1.5 : 1), ce = Math.cos(rad(v.el)), yy = v.y - (U.mode === 'free' ? d * (stretto ? .09 : .05) : 0);
-  camera.position.set(v.x + Math.sin(rad(v.az)) * ce * d, yy + Math.sin(rad(v.el)) * d, Math.cos(rad(v.az)) * ce * d); camera.lookAt(v.x, yy, 0);
+// senza sole la batteria alimenta la casa fino alla scarica minima, poi si prende dalla rete. Intensità qualitative: nessun valore a schermo.
+const TA = 3.5, TR = 36.5, TE = 50.5;
+const ST = { ghost: 0, xray: 0, E: 0, shr: 1, read: 0, sole: 0, soc: .45, bat: 0, rete: 0, casa: .35, s: 0, b: 0, c: 0, g: 0, dentro: 0 };
+const EN = { sole: .8, soc: .45, bat: 0, rete: 0, casa: .35 };
+function ripartisci(o) { const av = o.sole - o.casa; o.bat = av > 0 ? (o.soc < .995 ? Math.min(av, .5) : 0) : (o.soc > .105 ? Math.max(av, -.5) : 0); o.rete = av - o.bat; }
+function energia(dt) { ripartisci(EN); EN.soc = clamp(EN.soc + EN.bat * dt * .12, .1, 1); }
+const SOLE = [1.6, 1.25, .2], DC = [1.7, 1.35, .25], ACC = [1.5, 1.35, 1.1], BAT = [.35, 1.6, .55], RETE = [1.0, .55, 1.7];
+const PATH = {};
+{
+  const f = (n, s) => new Flow(machine, n, s, .03);
+  const fs1 = f(110, .026), fs2 = f(110, .026), fb = f(60, .03), fc = f(50, .03), fr = f(50, .03), fi = f(70, .022);
+  PATH.s1 = fs1.path([seg('s1', SOLE, DC)]); PATH.s2 = fs2.path([seg('s2', SOLE, DC)]); PATH.bat = fb.path([seg('bat', BAT, BAT)]); PATH.casa = fc.path([seg('casa', ACC, ACC)]); PATH.rete = fr.path([seg('rete', RETE, RETE)]);
+  PATH.dentro = fi.path([seg('dentro', DC, ACC)]); PATH.ride = giroDi(fs1.path([seg('s1', SOLE, DC), seg('dentro', DC, ACC), seg('casa', ACC, ACC)], 900));
+  Object.assign(PATH, { fs1, fs2, fb, fc, fr, fi });
 }
-// ───────── interfaccia ─────────
-function resize() { const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight); renderer.setSize(w, h, false); camera.aspect = w / h; stretto = w < h; camera.fov = stretto ? 38 : 30; camera.updateProjectionMatrix(); }
-addEventListener('resize', resize); new ResizeObserver(resize).observe(stage); resize();
-const setMode = m => { U.mode = m; document.body.className = m; };
-function didascalia(t) { let i = 0; for (let k = 0; k < G.length; k++) if (t >= G[k].t0 - .3) i = k; const run = t >= FINE_M, pre = t < G[0].t0 - .3;
-  $('num').textContent = run || pre ? '' : String(i + 1).padStart(2, '0'); $('name').textContent = pre ? 'Fotovoltaico Unical' : run ? 'In funzione' : G[i].nome;
-  $('spec').textContent = pre ? 'Moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL' : run ? testoSole() : G[i].facile; }
-const testoSole = () => E.sole > CASA + .02 ? (E.soc < .995 ? 'C\'è sole: l\'inverter alimenta la casa e con l\'avanzo carica la batteria.' : 'Batteria piena: il sole alimenta la casa e il resto va in rete.') : (E.soc > .105 ? 'Poco sole o buio: la batteria alimenta la casa.' : 'Batteria alla scarica minima: la casa prende dalla rete.');
-function startFilm() { U.t = 0; U.e = U.eTo = 0; setMode('film'); }
-function libero(annuncia) { setMode('free'); U.auto = true; U.el = rad(14); U.zoom = 1; E.sole = +$('sS').value; setTool('tocca'); if (annuncia) { const t = $('toast'); t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); } }
-function setTool(n) { U.tool = n; for (const b of $('tabs').children) b.setAttribute('aria-pressed', b.dataset.tool === n); for (const s of $('panel').children) s.classList.toggle('on', s.dataset.tool === n); U.eTo = n === 'smonta' ? +$('sE').value : 0; U.dentroTo = n === 'dentro' ? 1 : 0; if (n === 'tocca') scheda(-1); }
-function scheda(i) { $('pTocca').textContent = i < 0 ? 'Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.' : ''; if (i >= 0) { const b = document.createElement('b'), s = document.createElement('small'); b.textContent = G[i].nome + '. '; s.textContent = G[i].tecnico; $('pTocca').append(b, G[i].facile, document.createElement('br'), s); }
-  for (const b of $('nomi').children) b.setAttribute('aria-pressed', +b.dataset.i === i); }
-G.forEach((g, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.i = i; b.textContent = g.nome; b.onclick = () => scheda(i); $('nomi').appendChild(b); });
-for (const b of $('tabs').children) b.onclick = () => setTool(b.dataset.tool);
-$('sE').addEventListener('input', e => { U.eTo = +e.target.value; }); $('sS').addEventListener('input', e => { E.sole = +e.target.value; });
-$('bGo').onclick = startFilm; $('bExplore').onclick = () => libero(false); $('bFilm').onclick = startFilm;
-const dita = new Map(), ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let mosso = 0, pinch = 0;
-canvas.addEventListener('pointerdown', e => { if (U.mode !== 'free') return; canvas.setPointerCapture(e.pointerId); dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; });
-canvas.addEventListener('pointermove', e => { const p = dita.get(e.pointerId); if (!p) return;
-  if (dita.size === 1) { const dx = e.clientX - p[0], dy = e.clientY - p[1]; mosso += Math.abs(dx) + Math.abs(dy); if (mosso > 6) U.auto = false; U.az = clamp(U.az - dx * .008, rad(-75), rad(75)); U.el = clamp(U.el + dy * .006, rad(2), rad(60)); }
-  dita.set(e.pointerId, [e.clientX, e.clientY]);
-  if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) U.zoom = clamp(U.zoom * pinch / d, .3, 1.5); pinch = d; mosso += 20; } });
-for (const ev of ['pointerup', 'pointercancel']) canvas.addEventListener(ev, e => { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
-  if (p && mosso < 8 && U.mode === 'free') { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(root.children, true).find(h => h.object.userData.g !== undefined && h.object.visible); if (hit) { if (U.tool !== 'tocca') setTool('tocca'); scheda(hit.object.userData.g); } } });
-canvas.addEventListener('wheel', e => { if (U.mode !== 'free') return; e.preventDefault(); U.zoom = clamp(U.zoom * Math.exp(e.deltaY * .0012), .3, 1.5); U.auto = false; }, { passive: false });
-let last = 0, lenti = 0, tAgg = 0;
-function passo(dt, now) { if (U.mode === 'film') { U.t += dt; didascalia(U.t); if (U.t >= FINE) libero(true); } U.e = lerp(U.e, U.eTo, 1 - Math.exp(-dt * 6)); posa(now, dt); if (U.mode === 'free' && now - tAgg > .25) { tAgg = now; $('pSole').textContent = testoSole(); } }
-function frame(ts) { requestAnimationFrame(frame); if (document.hidden) { last = 0; return; } const now = ts / 1000, grezzo = last ? now - last : 0, dt = Math.min(.05, grezzo); last = now; passo(dt, now); renderer.render(scene, camera);
-  if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1); }
-tacche(E.soc); posa(0, 0);
-window.__fv = { U, E, G, setTool, scheda, startFilm, libero, seek(t) { if (U.mode !== 'film') startFilm(); U.t = t; passo(0, t); renderer.render(scene, camera); }, avanti(s) { for (let i = 0; i < s * 20; i++) passo(.05, last + i * .05); renderer.render(scene, camera); },
-  stato: () => ({ mode: U.mode, tool: U.tool, t: +U.t.toFixed(2), e: +U.e.toFixed(3), dentro: +U.dentro.toFixed(3), sole: E.sole, soc: +E.soc.toFixed(3), bat: +E.bat.toFixed(3), rete: +E.rete.toFixed(3), pezzi: G.reduce((n, g) => n + g.pezzi.length, 0), calls: renderer.info.render.calls }) };
+let ventA = 0, lastLcd = '', lastSoc = -1;
+const testoLcd = () => EN.sole > .15 ? 'SOLE' : ST.bat < -.01 ? 'BATTERIA' : 'RETE';
+const CFG = {
+  id: 'fv', nome: 'Fotovoltaico', modello: 'Unical', sub: 'Unical · MULTIVOLT 460 BF · ZOE1-6000 · SUM BL15P',
+  start: { k: 'Fotovoltaico con accumulo Unical', p: 'Moduli sul tetto, inverter e batteria in mansarda. Poi provalo tu: smontalo, guardaci dentro, segui l\'energia, fai sorgere e tramontare il sole.', dur: '50 secondi' },
+  T_ASM: TA, T_RUN: TR, T_END: TE, MC: V(.25, 1.15, -.1), BW: 4.7, BH: 2.7, S: ST,
+  ganci: [[.1, 1.5, '6,44 kWp', '#ffd84a', 'sul tetto della casa: 14 moduli'], [1.55, TA - .2, '15,36 kWh', '#7dff9a', 'da parte per la sera']],
+  letture: [['Sole', s => s.sole > .6 ? 'Pieno' : s.sole > .15 ? 'Velato' : 'Notte', '#ffd84a', 'gen'], ['Batteria', s => s.bat > .01 ? 'Si carica' : s.bat < -.01 ? 'Alimenta la casa' : s.soc >= .995 ? 'Piena' : 'Ferma', '#7dff9a', 'gen'],
+    ['Rete', s => s.rete > .01 ? 'Riceve' : s.rete < -.01 ? 'Fornisce' : 'Ferma', '#c49bff', 'gen']],
+  caps: [[0, 'Mezzogiorno', 'Il sole dà più di quello che serve: la casa prende la sua parte e la batteria si carica con il resto.'],
+    [4.6, 'Tramonto', 'Il sole cala. Quello che manca lo dà la batteria: la rete non serve.'],
+    [8.6, 'Notte', 'La batteria tiene accesa la casa. Quando arriva alla scarica minima, si prende dalla rete.'],
+    [12, 'Unical: moduli, inverter, batteria', 'MULTIVOLT 460 BF · ZOE1-6000 · SUM BL15P · l\'energia del sole, usata in casa prima che altrove.']],
+  camRun(H, TUTTO) { H(TR + .9, TUTTO, -6, 14); H(TR + 4.6, { off: [1.5, 1.05, ZW + .3], w: 1.9, h: 1.7 }, 10, 10); H(TR + 8.6, { off: [1.1, .85, ZW + .3], w: 1.5, h: 1.45 }, -14, 8); H(TR + 12, TUTTO, -4, 12); },
+  film(t, fase) {
+    const o = { sole: 0, soc: .45, casa: .35 };
+    if (fase === 0) { o.sole = 1; o.soc = .5; ripartisci(o); Object.assign(ST, o, { xray: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0 }); }
+    else if (fase === 1) { o.sole = .7 * sm(12.6, 13.2, t) * (1 - sm(14.2, 14.7, t)); Object.assign(ST, o, { bat: 0, rete: 0, xray: 0, E: 0, shr: 1, read: 0 }); ST.flussi = 0; }
+    else { const r = t - TR; o.sole = 1 - sm(4.6, 7.2, r); o.soc = clamp(.5 + .45 * sm(.6, 4.4, r) - .85 * sm(7.6, 11.4, r), .1, .95); ripartisci(o);
+      Object.assign(ST, o, { xray: sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r)), E: 0, shr: 1, read: r > 1 ? 1 : 0 }); }
+    const fl = fase === 1 ? 0 : 1; ST.s = ST.sole * fl; ST.b = Math.abs(ST.bat) * 2 * fl; ST.c = fl; ST.g = Math.min(1, Math.abs(ST.rete) * 3) * fl; ST.dentro = ST.xray * fl;
+  },
+  look(now, dt) {
+    M.cella.emissiveIntensity = M.celle.emissiveIntensity = .55 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
+    M.cellaB.emissiveIntensity = ST.bat > .01 ? .35 + .15 * Math.sin(now * 4) : ST.bat < -.01 ? .15 : 0;
+    ventA += dt * (ST.s + ST.b > .05 ? 14 : 0); SCENA.ventola.rotation.z = -ventA;
+    const l = testoLcd(); if (l !== lastLcd) { lastLcd = l; lcdInv(l); }
+    if (Math.abs(ST.soc - lastSoc) > .01) { lastSoc = ST.soc; tacche(ST.soc); }
+    PATH.fs1.upd(now, ST.s, .09, PATH.s1); PATH.fs2.upd(now, ST.s, .09, PATH.s2); PATH.fb.upd(now, Math.min(1, ST.b), ST.bat >= 0 ? .2 : -.2, PATH.bat);
+    PATH.fc.upd(now, ST.c, .22, PATH.casa); PATH.fr.upd(now, ST.g, ST.rete >= 0 ? .22 : -.22, PATH.rete); PATH.fi.upd(now, ST.dentro * Math.min(1, ST.s + ST.b), .25, PATH.dentro);
+  },
+  libero() { Object.assign(EN, { sole: .8, soc: .45, casa: .35 }); },
+  short: { tetto: 'Ganci e profili', modulo: 'Modulo', modulo2: 'Morsetti', inverter: 'Inverter', batteria: 'Batteria', cavi: 'Cavi' },
+  gusci: ['inverter', 'batteria'], aperti: ['cavi'],
+  tick(dt, { U, ease, inside, calm }) {
+    energia(dt); Object.assign(ST, { sole: EN.sole, soc: EN.soc, bat: EN.bat, rete: EN.rete, casa: EN.casa });
+    ease('s', EN.sole * calm, 3); ease('b', Math.min(1, Math.abs(EN.bat) * 2) * calm, 3); ease('c', calm, 3); ease('g', Math.min(1, Math.abs(EN.rete) * 3) * calm, 3); ease('dentro', inside ? calm : 0, 3);
+    if (U.ride) { ST.s = 1; ST.dentro = 1; ST.c = 1; }
+    if (U.tool === 'sole') uiSole();
+  },
+  ronzio: s => [s.s + s.b > .05 ? 1.2 : 0, 0],
+  stato: () => ({ sole: +EN.sole.toFixed(2), soc: +EN.soc.toFixed(3), bat: +EN.bat.toFixed(3), rete: +EN.rete.toFixed(3), casa: EN.casa }),
+};
+function uiSole() { $('bSoc').style.width = (EN.soc * 100).toFixed(0) + '%';
+  $('pSole').textContent = EN.sole - EN.casa > 0 ? (EN.bat > 0 ? 'C\'è più sole di quanto serve: l\'avanzo carica la batteria.' : 'Batteria piena: quello che avanza va in rete.')
+    : EN.bat < 0 ? 'Il sole non basta: la batteria dà quello che manca.' : 'Batteria alla scarica minima: si prende dalla rete.'; }
+CFG.strumenti = ['touch', 'expl',
+  { k: 'xray', nota: 'Giallo: corrente continua dal tetto. Bianco: alternata verso la casa. Verde: batteria. Viola: rete.' },
+  { k: 'ride', titolo: 'Segui l\'energia', path: () => PATH.ride, vel: 1.1, dist: [1.0, 1.5], inizio: 'Si parte dalle celle del modulo',
+    frasi: [[0, 'Dalle celle, in corrente continua, scende lungo la stringa fino all\'inverter'], [1, 'Nell\'inverter i condensatori la livellano e sei interruttori la trasformano in alternata'], [2, 'Esce in alternata e accende la casa']],
+    fine: 'Giro finito: dal tetto alla presa di casa, in un istante.' },
+  { k: 'sole', nome: 'Sole', icona: '<circle cx="12" cy="12" r="4"/><path d="M12 2.500v2.500M12 19v2.500M2.500 12H5M19 12h2.500M5.300 5.300l1.800 1.800M16.900 16.900l1.800 1.800M18.700 5.300l-1.800 1.800M7.100 16.900l-1.800 1.800"/>',
+    html: '<div class="how"><i class="gest"></i><span>Muovi il sole e i consumi di casa: guarda dove va l\'energia.</span></div><div class="sl"><small style="min-width:64px">Sole</small><input id="sS" type="range" min="0" max="100" value="80" aria-label="Sole"></div><div class="sl"><small style="min-width:64px">Consumi</small><input id="sC" type="range" min="10" max="90" value="35" aria-label="Consumi della casa"></div><div class="row"><small>Batteria</small><div class="prog" style="flex:1"><i id="bSoc"></i></div></div><p class="note" id="pSole"></p>',
+    init() { const s = $('sS'), c = $('sC'); fill(s); fill(c); s.addEventListener('input', () => { EN.sole = s.value / 100; fill(s); }); c.addEventListener('input', () => { EN.casa = c.value / 100; fill(c); }); },
+    entra() { $('sS').value = Math.round(EN.sole * 100); $('sC').value = Math.round(EN.casa * 100); fill($('sS')); fill($('sC')); uiSole(); } },
+];
+
+// ───────── Pagine prodotto · camera, didascalie e film (dopo i pezzi del prodotto) ─────────
+// Il prodotto, nei suoi file, ha già costruito i pezzi (group, P, PIN, screws, finalize) e ha definito CFG:
+//   id, nome, modello, sub, start { k, p, dur }           testi della pagina
+//   T_ASM, T_RUN, T_END, MC, BW, BH                       tempi del film (aggancio, montaggio, funzionamento) e inquadratura d'insieme
+//   ganci [[t0, t1, grande, colore, piccolo], ...]        le scritte dell'aggancio iniziale
+//   letture [[etichetta, S => testo, colore, classe], ...] i numeri in alto a sinistra
+//   caps [[dt, titolo, testo], ...]                       didascalie della parte in funzione (dt dopo T_RUN); l'ultima senza numero è la firma
+//   S                                                     stato visivo (deve avere xray, ghost, E, shr, read)
+//   film(t, fase)                                         riempie S: fase 0 aggancio, 1 montaggio, 2 in funzione
+//   look(now, dt)                                         applica S alla scena (rotazioni, flussi, luci)
+//   libero()                                              stato all'ingresso nella parte libera
+//   scossa(t), dx(g), stato()                             facoltativi
+const { T_ASM, T_RUN, T_END, MC, BW, BH } = CFG, S = CFG.S;
+$('bN').innerHTML = CFG.nome + ' <span>' + CFG.modello + '</span>'; $('bSub').textContent = CFG.sub; $('sK').textContent = CFG.start.k; $('sP').textContent = CFG.start.p; $('sDur').textContent = CFG.start.dur;
+CFG.letture.forEach(([l, , col, cls]) => { const d = document.createElement('div'); if (cls) d.className = cls; const s = document.createElement('small'), b = document.createElement('b'); s.textContent = l; if (col) b.style.color = col; d.append(s, b); $('read').appendChild(d); });
+
+// ───────── camera ─────────
+const KEYS = [], rig = { t: V(), az: 0, el: 0, w: 2, h: 1.5 }, _a = V(), _b = V(), _o = V();
+const K = (t, g, az, el, w, h, off) => KEYS.push({ t, g, az: rad(az), el: rad(el), w, h, off: off || [0, 0, 0] });
+const H = (t, hm, az, el, k = 1) => K(t, -1, az, el, hm.w * k, hm.h * k, [hm.off[0] - MC.x, hm.off[1] - MC.y, hm.off[2] - MC.z]);
+const TUTTO = { off: MC.toArray(), w: BW, h: BH };
+K(0, -1, 10, 6, BW * .92, BH * .9); K(T_ASM - 1.2, -1, 16, 8, BW * .84, BH * .82); K(T_ASM - .25, -1, 22, 13, BW * 1.55, BH * 1.45);
+for (const g of GROUPS) {
+  const W = g.t1 - g.t0, z = g.size * 2.3 * g.zoom, dx = CFG.dx ? CFG.dx(g) * z : 0, hm = g.home || TUTTO;
+  if (g.keys) for (const [f, az, el, zm, oy] of g.keys) K(g.t0 + f * W, g.i, az, el, z * zm, z * zm, [dx * zm, oy, 0]);
+  else { K(g.t0 + .45, g.i, g.az, g.el, z, z, [dx, 0, 0]); K(g.t0 + .58 * W, g.i, g.az + 14, g.el, z * 1.05, z * 1.05, [dx, 0, 0]); }
+  H(g.t1 - .6, hm, (g.keys ? g.keys[g.keys.length - 1][1] : g.az + 14) + 8, 12);
+}
+if (CFG.camRun) CFG.camRun(H, TUTTO); else { H(T_RUN + .9, TUTTO, 8, 10); H((T_RUN + T_END) / 2, TUTTO, -6, 10, .9); }
+H(T_END + .5, TUTTO, 10, 9);
+function keyTarget(k, out) { if (k.g < 0) out.copy(MC); else { const g = GROUPS[k.g]; out.copy(g.node.position).add(g.c); } return out.add(_o.set(k.off[0], k.off[1], k.off[2])); }
+function camFilm(t) {
+  let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1].t <= t) i++;
+  const a = KEYS[i], b = KEYS[i + 1], u = sm(a.t, b.t, t);
+  keyTarget(a, _a); keyTarget(b, _b); rig.t.lerpVectors(_a, _b, u); rig.az = lerp(a.az, b.az, u) + Math.sin(t * .6) * .02; rig.el = lerp(a.el, b.el, u); rig.w = lerp(a.w, b.w, u); rig.h = lerp(a.h, b.h, u);
+  let sh = 0; for (const g of GROUPS) if (t > g.tb && g.stage.lengthSq() > 0) sh = Math.max(sh, Math.exp(-(t - g.tb) * 9));
+  if (t > T_ASM - 1.15 && t < T_ASM) sh = Math.max(sh, Math.exp(-(t - T_ASM + 1.15) * 5));
+  rig.t.x += Math.sin(t * 97) * .007 * sh; rig.t.y += Math.cos(t * 83) * .007 * sh;
+}
+function placeCam(r) {
+  const f = Math.tan(rad(camera.fov / 2)), d = Math.max(r.h / 2 / f, r.w / 2 / (f * camera.aspect)) * 1.1;
+  camera.position.set(r.t.x + d * Math.sin(r.az) * Math.cos(r.el), r.t.y + d * Math.sin(r.el), r.t.z + d * Math.cos(r.az) * Math.cos(r.el)); camera.lookAt(r.t);
+  return d;
+}
+
+// ───────── didascalie ─────────
+const CAPS = [];
+GROUPS.forEach(g => CAPS.push({ t: g.t0, n: String(g.i + 1).padStart(2, '0'), a: g.name, b: g.spec }));
+const NR = String(GROUPS.length + 1).padStart(2, '0');
+CFG.caps.forEach(([dt, a, b], i) => CAPS.push({ t: T_RUN + dt, n: i === CFG.caps.length - 1 ? '' : NR, a, b }));
+const el = { cap: $('cap'), num: $('num'), name: $('name'), spec: $('spec'), tick: $('tick'), count: $('count').firstElementChild, hook: $('hook'), hk1: $('hk1'), hk2: $('hk2'), read: $('read'), flash: $('flash'), segs: $('segs') };
+const SEGS = GROUPS.map(g => [g.t0, g.t1]).concat([[T_RUN, T_END]]);
+SEGS.forEach(s => { const i = document.createElement('i'); i.style.flex = String(s[1] - s[0]); i.appendChild(document.createElement('b')); el.segs.appendChild(i); });
+let capI = -2, lastCount = -1, hookK = -2; const lastR = [];
+const fmtT = v => (v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' °C';
+function setCap(n, a, b) { el.num.textContent = n; el.name.textContent = a; el.spec.textContent = b; el.tick.textContent = ''; el.cap.classList.remove('in'); void el.cap.offsetWidth; el.cap.classList.add('in'); }
+function hud(t) {
+  let i = -1; for (let k = 0; k < CAPS.length; k++) if (CAPS[k].t <= t) i = k;
+  if (i !== capI) { capI = i; if (i >= 0) setCap(CAPS[i].n, CAPS[i].a, CAPS[i].b); }
+  el.cap.style.opacity = t < T_ASM ? 0 : 1;
+  let hk = -1; CFG.ganci.forEach((h, k) => { if (t >= h[0] && t < h[1]) hk = k; });
+  if (hk !== hookK) { hookK = hk; if (hk >= 0) { const h = CFG.ganci[hk]; el.hk1.textContent = h[2]; el.hk1.style.color = h[3]; el.hk2.textContent = h[4]; } }
+  el.hook.style.opacity = hk < 0 ? 0 : sm(CFG.ganci[hk][0], CFG.ganci[hk][0] + .35, t) * (1 - sm(CFG.ganci[hk][1] - .25, CFG.ganci[hk][1], t));
+  el.flash.style.opacity = Math.max(0, 1 - Math.abs(t - T_ASM) / .22) * .9;
+  const n = t < T_ASM ? PIECES.length : placed; if (n !== lastCount) { lastCount = n; el.count.textContent = n; }
+  SEGS.forEach((s, k) => { el.segs.children[k].firstChild.style.transform = `scaleX(${clamp((t - s[0]) / (s[1] - s[0]))})`; });
+  readout();
+}
+function readout() { el.read.classList.toggle('on', S.read > .5); CFG.letture.forEach(([, f], i) => { const v = f(S); if (v !== lastR[i]) { lastR[i] = v; el.read.children[i].lastChild.textContent = v; } }); }
+onStart = p => { el.tick.textContent = p.n; el.tick.classList.remove('in'); void el.tick.offsetWidth; el.tick.classList.add('in'); };
+let sfx = null;                       // riempito dal modulo dei comandi quando l'audio è attivo
+const _w = V();
+onLand = p => { _w.copy(p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
+
+// ───────── linea del tempo del filmato ─────────
+function filmState(t, emit) {
+  if (t < T_ASM) { CFG.film(t, 0); apply(T_RUN, S.E, S.shr, false); }
+  else if (t < T_RUN) {
+    CFG.film(t, 1); apply(t, 0, 1, emit);
+    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, g.c.z); if (sfx) sfx('dock'); }
+  } else { CFG.film(t, 2); apply(T_RUN, 0, 1, false); }
+}
+function applyLook(now, dt) {
+  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost); soloAcqua(S.ghost < .003 ? 0 : S.ghost);
+  CFG.look(now, dt); updSparks(dt);
+  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar(.3 + k * 1.5); ring.material.opacity = (1 - k) * .8; } else ring.material.opacity = 0;
+}
+
+// ───────── ciclo di disegno ─────────
+// Si parte da una schermata d'inizio: il film comincia solo quando chi guarda lo chiede.
+const setBody = c => { document.body.className = c; };
+let vistaProva = null;       // solo per le prove: inquadratura fissa decisa da fuori
+let mode = 'film', started = false, playing = false, Tm = 0, now = 0, last = performance.now(), frames = 0, slow = 0, freeTick = null;
+function draw() { if (HQ && composer) composer.render(); else renderer.render(scene, camera); }
+function frame(ts) {
+  requestAnimationFrame(frame);
+  let dt = Math.min(.05, (ts - last) / 1000); last = ts; if (document.hidden) return; now += dt;
+  if (mode === 'film') {
+    if (playing) Tm += dt;
+    if (Tm >= T_END) { enterFree(); }
+    else { filmState(Tm, playing); camFilm(Tm); if (!started) { rig.az += Math.sin(now * .22) * .12; rig.w *= 1.06; rig.h *= 1.06; } hud(Tm); placeCam(rig); }
+  }
+  if (mode === 'free' && freeTick) freeTick(dt);
+  if (vistaProva) { rig.t.set(...vistaProva.t); rig.az = rad(vistaProva.az); rig.el = rad(vistaProva.el); rig.w = vistaProva.w; rig.h = vistaProva.h; placeCam(rig); }
+  applyLook(now, playing || mode === 'free' || !started ? dt : 0); draw();
+  if (++frames > 20 && frames < 140) { if (dt > .04) slow++; if (frames === 139) { if (slow > 70 && HQ) { HQ = false; renderer.setPixelRatio(1); resize(); ptSizes(); } else if (slow > 24) { renderer.setPixelRatio(Math.min(renderer.getPixelRatio(), 1.25)); resize(); ptSizes(); } } }
+}
+// modalità libera: senza il modulo dei comandi resta un modello che gira piano
+const free = { az: rad(10), el: rad(9), zoom: 1, t: MC.clone(), auto: true };
+function enterFree() {
+  const wasFree = mode === 'free'; mode = 'free'; started = true; playing = false; Tm = T_END; filmState(T_END - .001, false); hud(T_END - .001);
+  S.xray = 0; S.ghost = 0; S.read = 1; CFG.libero();
+  free.az = rig.az % (PI * 2); free.el = rig.el; free.zoom = 1; free.t.copy(MC); free.auto = true;
+  setBody('free'); if (!wasFree) { const t = $('toast'); t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); }
+  if (typeof uiEnter === 'function') uiEnter(); else freeTick = dt => { free.az += dt * .12; rig.t.copy(free.t); rig.az = free.az; rig.el = free.el; rig.w = BW; rig.h = BH; placeCam(rig); };
+}
+function startFilm(t = 0) { const wasFree = mode === 'free'; mode = 'film'; started = true; playing = true; Tm = t; capI = -2; for (const p of PIECES) p.st = -1; lastE = -1; setBody('film'); $('bPlay').textContent = 'Pausa'; if (wasFree && typeof uiLeave === 'function') uiLeave(); }
+$('bPlay').onclick = () => { playing = !playing; $('bPlay').textContent = playing ? 'Pausa' : 'Riprendi'; };
+$('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $('bExplore').onclick = () => enterFree();
+
+resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
+queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
+// per le prove: tempo, esplosione e vista comandabili da fuori
+window['__' + CFG.id] = { GROUPS, PIECES, M, PIPE, CFG, vista(v) { vistaProva = v; },
+  seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(.016); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
+  setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
+  groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
+  stato: () => Object.assign({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }, CFG.stato ? CFG.stato() : {}) };
 requestAnimationFrame(frame);
+
+// ───────── Pagine prodotto · parte libera: gli strumenti, uno alla volta (come nella UHP) ─────────
+// Dal prodotto (CFG): short { chiave del gruppo: nome corto }, gusci [chiavi degli involucri], aperti [gruppi che non serve rendere trasparenti],
+//   strumenti [...]: 'touch', 'expl', { k: 'xray', nota }, { k: 'ride', titolo, path(), vel, frasi [[tratto, testo]], fine, inizio },
+//                    oppure uno suo { k, nome, icona (path SVG), html, init(), entra(), esce() },
+//   trasparente(U) vero quando lo strumento scelto deve mostrare l'interno, tick(dt, { U, ease, inner, inside, calm }) lo stato dell'impianto nella parte libera, entra(U) all'ingresso, ronzio(S) per l'audio.
+const U = { tool: 'touch', E: 0, Ecur: 0, lens: false, lensAuto: true, lx: -1, ly: -1, ride: false, ru: 0, rinit: true, sel: -1, selK: 0, snd: false, vkey: '' };
+const IMS = []; machine.traverse(o => { if (o.isInstancedMesh) IMS.push(o); });
+const comet = pushed(points(40, .03), .04); comet.visible = false; machine.add(comet); const camP = V(), camL = V();
+const ray = new THREE.Raycaster(), ptr = new Map(), _n = new THREE.Vector2(), _t = V(), _d = V();
+const TOOLS = CFG.strumenti.map(t => typeof t === 'string' ? { k: t } : t), RIDE = TOOLS.find(t => t.k === 'ride') || null;
+const ICONE = {
+  touch: ['Tocca', '<circle cx="12" cy="14" r="2.6"/><path d="M7.5 9.5a6.4 6.4 0 0 1 9 0M4.6 6.6a10.5 10.5 0 0 1 14.8 0"/>'],
+  expl: ['Smonta', '<rect x="9" y="9" width="6" height="6" rx="1"/><path d="M8 8 3.5 3.5M16 8l4.5-4.5M8 16l-4.5 4.5M16 16l4.5 4.5M3.5 3.5h3M3.5 3.5v3M20.5 3.5h-3M20.5 3.5v3M3.5 20.5h3M3.5 20.5v-3M20.5 20.5h-3M20.5 20.5v-3"/>'],
+  xray: ['Raggi X', '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M7.5 10.5h6M10.5 7.5v6"/>'],
+  ride: ['Giro', '<path d="M5 8c0-3.4 14-3.4 14 0S5 12.6 5 16s14 3.4 14 0"/><circle cx="19" cy="16" r="1.8" fill="currentColor"/>'],
+};
+const press = (b, v) => b.setAttribute('aria-pressed', v ? 'true' : 'false');
+const fill = i => i.style.setProperty('--p', ((i.value - i.min) / (i.max - i.min) * 100) + '%');
+const setE = v => { U.E = v / 100; $('sE').value = v; $('oE').textContent = Math.round(v) + '%'; fill($('sE')); };
+
+// audio sintetizzato: piccoli scatti all'arrivo dei pezzi, ventilatore e compressore in funzione
+let AC = null, humF = null, humC = null, lastS = 0;
+function audioOn(v) {
+  U.snd = v; press($('bSnd'), v); press($('bSnd2'), v);
+  if (!v) { sfx = null; if (AC) AC.suspend(); return; }
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)(); const out = AC.createGain(); out.gain.value = .5; out.connect(AC.destination); AC.out = out;
+      const nb = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const ns = AC.createBufferSource(); ns.buffer = nb; ns.loop = true; const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 420; bp.Q.value = .6; humF = AC.createGain(); humF.gain.value = 0; ns.connect(bp).connect(humF).connect(out); ns.start(); humF.bp = bp;
+      const os = AC.createOscillator(); os.type = 'sawtooth'; os.frequency.value = 55; const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 190; humC = AC.createGain(); humC.gain.value = 0; os.connect(lp).connect(humC).connect(out); os.start(); humC.os = os;
+    }
+    AC.resume();
+    sfx = k => {
+      const t = AC.currentTime; if (t - lastS < (k === 'fin' ? .05 : .02)) return; lastS = t;
+      const blip = (f, dur, g, type = 'triangle', at = 0) => { const o = AC.createOscillator(), a = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t + at); o.frequency.exponentialRampToValueAtTime(f * .5, t + at + dur); a.gain.setValueAtTime(g, t + at); a.gain.exponentialRampToValueAtTime(.0008, t + at + dur); o.connect(a).connect(AC.out); o.start(t + at); o.stop(t + at + dur + .02); };
+      if (k === 'fin' || k === 'tick') blip(2200 + Math.random() * 1600, .03, .05);
+      else if (k === 'screw') { blip(1500, .025, .07, 'square'); blip(1700, .025, .06, 'square', .05); blip(1900, .03, .06, 'square', .1); }
+      else if (k === 'dock') { blip(90, .35, .5, 'sine'); blip(320, .12, .12, 'triangle'); }
+      else { blip(620 + Math.random() * 500, .07, .13); blip(2400, .02, .04, 'square'); }
+    };
+  } catch (e) { U.snd = false; sfx = null; press($('bSnd'), false); press($('bSnd2'), false); }
+}
+function audioTick() { if (!AC || !U.snd || !CFG.ronzio) return; const t = AC.currentTime, vis = mode === 'film' ? (!started ? 0 : Tm < T_ASM ? .5 : Tm > T_RUN ? 1 : 0) : 1, [f, c] = CFG.ronzio(S); humF.gain.setTargetAtTime(Math.min(.2, f * .028) * vis, t, .15); humF.bp.frequency.setTargetAtTime(240 + f * 60, t, .2); humC.gain.setTargetAtTime(Math.min(.09, c * .025) * vis, t, .15); humC.os.frequency.setTargetAtTime(38 + c * 9, t, .2); }
+
+// scheda del gruppo
+function closeCard() { U.sel = -1; $('cardIn').hidden = true; $('howTouchRow').hidden = false; for (const c of $('chips').children) press(c, false); }
+function openCard(i) {
+  const g = GROUPS[i]; U.sel = i; free.auto = false;
+  $('cK').textContent = `Gruppo ${i + 1} di ${GROUPS.length} · ${g.pieces.length} pezzi`; $('cT').textContent = g.name; $('cE').textContent = g.info.e; $('cS').textContent = g.info.s;
+  $('cardIn').hidden = false; $('howTouchRow').hidden = true; [...$('chips').children].forEach((c, k) => { press(c, k === i); if (k === i) c.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); });
+}
+function pick(x, y) {
+  const r = canvas.getBoundingClientRect(); _n.set((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1); ray.setFromCamera(_n, camera);
+  for (const im of IMS) im.boundingSphere = null;
+  for (const h of ray.intersectObject(machine, true)) { const o = h.object; if (o.isPoints || o.userData.g === undefined || !o.visible) continue; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (S.xray > .5 && XRM.includes(m)) continue; return o.userData.g; }
+  return -1;
+}
+function setLens(on) { U.lens = on; $('lens').style.display = on ? 'block' : 'none'; if (on) { U.lensAuto = true; } else LENS.value.z = 0; }
+function setRide(on) {
+  if (!RIDE) return; U.ride = on;
+  if (on) { U.ru = 0; U.rinit = true; camera.fov = 44; camera.updateProjectionMatrix(); ptSizes(); $('bRideGo').textContent = 'Ferma'; $('rT').textContent = RIDE.inizio || ''; }
+  else { comet.visible = false; resize(); U.vkey = ''; ptSizes(); $('bRideGo').textContent = 'Rifai il giro'; }
+}
+function setTool(t) {
+  const prima = TOOLS.find(x => x.k === U.tool);
+  if (U.tool === 'expl' && t !== 'expl') setE(0);
+  if (U.tool === 'xray' && t !== 'xray') setLens(false);
+  if (U.ride && t !== 'ride') setRide(false);
+  if (prima && prima.esce && t !== U.tool) prima.esce();
+  if (t !== 'touch') closeCard();
+  U.tool = t; free.auto = false;
+  for (const b of $('tabs').children) b.setAttribute('aria-selected', b.dataset.tool === t ? 'true' : 'false');
+  for (const x of TOOLS) $('p_' + x.k).hidden = x.k !== t;
+  if (t === 'expl') setE(55);                                   // ogni strumento si mostra da solo appena scelto
+  if (t === 'xray') setLens(true);
+  if (t === 'ride') setRide(true);
+  const ora = TOOLS.find(x => x.k === t); if (ora && ora.entra) ora.entra();
+}
+
+function uiTick(dt) {
+  U.Ecur += (U.E - U.Ecur) * Math.min(1, dt * 4.5); if (Math.abs(U.E - U.Ecur) < .0005) U.Ecur = U.E;
+  U.selK += ((U.sel >= 0 ? 1 : 0) - U.selK) * Math.min(1, dt * 5);
+  apply(T_RUN, U.Ecur, 1, false); S.E = U.Ecur;
+  if (U.sel >= 0 && U.selK > .001) { const g = GROUPS[U.sel]; _d.copy(g.ex); if (_d.lengthSq() < .01) _d.set(0, 0, 0); else _d.normalize(); g.node.position.addScaledVector(_d, .16 * U.selK * (1 - U.Ecur)); }
+  const ease = (key, v, r = 1.6) => { S[key] += (v - S[key]) * Math.min(1, dt * r); };
+  const g0 = U.sel >= 0 ? GROUPS[U.sel] : null, inner = !!g0 && !CFG.gusci.includes(g0.key) && !(CFG.aperti || []).includes(g0.key), inside = U.lens || U.ride || inner, calm = 1 - clamp(U.Ecur * 4);
+  ease('xray', U.ride ? 1 : (inner || (CFG.trasparente && CFG.trasparente(U))) ? .92 : 0, 4); ease('ghost', U.ride ? 1 : 0, 3);
+  CFG.tick(dt, { U, ease, inner, inside, calm }); S.read = 1; readout();
+  // la barra degli strumenti copre il fondo (o, col telefono in orizzontale, il fianco destro): sposto il modello nella parte libera
+  const r = stage.getBoundingClientRect(), dk = $('dock'), side = dk.offsetWidth < r.width - 4, dockH = side ? 0 : dk.offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height)), fx = side ? Math.min(.5, dk.offsetWidth / Math.max(1, r.width)) : 0;
+  { const key = fx + ':' + r.width + ':' + r.height; if (key !== U.vkey) { U.vkey = key; if (fx) camera.setViewOffset(r.width, r.height, r.width * fx / 2, 0, r.width, r.height); else camera.clearViewOffset(); } }
+  if (!U.ride) {
+    if (free.auto) free.az = rad(8) + Math.sin(now * .22) * rad(26);
+    const g = g0; _t.copy(g ? _d.copy(g.node.position).add(g.c) : MC); free.t.lerp(_t, Math.min(1, dt * 4));
+    const zs = g && !(CFG.aperti || []).includes(g.key) ? Math.max(.24, g.size * 2.5 / BW) : 1 + U.Ecur * .55;
+    rig.az = free.az; rig.el = free.el; rig.w += (BW * zs * free.zoom / (1 - fx) - rig.w) * Math.min(1, dt * 4); rig.h += (BH * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
+  } else {
+    const pa = RIDE.path(); U.ru += dt * (RIDE.vel || .6) / pa.tot;
+    if (U.ru >= 1) { setRide(false); $('rT').textContent = RIDE.fine; $('rP').style.width = '100%'; }
+    else {
+      // camera da inseguimento: sta davanti al punto che corre nei tubi e lo segue con un po' di ritardo
+      const p = pa.curve.getPointAt(U.ru), dd = RIDE.dist || [.95, 1.4]; _d.set(.22, .16, 1).normalize(); _t.copy(p).addScaledVector(_d, camera.aspect < 1 ? dd[1] : dd[0]); _t.y = Math.max(.12, _t.y);
+      if (U.rinit) { camP.copy(_t); camL.copy(p); U.rinit = false; } else { camP.lerp(_t, Math.min(1, dt * 2)); camL.lerp(p, Math.min(1, dt * 5)); }
+      camera.position.copy(camP); camera.lookAt(camL.x, camL.y - fr * .34, camL.z);
+      const cp = comet.geometry.attributes.position, cc = comet.geometry.attributes.color; comet.visible = true;
+      for (let i = 0; i < 40; i++) { const u = Math.max(0, U.ru - i * .0007), f = u * (pa.S - 1), a = f | 0, b2 = Math.min(pa.S - 1, a + 1), t = f - a, kk = 1 - i / 40;
+        cp.setXYZ(i, lerp(pa.P[a * 3], pa.P[b2 * 3], t), lerp(pa.P[a * 3 + 1], pa.P[b2 * 3 + 1], t), lerp(pa.P[a * 3 + 2], pa.P[b2 * 3 + 2], t)); cc.setXYZ(i, (pa.C[a * 3] + .5) * kk, (pa.C[a * 3 + 1] + .5) * kk, (pa.C[a * 3 + 2] + .5) * kk); }
+      cp.needsUpdate = cc.needsUpdate = true;
+      let s = 0; for (let i = 0; i < pa.marks.length; i++) if (pa.marks[i] <= U.ru) s = i; let txt = RIDE.frasi[0][1]; for (const [m, tx] of RIDE.frasi) if (m <= s) txt = tx;
+      if ($('rT').textContent !== txt) $('rT').textContent = txt; $('rP').style.width = (U.ru * 100).toFixed(1) + '%';
+    }
+  }
+  // lente: finché nessuno la tocca passa da sola sul prodotto, per far capire cosa fa
+  if (U.lens) {
+    const R = Math.min(r.width * (1 - fx), r.height - dockH) * .2, pr = renderer.getPixelRatio(), L = $('lens'), cy = (r.height - dockH) * .5;
+    if (U.lensAuto) { U.lx = r.width * (1 - fx) * (.5 + .24 * Math.sin(now * .7)); U.ly = cy + (r.height - dockH) * .16 * Math.sin(now * 1.1 + 1); }
+    LENS.value.set(U.lx * pr, (r.height - U.ly) * pr, R * pr); L.style.width = L.style.height = R * 2 + 'px'; L.style.transform = `translate(${U.lx - R}px, ${U.ly - R}px)`;
+  }
+  audioTick();
+}
+function uiEnter() {
+  freeTick = uiTick; U.Ecur = 0; setE(0); rig.w = BW; rig.h = BH; if (CFG.entra) CFG.entra(U);
+  setTool('touch'); free.auto = true;
+  [...$('tabs').children].forEach((b, i) => { b.classList.remove('pulse'); setTimeout(() => { b.classList.add('pulse'); }, 1500 + i * 130); });
+}
+function uiLeave() { camera.clearViewOffset(); U.vkey = ''; if (U.lens) setLens(false); if (U.ride) setRide(false); const t = TOOLS.find(x => x.k === U.tool); if (t && t.esce) t.esce(); closeCard(); setE(0); S.ghost = 0; resize(); ptSizes(); freeTick = null; }
+
+function initUI() {
+  // schede e pannelli degli strumenti
+  $('pTouch').id = 'p_touch'; $('pExpl').id = 'p_expl'; $('pXray').id = 'p_xray'; $('pRide').id = 'p_ride';
+  for (const t of TOOLS) {
+    const [nome, ico] = ICONE[t.k] || [t.nome, t.icona.startsWith('<') ? t.icona : `<path d="${t.icona}"/>`], b = document.createElement('button');
+    b.className = 'tab'; b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.tool = t.k; b.setAttribute('aria-selected', 'false'); b.innerHTML = `<svg viewBox="0 0 24 24">${ico}</svg>${t.nome || nome}`; b.onclick = () => setTool(t.k); $('tabs').appendChild(b);
+    if (!ICONE[t.k]) { const s = document.createElement('section'); s.id = 'p_' + t.k; s.hidden = true; s.innerHTML = t.html; $('panel').appendChild(s); }
+  }
+  for (const k of ['touch', 'expl', 'xray', 'ride']) if (!TOOLS.find(t => t.k === k)) $('p_' + k).remove();
+  $('tabs').style.setProperty('--n', TOOLS.length);
+  $('nP').textContent = PIECES.length;
+  $('howTouch').textContent = COARSE ? 'Trascina per girare, pizzica per avvicinarti. Tocca un pezzo per sapere cos\'è.' : 'Trascina per girare, rotella per avvicinarti. Clicca un pezzo per sapere cos\'è.';
+  const tx = TOOLS.find(t => t.k === 'xray'); if (tx) { $('howX').textContent = (COARSE ? 'Muovi il dito' : 'Muovi il mouse') + ': dentro il cerchio lo vedi lavorare.'; $('xNote').textContent = tx.nota || ''; }
+  if (RIDE) $('rK').textContent = RIDE.titolo;
+  GROUPS.forEach((g, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = CFG.short[g.key] || g.name; b.setAttribute('aria-pressed', 'false'); b.onclick = () => (U.sel === i ? closeCard() : openCard(i)); $('chips').appendChild(b); });
+  for (const t of TOOLS) if (t.init) t.init();
+  // orbita, zoom, tocco
+  let down = null, pinch = 0;
+  const lensTo = e => { const r = stage.getBoundingClientRect(); U.lensAuto = false; U.lx = e.clientX - r.left; U.ly = e.clientY - r.top - (e.pointerType === 'mouse' ? 0 : Math.min(r.width, r.height) * .17); };   // col dito la lente sta sopra, per non coprirla
+  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
+  stage.addEventListener('pointermove', e => {
+    if (mode !== 'free') return;
+    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
+    const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY; if (down) down.far += Math.abs(dx) + Math.abs(dy);
+    if (U.ride) return;
+    if (ptr.size === 2) { const a = [...ptr.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (pinch > 0) free.zoom = clamp(free.zoom * pinch / d, .22, 1.7); pinch = d; free.auto = false; }
+    else { free.az -= dx * .007; free.el = clamp(free.el + dy * .005, rad(-2), rad(62)); free.auto = false; }
+  });
+  const up = e => {
+    if (!ptr.has(e.pointerId)) return; ptr.delete(e.pointerId); pinch = 0;
+    if (down && down.far < 8 && performance.now() - down.t < 450 && U.tool !== 'expl' && U.tool !== 'xray' && !U.ride) { const g = pick(e.clientX, e.clientY); if (g >= 0 && g !== U.sel) { if (U.tool !== 'touch') setTool('touch'); openCard(g); } else if (U.tool === 'touch') closeCard(); }
+    if (ptr.size === 0) down = null;
+  };
+  stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+  stage.addEventListener('wheel', e => { if (mode !== 'free' || U.ride || e.target.closest('#dock')) return; e.preventDefault(); free.zoom = clamp(free.zoom * Math.exp(e.deltaY * .0012), .22, 1.7); free.auto = false; }, { passive: false });
+  $('sE').addEventListener('input', e => setE(+e.target.value));
+  if (RIDE) $('bRideGo').onclick = () => setRide(!U.ride);
+  $('bSnd').onclick = $('bSnd2').onclick = () => audioOn(!U.snd); $('bFilm').onclick = () => startFilm(0);
+  window.__ui = { U, setTool, openCard, closeCard, pick, uiTick };
+}
 
 </script>
 </body>
