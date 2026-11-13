@@ -17,6 +17,7 @@ Solo libreria standard: nessuna installazione.
 """
 import argparse
 import hashlib
+import json
 import pathlib
 import sys
 
@@ -26,6 +27,9 @@ SITO = "https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/"
 
 THREE = "0.186.1"
 MOTORE_UHP = {"ibrido"}   # pagine complete costruite sul motore di montaggio della UHP (stesso livello di dettaglio)
+# pagine complete sul motore della UHP che in più condividono pagina, film e strumenti (src/comune/prodotto.html, p1_base.js, p2_show.js, p3_ui.js):
+# di suo il prodotto ha solo i pezzi, la scena e la configurazione (CFG) nei file ?_*.js, e i testi dell'intestazione in meta.json
+MOTORE_COMUNE = {"acs", "fv", "clima"}
 FONTS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
@@ -64,7 +68,14 @@ def sito(out_rel: str) -> dict:
     resto = sorted(p for p in app.glob("*.js") if p.name != "a_base.js")
     files = {"index.html": pagina(app / "shell.html", [logo, app / "a_base.js"] + [p / "leggero.js" for p in prodotti] + resto, base)}
     for p in prodotti:
-        if (p / "shell.html").exists():
+        if p.name in MOTORE_COMUNE and (p / "meta.json").exists():
+            com, uhp = SRC / "comune", SRC / "prodotti" / "uhp"
+            meta = json.loads(leggi(p / "meta.json"))
+            html = pagina(com / "prodotto.html", [logo, uhp / "a_core.js", uhp / "b_engine.js", com / "p1_base.js"] + sorted(p.glob("?_*.js")) + [com / "p2_show.js", com / "p3_ui.js"], base + p.name + "/").decode("utf-8")
+            for k in ("TITOLO", "DESCRIZIONE", "OG", "ARIA"):
+                html = html.replace("<!--%s-->" % k, meta[k.lower()].replace('"', "&quot;"))
+            files["%s/index.html" % p.name] = html.encode("utf-8")
+        elif (p / "shell.html").exists():
             # la UHP ha il suo motore (a_core.js e b_engine.js); i prodotti in MOTORE_UHP lo riusano tale e quale, gli altri usano kit.js
             if p.name in MOTORE_UHP:
                 kit = [SRC / "prodotti" / "uhp" / "a_core.js", SRC / "prodotti" / "uhp" / "b_engine.js"]

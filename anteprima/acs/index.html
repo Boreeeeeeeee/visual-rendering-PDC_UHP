@@ -2,13 +2,13 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HP 300PSDX pezzo per pezzo</title>
-<meta name="description" content="Lo scaldacqua a pompa di calore Unical HP 300PSDX che si monta pezzo per pezzo. Guarda il film, poi taglialo a metà, apri la doccia, accendi il sole.">
-<meta property="og:title" content="HP 300PSDX pezzo per pezzo">
-<meta property="og:description" content="Guarda lo scaldacqua a pompa di calore montarsi, poi provalo tu: taglialo a metà, apri la doccia, accendi il sole.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unical HP 300PSDX pezzo per pezzo</title>
+<meta name="description" content="Lo scaldacqua a pompa di calore Unical HP 300PSDX che si monta pezzo per pezzo: serbatoio inox Duplex, condensatore avvolto, compressore e propano R290. Guarda il film, poi smontalo, guardaci dentro e apri la doccia.">
+<meta property="og:title" content="Unical HP 300PSDX pezzo per pezzo">
+<meta property="og:description" content="Lo scaldacqua che prende il calore dall'aria: guardalo montarsi pezzo per pezzo, poi apri la doccia e guarda il serbatoio.">
+<meta property="og:image" content="https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/anteprima/acs/../og.jpg>
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://boreeeeeeeee.github.io/visual-rendering-PDC_UHP/anteprima/acs/../og.jpg">
 <meta name="theme-color" content="#0b0f13">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,71 +17,213 @@
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/" } }
 </script>
 <style>
-  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
+  /* Un solo mondo visivo, scuro: officina di notte. Scena 3D a tutto schermo; in basso una barra di sei strumenti
+     e sopra un pannello che dice in una riga cosa fare con lo strumento scelto. Pensato prima per il telefono. */
+  :root { color-scheme: dark; --ink: #eef2f0; --dim: #9aa7a4; --line: rgba(255,255,255,.16); --green: #a9bd8f; --copper: #e08a52;
+    --ice: #8fd3ff; --heat: #ff9a4d; --bg: #0b0f13; --panel: rgba(13,18,22,.88); --pad: clamp(12px, 2.4vmin, 28px);
     --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: Barlow, system-ui, sans-serif }
-  * { box-sizing: border-box } html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent }
-  #stage { position: fixed; inset: 0 } #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden }
+  #stage { position: relative; height: 100%; width: 100%; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none }
+  canvas#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block }
   button { font: inherit; color: inherit }
-  .btn { pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
-  .btn[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
-  #top { position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; flex-wrap: wrap }
-  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase } .brand span { color: var(--green) }
+  [hidden] { display: none !important }
+
+  /* testi sopra la scena */
+  #hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: var(--pad);
+    background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%) }
+  #top { display: flex; flex-direction: column; gap: 9px }
+  #brandrow { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap }
+  .brand { font: 700 clamp(17px, 2.5vmin, 24px)/1 var(--display); letter-spacing: .08em; text-transform: uppercase }
+  .brand span { color: var(--green) }
   .back { position: relative; z-index: 60; pointer-events: auto; display: inline-block; margin-right: 12px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(13,18,22,.7); color: var(--ink); font-size: .78em; letter-spacing: .06em; text-decoration: none; vertical-align: middle }
-  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em } body.free .sub { display: none }
-  #bFilm { display: none } body.free #bFilm { display: inline-flex }
-  #set { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 46px); font: 600 13px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) } #set b { display: block; margin-top: 4px; font-size: 30px; letter-spacing: .02em; color: var(--heat) }
-  body.start #set, body.film #set { display: none }
-  #cap { position: absolute; left: var(--pad); right: var(--pad); bottom: max(var(--pad), env(safe-area-inset-bottom)); display: none; gap: 14px; align-items: flex-end; pointer-events: none; text-shadow: 0 2px 14px #000 } body.film #cap { display: flex }
-  #num { font: 700 clamp(44px, 9vmin, 76px)/.85 var(--display); color: var(--green) } #cap h2 { margin: 0; font: 700 clamp(22px, 4.4vmin, 34px)/1 var(--display); letter-spacing: .05em; text-transform: uppercase } #cap p { margin: 4px 0 0; max-width: 46ch; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; color: var(--ink) }
-  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 52px) var(--pad) calc(var(--pad) + 8px); background: linear-gradient(90deg, rgba(5,8,10,.82), rgba(5,8,10,.1) 70%) } body.start #start { display: flex }
-  #start small { font: 600 13px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--green) } #start h1 { margin: 8px 0; font: 700 clamp(34px, 7.6vmin, 60px)/.95 var(--display); letter-spacing: .03em; text-transform: uppercase; max-width: 9em } #start p { margin: 0; max-width: 34ch; color: var(--ink) }
-  .go { display: flex; flex-direction: column; gap: 10px; width: min(100%, 380px) } .big { pointer-events: auto; display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 22px; border: 0; border-radius: 16px; background: var(--green); color: #10140f; font: 700 20px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; text-align: left }
-  .big svg { width: 22px; height: 22px; fill: currentColor } .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
-  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; opacity: 0; pointer-events: none; white-space: nowrap }
-  #toast.on { animation: toast 2.4s ease both } @keyframes toast { 0% { opacity: 0 } 12%, 78% { opacity: 1 } 100% { opacity: 0 } }
-  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px max(8px, env(safe-area-inset-bottom)); display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) } body.free #dock { display: flex }
-  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px) }
-  #panel section { display: none; flex-direction: column; gap: 10px } #panel section.on { display: flex } #panel p { margin: 0; font-size: 14px; line-height: 1.35 } #panel p small { color: var(--dim) }
-  .riga { display: flex; flex-wrap: wrap; gap: 8px } .riga .btn { min-height: 40px; padding: 0 13px; font-size: 13px }
-  #tabs { pointer-events: auto; display: flex; gap: 6px; width: min(100%, 640px) } .tab { flex: 1; min-height: 52px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; cursor: pointer }
-  .tab[aria-pressed=true] { background: var(--green); color: #10140f; border-color: transparent }
-  #barra { height: 10px; border-radius: 5px; background: rgba(255,255,255,.14); overflow: hidden } #barra i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #ff6a3c, #ffb15c); transition: width .2s linear }
-  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent }
-  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) } input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.22) }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0 } input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
-  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 40px) } #start h1 { font-size: 28px } .tab { min-height: 40px } #panel { padding: 8px 12px } #panel p { font-size: 12.5px } .big { min-height: 48px } #set { display: none } #dock { flex-direction: row; align-items: flex-end; justify-content: center } #tabs { width: auto; flex: 0 0 auto } .tab { padding: 0 10px } }
+  .back:hover, .back:focus-visible { border-color: var(--green) }
+  .sub { font-size: clamp(11px, 1.5vmin, 13px); color: var(--dim); letter-spacing: .04em }
+  #segs { display: flex; gap: 4px; height: 3px }
+  #segs i { background: var(--line); overflow: hidden; border-radius: 2px; min-width: 5px }
+  #segs b { display: block; height: 100%; background: var(--green); transform-origin: left; transform: scaleX(0) }
+  #read { display: flex; gap: clamp(12px, 2vmin, 22px); margin-top: 4px; opacity: 0; transition: opacity .5s }
+  #read.on { opacity: 1 }
+  #read div { display: flex; flex-direction: column; gap: 2px }
+  #read small { font: 600 clamp(10px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim) }
+  #read b { font: 700 clamp(24px, 3.6vmin, 34px)/1 var(--display); font-variant-numeric: tabular-nums }
+  #read .gen b { font-size: clamp(17px, 2.6vmin, 24px); line-height: 1.25; padding-top: .2em; color: var(--green); text-transform: uppercase; letter-spacing: .04em } #rGen b[data-w="2"], #rGen b[data-w="3"] { color: var(--heat) } #rGen b[data-w="0"] { color: var(--dim) }
+  #hook { position: absolute; left: 0; right: 0; top: 13%; text-align: center; opacity: 0; padding: 0 16px }
+  #hook b { display: block; font: 700 clamp(50px, 13vmin, 132px)/.9 var(--display); letter-spacing: .01em; font-variant-numeric: tabular-nums; text-shadow: 0 4px 40px rgba(0,0,0,.6) }
+  #hook span { display: block; margin-top: 8px; font: 600 clamp(15px, 2.7vmin, 26px)/1.1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--dim) }
+  #bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px }
+  #cap { display: flex; gap: clamp(10px, 1.6vmin, 18px); align-items: flex-start; max-width: min(100%, 560px); text-shadow: 0 2px 16px rgba(0,0,0,.85), 0 0 3px rgba(0,0,0,.6) }
+  #cap.in { animation: rise .6s cubic-bezier(.2,.8,.2,1) both }
+  #num { font: 700 clamp(44px, 8.2vmin, 84px)/.82 var(--display); color: transparent; -webkit-text-stroke: 1.5px var(--green); font-variant-numeric: tabular-nums }
+  #name { margin: 0; font: 700 clamp(24px, 4.3vmin, 44px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase; text-wrap: balance }
+  #spec { margin: 6px 0 0; font-size: clamp(13px, 1.7vmin, 15px); line-height: 1.35; color: #c3cdca; text-wrap: pretty; max-width: 44ch }
+  #tick { margin: 9px 0 0; min-height: 1.3em; font: 600 clamp(13px, 1.9vmin, 17px)/1.3 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--copper) }
+  #tick:not(:empty)::before { content: ""; display: inline-block; width: 18px; height: 1.5px; background: var(--copper); vertical-align: middle; margin-right: 8px }
+  #tick.in { animation: rise .3s ease-out both }
+  #count { text-align: right; flex: none; margin-bottom: 50px }
+  #count b { display: block; font: 700 clamp(26px, 4.6vmin, 46px)/.9 var(--display); font-variant-numeric: tabular-nums }
+  #count span { font: 600 clamp(9px, 1.3vmin, 11px)/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+  #flash { position: absolute; inset: 0; background: #dff1ff; opacity: 0; pointer-events: none }
+  #lens { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ice); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 28px rgba(143,211,255,.5), inset 0 0 26px rgba(143,211,255,.22); pointer-events: none; display: none }
+
+  /* pulsanti */
+  .btn { pointer-events: auto; cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 0 15px; min-height: 40px; display: inline-flex; align-items: center; gap: 7px;
+    font: 600 clamp(13px, 1.7vmin, 14px)/1 var(--display); letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(8px); white-space: nowrap }
+  .btn:hover { border-color: rgba(255,255,255,.4) } .btn:focus-visible, .tab:focus-visible, .key:focus-visible, .chip:focus-visible, input:focus-visible, .big:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px }
+  .btn[aria-pressed="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .btn svg, .tab svg, .big svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none }
+  #film, #freetop { position: absolute; right: var(--pad); display: none; gap: 8px }
+  #film { bottom: var(--pad) } #freetop { top: calc(var(--pad) + 46px) }
+  body.film #film, body.free #freetop { display: flex }
+  body.start #bottom, body.free #bottom, body.start #read { display: none }
+  body.free #segs, body.start #segs { visibility: hidden }
+
+  /* schermata d'inizio */
+  #start { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: calc(var(--pad) + 44px) var(--pad) calc(var(--pad) + 8px);
+    background: linear-gradient(rgba(6,12,20,.7), transparent 34%, transparent 58%, rgba(6,10,14,.92)) }
+  body.start #start { display: flex }
+  #start small { font: 600 clamp(12px, 1.8vmin, 14px)/1 var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--green) }
+  #start h1 { margin: 8px 0 8px; font: 700 clamp(34px, 7.4vmin, 76px)/.95 var(--display); letter-spacing: .01em; text-transform: uppercase; max-width: 13ch; text-wrap: balance; text-shadow: 0 3px 30px rgba(0,0,0,.6) }
+  #start p { margin: 0; font-size: clamp(15px, 2.2vmin, 19px); line-height: 1.35; max-width: 32ch; color: #d5dedb; text-shadow: 0 2px 14px rgba(0,0,0,.8) }
+  #start .go { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: min(100%, 380px) }
+  .big { cursor: pointer; border: 0; border-radius: 16px; background: var(--green); color: #10140f; min-height: 62px; padding: 10px 20px; display: flex; align-items: center; gap: 14px; text-align: left;
+    font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase; box-shadow: 0 10px 40px rgba(0,0,0,.45) }
+  .big svg { width: 26px; height: 26px; fill: currentColor; stroke: none }
+  .big span { display: block; margin-top: 4px; font: 500 13px/1 var(--body); letter-spacing: .02em; text-transform: none; opacity: .8 }
+  #start .btn { justify-content: center; min-height: 46px }
+  #start .credit { margin: 2px 0 0; font-size: 12px; line-height: 1.3; color: var(--dim); max-width: none; text-shadow: none }
+
+  /* avviso di passaggio alla parte interattiva */
+  #toast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); padding: 14px 24px; border-radius: 16px; background: var(--green); color: #10140f; font: 700 clamp(24px, 4.4vmin, 38px)/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+    opacity: 0; pointer-events: none; white-space: nowrap; box-shadow: 0 14px 50px rgba(0,0,0,.5) }
+  #toast.on { animation: toast 2.4s ease both }
+  @keyframes toast { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.9) } 12%, 78% { opacity: 1; transform: translate(-50%, -50%) scale(1) } 100% { opacity: 0; transform: translate(-50%, -62%) scale(1) } }
+
+  /* barra degli strumenti e pannello */
+  #dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 8px 8px; display: none; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; background: linear-gradient(transparent, rgba(5,8,10,.9) 34%) }
+  body.free #dock { display: flex }
+  #panel { pointer-events: auto; width: min(100%, 640px); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; backdrop-filter: blur(10px); display: flex; flex-direction: column }
+  #panel section { display: flex; flex-direction: column; gap: 10px }
+  .how { display: flex; gap: 12px; align-items: center; font-size: clamp(15px, 2vmin, 16px); line-height: 1.3; text-wrap: pretty }
+  .how b { color: var(--green); font-weight: 600 }
+  .gest { flex: none; position: relative; width: 44px; height: 26px; border-radius: 13px; border: 1.5px solid var(--line) }
+  .gest::after { content: ""; position: absolute; left: 4px; top: 4px; width: 15px; height: 15px; border-radius: 50%; background: var(--green); animation: swipe 1.8s ease-in-out infinite }
+  .gest.tap::after { left: 13px; animation: tap 1.4s ease-in-out infinite }
+  @keyframes swipe { 0%, 100% { transform: translateX(0) } 50% { transform: translateX(19px) } }
+  @keyframes tap { 0%, 100% { transform: scale(.55); opacity: .5 } 50% { transform: scale(1.05); opacity: 1 } }
+  #tabs { pointer-events: auto; display: grid; grid-template-columns: repeat(var(--n, 6), 1fr); gap: 5px; width: min(100%, 640px) }
+  .tab { cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 2px 7px; min-height: 58px; border-radius: 13px; border: 1px solid var(--line); background: var(--panel);
+    font: 600 clamp(10.5px, 2.8vw, 13px)/1 var(--display); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(8px) }
+  .tab svg { width: 24px; height: 24px }
+  .tab[aria-selected="true"] { background: var(--green); color: #10140f; border-color: var(--green) }
+  .tab.pulse { animation: pulse .7s ease both }
+  @keyframes pulse { 40% { transform: translateY(-7px); border-color: var(--green) } }
+  /* cursori */
+  .sl { display: flex; align-items: center; gap: 10px }
+  .sl svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; flex: none }
+  .sl output { font: 700 clamp(20px, 3vmin, 24px)/1 var(--display); font-variant-numeric: tabular-nums; min-width: 3.3em; text-align: right }
+  input[type=range] { flex: 1; appearance: none; -webkit-appearance: none; height: 44px; background: transparent; margin: 0; min-width: 80px; touch-action: none }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--p, 0%), var(--line) var(--p, 0%)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -12px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg); box-shadow: 0 0 0 2px var(--green) }
+  input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); border: 4px solid var(--bg) }
+  #sT::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  #sT::-moz-range-track { background: linear-gradient(90deg, var(--ice), #cfd8dc 62%, var(--heat)) }
+  .note { margin: 0; font-size: 14px; line-height: 1.35; color: var(--dim); min-height: 1.35em; text-wrap: pretty }
+  /* pezzi */
+  .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; touch-action: pan-x }
+  .chips::-webkit-scrollbar { display: none }
+  .chip, .key { cursor: pointer; flex: none; border: 1px solid var(--line); background: rgba(255,255,255,.04); border-radius: 999px; min-height: 38px; padding: 0 13px; font: 600 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #10140f; border-color: var(--ink) }
+  #cardIn small { font: 600 11px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--green) }
+  #cardIn h3 { margin: 4px 0 5px; font: 700 clamp(22px, 3.4vmin, 28px)/1 var(--display); letter-spacing: .03em; text-transform: uppercase }
+  #cardIn p { margin: 0; font-size: 15px; line-height: 1.35; text-wrap: pretty } #cardIn p + p { margin-top: 6px; color: var(--dim); font-size: 13px }
+  /* comando */
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+  .key { padding: 0 4px; min-height: 44px; border-radius: 12px; text-align: center; letter-spacing: .05em; font-size: clamp(12px, 3vw, 14px) }
+  .key[aria-pressed="true"] { border-color: var(--heat); color: var(--heat); background: rgba(255,154,77,.1) }
+  #kPw[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: rgba(169,189,143,.12) }
+  #kCool[aria-pressed="true"] { border-color: var(--ice); color: var(--ice); background: rgba(143,211,255,.1) }
+  /* giro */
+  #rT { font: 600 clamp(17px, 2.6vmin, 20px)/1.2 var(--display); letter-spacing: .03em; min-height: 2.4em; display: block; text-wrap: balance }
+  .prog { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden } .prog i { display: block; height: 100%; width: 0; background: var(--green) }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between }
+
+  @media (max-width: 560px) { #film { left: var(--pad); justify-content: flex-end } body.film #bottom { padding-bottom: 52px } #count { display: none } .sub { display: none } .keys { grid-template-columns: repeat(2, 1fr) }
+    #freetop .btn { min-height: 36px; padding: 0 11px; letter-spacing: .08em } #freetop { gap: 6px } }
+  @media (max-width: 560px) { #read { flex-wrap: wrap; row-gap: 6px } #read .gen { flex-basis: 100% } }
+  @media (max-height: 460px) { #start { padding-top: calc(var(--pad) + 30px) } #start h1 { font-size: 30px } .tab { min-height: 46px; flex-direction: row; gap: 6px } .tab svg { width: 18px; height: 18px } #panel { padding: 8px 12px } input[type=range] { height: 34px } }
+  /* telefono in orizzontale: strumenti in colonna a destra, l'impianto resta libero a sinistra */
+  @media (max-height: 460px) and (min-aspect-ratio: 3/2) {
+    #dock { left: auto; top: 0; width: min(44vw, 340px); padding: 8px 8px 8px 22px; justify-content: flex-end; background: linear-gradient(90deg, transparent, rgba(5,8,10,.9) 16%) }
+    #panel { width: 100%; max-height: calc(100% - 112px); overflow-y: auto; padding: 8px 10px } #panel section { gap: 7px }
+    #tabs { width: 100%; grid-template-columns: repeat(3, 1fr) } .keys { grid-template-columns: repeat(2, 1fr) } .key { min-height: 36px; font-size: 11.5px; letter-spacing: .02em } #pRem .how { display: none } .note { font-size: 12.5px; line-height: 1.3 }
+    body.free #freetop { top: auto; bottom: var(--pad); right: auto; left: var(--pad) } body.free #brandrow > :last-child { visibility: hidden }
+  }
+  @media (prefers-reduced-motion: reduce) { #cap.in, #tick.in, .gest::after, .tab.pulse { animation: none } }
 </style>
 </head>
 <body class="start">
 <div id="stage">
   <canvas id="gl" aria-label="Scaldacqua a pompa di calore Unical HP 300PSDX che si monta pezzo per pezzo"></canvas>
-  <header id="top">
-    <div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a>HP <span>300PSDX</span></div>
-    <div class="sub">Unical · scaldacqua a pompa di calore · 300 l · R290</div>
-    <button class="btn" id="bFilm" type="button">Film</button>
-  </header>
-  <div id="set">Set acqua<b id="oSet">55 °C</b></div>
-  <div id="cap"><div id="num">01</div><div><h2 id="name"></h2><p id="spec"></p></div></div>
+  <div id="hud">
+    <header id="top">
+      <div id="brandrow"><div class="brand"><a class="back" href="../#indietro" target="_top" aria-label="Torna a Casa Unical">&#8249; Casa Unical</a><i id="bN" style="font-style:normal"></i></div><div class="sub" id="bSub"></div></div>
+      <div id="segs"></div>
+      <div id="read"></div>
+    </header>
+    <div id="hook"><b id="hk1"></b><span id="hk2"></span></div>
+    <footer id="bottom">
+      <div id="cap"><div id="num">00</div><div><h2 id="name"></h2><p id="spec"></p><p id="tick"></p></div></div>
+      <div id="count"><b>0</b><span>pezzi</span></div>
+    </footer>
+  </div>
+  <div id="lens"></div>
+
+  <div id="film">
+    <button class="btn" id="bPlay" type="button">Pausa</button>
+    <button class="btn" id="bSkip" type="button">Salta il film</button>
+    <button class="btn" id="bSnd2" type="button" aria-pressed="false">Audio</button>
+  </div>
+  <div id="freetop">
+    <button class="btn" id="bFilm" type="button"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4"/></svg>Film</button>
+    <button class="btn" id="bSnd" type="button" aria-pressed="false">Audio</button>
+  </div>
+
   <div id="start">
-    <div><small>Scaldacqua a pompa di calore Unical HP 300PSDX</small><h1>Guardalo montarsi pezzo per pezzo</h1><p>Poi provalo tu: smontalo, taglialo a metà, apri la doccia, accendi il sole.</p></div>
+    <div><small id="sK"></small><h1>Guardalo montarsi pezzo per pezzo</h1><p id="sP"></p></div>
     <div class="go">
-      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span>40 secondi</span></div></button>
+      <button class="big" id="bGo" type="button"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg><div>Guarda il film<span id="sDur"></span></div></button>
       <button class="btn" id="bExplore" type="button">Salta il film e provalo subito</button>
     </div>
   </div>
   <div id="toast">Ora provalo tu</div>
+
   <div id="dock">
     <div id="panel">
-      <section data-tool="tocca"><p id="pTocca">Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.</p><div class="riga" id="nomi"></div></section>
-      <section data-tool="smonta"><p>Sposta il cursore: i sei gruppi si separano e tornano a posto.</p><input type="range" id="sE" min="0" max="1" step="0.01" value="0.55" aria-label="Quanto smontare"></section>
-      <section data-tool="sezione"><p>Tagliato a metà. Dentro: serbatoio in acciaio inox Duplex, serpentino da 1,2 m² in basso, condensatore in alluminio avvolto all'esterno del serbatoio, 50 mm di poliuretano. Sopra, la pompa di calore.</p></section>
-      <section data-tool="doccia"><div class="riga"><button class="btn" id="kDoccia" type="button" aria-pressed="false">Apri la doccia</button></div><div id="barra" aria-label="Acqua calda nel serbatoio"><i id="bCaldo"></i></div><p id="pDoccia"></p></section>
-      <section data-tool="modi"><div class="riga"><button class="btn" id="kFv" type="button" aria-pressed="false">Sole sul tetto</button><button class="btn" id="kAnti" type="button" aria-pressed="false">Antilegionella</button><button class="btn" id="kRes" type="button" aria-pressed="false">Resistenza</button></div><p id="pModi"></p></section>
+      <section id="pTouch">
+        <div class="how" id="howTouchRow"><i class="gest"></i><span id="howTouch">Trascina per girare. Tocca un pezzo per sapere cos'è.</span></div>
+        <div id="cardIn" hidden><small id="cK"></small><h3 id="cT"></h3><p id="cE"></p><p id="cS"></p></div>
+        <div class="chips" id="chips" aria-label="Gruppi dell'impianto"></div>
+      </section>
+      <section id="pExpl" hidden>
+        <div class="how"><i class="gest"></i><span>Trascina il cursore: si smonta in <b id="nP"></b> pezzi.</span></div>
+        <div class="sl"><input id="sE" type="range" min="0" max="100" value="0" aria-label="Quanto smontare"><output id="oE">0%</output></div>
+      </section>
+      <section id="pXray" hidden>
+        <div class="how"><i class="gest"></i><span id="howX">Muovi il dito sull'impianto: dentro il cerchio lo vedi lavorare.</span></div>
+        <p class="note" id="xNote"></p>
+      </section>
+      <section id="pRide" hidden>
+        <div><small style="font:600 11px/1 var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--green)" id="rK"></small><b id="rT"></b></div>
+        <div class="row"><div class="prog" style="flex:1"><i id="rP"></i></div><button class="btn" id="bRideGo" type="button">Ferma</button></div>
+      </section>
     </div>
-    <div id="tabs">
-      <button class="tab" data-tool="tocca" type="button">Tocca</button><button class="tab" data-tool="smonta" type="button">Smonta</button><button class="tab" data-tool="sezione" type="button">Sezione</button><button class="tab" data-tool="doccia" type="button">Doccia</button><button class="tab" data-tool="modi" type="button">Modi</button>
+    <div id="tabs" role="tablist" aria-label="Strumenti">
     </div>
   </div>
+  <div id="flash"></div>
 </div>
 <script type="module">
 // ───────── logo Unical ─────────
@@ -97,212 +239,971 @@ const unicalLogoSvg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-// ───────── base comune alle pagine dei prodotti (non della UHP, che ha il suo motore) ─────────
-// Resa, scena da studio, materiali, piano di sezione e motore del montaggio: gruppo() apre un gruppo, P() gli aggiunge un pezzo che arriva in volo.
-const $ = id => document.getElementById(id), PI = Math.PI, rad = d => d * PI / 180;
+// ───────── base: utilità, renderer, scena ─────────
+const $ = id => document.getElementById(id);
+const PI = Math.PI, rad = d => d * PI / 180;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, t) => a + (b - a) * t;
-const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }, eoc = t => 1 - Math.pow(1 - t, 3);
+const sm = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+const eoc = t => 1 - Math.pow(1 - t, 3), eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eob = t => { const c = 1.25; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const eoe = t => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
-try { await Promise.race([document.fonts.load('700 40px "Barlow Condensed"'), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+try { await Promise.race([Promise.all([document.fonts.load('800 60px Barlow'), document.fonts.load('700 60px "Barlow Condensed"')]), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
 
 const canvas = $('gl'), stage = $('stage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-const COARSE = matchMedia('(pointer: coarse)').matches; let PR = Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2); renderer.setPixelRatio(PR);
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1; renderer.localClippingEnabled = true;
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0f13); scene.fog = new THREE.Fog(0x0b0f13, 7, 20);
-scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture; scene.environmentIntensity = .85;
-const camera = new THREE.PerspectiveCamera(30, 1, .03, 60);
-const keyL = new THREE.DirectionalLight(0xffffff, 2.2); keyL.position.set(2.5, 4, 3.5); const rimL = new THREE.DirectionalLight(0x9fd0ff, 1.3); rimL.position.set(-3, 2.5, -3.5);
-scene.add(keyL, rimL, new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, .45));
-function cv(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
-const tGrid = cv(256, 256, (g, w, h) => { g.fillStyle = '#0c1115'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(150,190,220,.20)'; g.lineWidth = 2; g.strokeRect(0, 0, w, h); }); tGrid.wrapS = tGrid.wrapT = THREE.RepeatWrapping; tGrid.repeat.set(40, 40);
-const pav = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ map: tGrid, roughness: .7, metalness: .2, envMapIntensity: .15 })); pav.rotation.x = -PI / 2; scene.add(pav);
+const COARSE = matchMedia('(pointer: coarse)').matches;   // telefono o tablet: tengo più bassa la risoluzione di resa
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+const scene = new THREE.Scene();
+const C_STUDIO = new THREE.Color(0x0b0f13), C_COLD = new THREE.Color(0x0b2038);
+scene.background = C_STUDIO.clone(); scene.fog = new THREE.Fog(0x0b0f13, 5, 16);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.03).texture;
+scene.environmentIntensity = 0.85;
+const camera = new THREE.PerspectiveCamera(30, 1, 0.03, 60);
+const keyL = new THREE.DirectionalLight(0xffffff, 2.3); keyL.position.set(2.5, 4, 3.5); scene.add(keyL);
+const rimL = new THREE.DirectionalLight(0x9fd0ff, 1.5); rimL.position.set(-3, 2.5, -3.5); scene.add(rimL);
+scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x1c2026, 0.45));
 
-// materiali; quelli "tagliabili" ricevono il piano di sezione, quelli "raggi X" diventano trasparenti in funzione
-const TAGLIO = new THREE.Plane(V(0, 0, -1), 0), std = o => new THREE.MeshStandardMaterial(o), TAGLIABILI = [], RAGGI = [];
-const tagl = (m, x = false) => { m.side = THREE.DoubleSide; TAGLIABILI.push(m); if (x) { m.userData.o = m.opacity; RAGGI.push(m); } return m; };
+let composer = null, bloom = null, HQ = true;
+function mkComposer() {
+  const s = renderer.getDrawingBufferSize(new THREE.Vector2());
+  composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(s.x, s.y, { type: THREE.HalfFloatType, samples: 4 }));
+  composer.addPass(new RenderPass(scene, camera));
+  bloom = new UnrealBloomPass(new THREE.Vector2(s.x / 2, s.y / 2), 0.5, 0.55, 0.92); composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+}
+function resize() {
+  const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight);
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 36 : 30; camera.updateProjectionMatrix();
+  if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
+}
+
+// ───────── texture disegnate su canvas ─────────
+function cv(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const rep = (t, x, y) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(x, y); return t; };
+const T = {};
+T.noise = rep(cv(256, 256, (g, w, h) => { const r = rng(3); g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); for (let i = 0; i < 9000; i++) { const v = 100 + r() * 56 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); } }, false), 6, 6);
+T.brush = rep(cv(256, 256, (g, w, h) => { const r = rng(5); g.fillStyle = '#d9d9d9'; g.fillRect(0, 0, w, h); for (let i = 0; i < 1400; i++) { const v = 170 + r() * 85 | 0; g.fillStyle = `rgba(${v},${v},${v},.5)`; g.fillRect(0, r() * h, w, .6 + r()); } }), 1, 2);
+T.lam = rep(cv(64, 256, (g, w, h) => { for (let y = 0; y < h; y += 4) { g.fillStyle = y % 8 ? '#6d7479' : '#3c4146'; g.fillRect(0, y, w, 4); } }), 1, 3);
+T.spangle = rep(cv(256, 256, (g, w, h) => { const r = rng(11); g.fillStyle = '#c4c9cc'; g.fillRect(0, 0, w, h); for (let i = 0; i < 260; i++) { const v = 150 + r() * 90 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.55)`; g.beginPath(); const x = r() * w, y = r() * h; g.moveTo(x, y); for (let k = 0; k < 5; k++) g.lineTo(x + (r() - .5) * 60, y + (r() - .5) * 60); g.fill(); } }), 2, 2);
+T.base = cv(1024, 360, (g, w, h) => { // nervature stampate del fondo, come nel disegno del manuale
+  g.fillStyle = '#6a6a6a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#c8c8c8'; g.lineWidth = 9; g.lineJoin = 'round';
+  const rr = (x, y, a, b, r) => { g.beginPath(); g.roundRect(x, y, a, b, r); g.stroke(); };
+  rr(40, 30, 620, 46, 20); rr(40, 110, 300, 90, 20); rr(380, 110, 280, 60, 20); rr(380, 200, 280, 46, 20); rr(40, 240, 300, 80, 20); rr(700, 30, 280, 130, 24); rr(700, 190, 280, 130, 24); rr(380, 276, 280, 46, 20);
+  g.fillStyle = '#2a2a2a'; g.beginPath(); g.arc(275, 285, 15, 0, 7); g.fill();
+}, false);
+T.side = cv(512, 1024, (g, w, h) => { g.fillStyle = '#707070'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d0d0d0'; g.lineWidth = 12; g.beginPath(); g.roundRect(46, 60, w - 92, h - 150, 40); g.stroke(); g.fillStyle = '#383838'; g.beginPath(); g.roundRect(196, 700, 120, 50, 8); g.fill(); }, false);
+T.chev = rep(cv(128, 128, (g, w, h) => { g.fillStyle = '#808080'; g.fillRect(0, 0, w, h); g.strokeStyle = '#d8d8d8'; g.lineWidth = 7; for (let y = -64; y < h + 64; y += 22) { g.beginPath(); g.moveTo(0, y + 40); g.lineTo(64, y); g.lineTo(128, y + 40); g.stroke(); } }, false), 1, 5);
+T.pcb = cv(512, 512, (g, w, h) => {
+  const r = rng(21); g.fillStyle = '#17503a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2c8660'; g.lineWidth = 2;
+  for (let i = 0; i < 70; i++) { let x = r() * w, y = r() * h; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { if (r() < .5) x += (r() - .5) * 150; else y += (r() - .5) * 150; g.lineTo(x, y); } g.stroke(); }
+  for (let i = 0; i < 26; i++) { const x = 20 + r() * (w - 90), y = 20 + r() * (h - 70), a = 20 + r() * 60, b = 14 + r() * 36; g.fillStyle = ['#15171a', '#22262b', '#0f1113'][i % 3]; g.fillRect(x, y, a, b); g.fillStyle = '#b9bec2'; for (let k = 0; k < a; k += 7) { g.fillRect(x + k, y - 3, 3, 3); g.fillRect(x + k, y + b, 3, 3); } }
+  g.fillStyle = '#d9c36a'; for (let i = 0; i < 120; i++) { g.beginPath(); g.arc(r() * w, r() * h, 2.4, 0, 7); g.fill(); }
+  g.fillStyle = '#e9efe9'; g.font = '600 13px sans-serif'; ['CN23', 'CN24', 'CN43', 'XT1', 'SW2', 'RS-485', 'DC FAN', 'EXV', 'IPM'].forEach((s, i) => g.fillText(s, 18 + (i % 3) * 170, 30 + (i / 3 | 0) * 160));
+});
+T.plate = cv(512, 300, (g, w, h) => { // targhetta: solo dati della scheda UHP 120
+  g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); drawUnicalLogo(g, 22, 22, 128); g.fillStyle = '#16191b';
+  g.font = '700 30px Barlow, Arial, sans-serif'; g.fillText('UHP 120', 330, 54); g.fillRect(22, 72, w - 44, 3); g.font = '500 23px Barlow, Arial, sans-serif';
+  [['Refrigerante', 'R290 · 1,35 kg'], ['Alimentazione', '230 V ~ 50 Hz'], ['Potenza max assorbita', '7 kW'], ['Corrente max', '45,15 A'], ['Acqua', 'max 80 °C · 3 bar'], ['Peso', '154 kg']].forEach((r, i) => { g.fillText(r[0], 22, 108 + i * 32); g.fillText(r[1], 300, 108 + i * 32); });
+});
+T.flame = cv(256, 256, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#f2c230'; g.strokeStyle = '#141414'; g.lineWidth = 14; g.lineJoin = 'round'; g.beginPath(); g.moveTo(128, 22); g.lineTo(238, 214); g.lineTo(18, 214); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#141414'; g.beginPath(); g.moveTo(128, 78); g.bezierCurveTo(176, 126, 168, 186, 128, 190); g.bezierCurveTo(84, 186, 84, 140, 108, 118); g.bezierCurveTo(112, 138, 124, 132, 128, 78); g.fill(); g.font = '700 26px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('R290', 128, 248); });
+T.letter = cv(256, 1100, (g, w, h) => { g.clearRect(0, 0, w, h); g.save(); g.translate(w / 2, h / 2); g.rotate(-PI / 2); drawUnicalLogo(g, -338, -100, 676, '#33383d'); g.restore(); });
+T.vessel = cv(256, 256, (g, w, h) => { g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.fillStyle = '#f2f2f2'; g.fillRect(40, 60, 176, 120); g.fillStyle = '#1b1e20'; g.font = '700 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('5 L', 128, 118); g.font = '500 26px Barlow, Arial, sans-serif'; g.fillText('precarica 1 bar', 128, 158); });
+T.io = s => cv(128, 64, (g, w, h) => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0, w, h); g.fillStyle = '#16191b'; g.font = '800 44px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText(s, 64, 48); });
+T.glow = cv(64, 64, (g) => { const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.55)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); });
+T.ground = cv(1024, 1024, (g, w, h) => { g.fillStyle = '#0b0f13'; g.fillRect(0, 0, w, h); const r = g.createRadialGradient(512, 512, 0, 512, 512, 512); r.addColorStop(0, 'rgba(120,140,150,.5)'); r.addColorStop(.35, 'rgba(60,72,80,.25)'); r.addColorStop(1, 'rgba(11,15,19,0)'); g.fillStyle = r; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(190,210,220,.10)'; g.lineWidth = 1; for (let i = 0; i <= 1024; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i, h); g.moveTo(0, i); g.lineTo(w, i); g.stroke(); }
+  const k = g.createRadialGradient(512, 512, 380, 512, 512, 512); k.addColorStop(0, 'rgba(11,15,19,0)'); k.addColorStop(1, 'rgba(11,15,19,1)'); g.fillStyle = k; g.fillRect(0, 0, w, h); });
+T.shadow = cv(256, 128, (g) => { const r = g.createRadialGradient(128, 64, 0, 128, 64, 128); r.addColorStop(0, 'rgba(0,0,0,.8)'); r.addColorStop(.6, 'rgba(0,0,0,.35)'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.setTransform(1, 0, 0, .5, 0, 0); g.fillStyle = r; g.fillRect(0, 0, 256, 256); });
+
+// ───────── materiali ─────────
+const LENS = { value: new THREE.Vector3(-9999, -9999, 0) };   // lente a raggi X: x, y, raggio in pixel del buffer
+const XRM = [];                                              // materiali dell'involucro, che possono diventare trasparenti
+const std = o => new THREE.MeshStandardMaterial(o);
+function xr(mat) {
+  mat.userData.o = mat.opacity;
+  mat.onBeforeCompile = s => { s.uniforms.uLens = LENS; s.fragmentShader = 'uniform vec3 uLens;\n' + s.fragmentShader.replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n\tif (uLens.z > 0.0 && distance(gl_FragCoord.xy, uLens.xy) < uLens.z) discard;'); };
+  XRM.push(mat); return mat;
+}
 const M = {
-  inox: tagl(std({ color: 0xc9cdd1, roughness: .28, metalness: .9, transparent: true, opacity: 1 })), inox2: std({ color: 0xc9cdd1, roughness: .3, metalness: .9 }),
-  allu: tagl(std({ color: 0xaeb4b8, roughness: .45, metalness: .8, emissive: 0xff5a1c, emissiveIntensity: 0 })), schiuma: tagl(std({ color: 0xe6d9a8, roughness: .95, transparent: true, opacity: 1 }), true),
-  argento: tagl(std({ color: 0xb4b8bb, roughness: .38, metalness: .75, transparent: true, opacity: 1 }), true), nero: tagl(std({ color: 0x1b1d20, roughness: .45, metalness: .1, transparent: true, opacity: 1 }), true),
-  gomma: std({ color: 0x0c0c0d, roughness: .95 }), ottone: std({ color: 0xb08a3c, roughness: .35, metalness: .8 }), rame: std({ color: 0xc47a45, roughness: .35, metalness: .9 }),
-  acciaio: std({ color: 0x7d858c, roughness: .5, metalness: .7 }), scuro: std({ color: 0x15171a, roughness: .5, metalness: .4 }), plast: std({ color: 0x3b4046, roughness: .6 }),
-  magnesio: std({ color: 0x8f9499, roughness: .7, metalness: .4 }), res: std({ color: 0x6b5a4a, roughness: .5, metalness: .6, emissive: 0xff3a10, emissiveIntensity: 0 }),
+  dark: std({ color: 0x2a2d31, roughness: .58, metalness: .25, bumpMap: T.noise, bumpScale: .5 }),
+  basePlate: std({ color: 0x2c3034, roughness: .5, metalness: .35, bumpMap: T.base, bumpScale: 4 }),
+  galv: std({ color: 0xb4bbc0, roughness: .42, metalness: .85, map: T.spangle }),
+  steel: std({ color: 0xc3c9cd, roughness: .3, metalness: 1, map: T.brush }),
+  inox: std({ color: 0xd3d8dc, roughness: .24, metalness: 1, bumpMap: T.chev, bumpScale: 2.5 }),
+  cast: std({ color: 0x55595d, roughness: .7, metalness: .6, bumpMap: T.noise, bumpScale: 1.2 }),
+  lam: std({ color: 0x8b9298, roughness: .45, metalness: .8, map: T.lam }),
+  black: std({ color: 0x111316, roughness: .32, metalness: .35 }),
+  plastic: std({ color: 0x17191c, roughness: .62, metalness: .05 }),
+  blade: std({ color: 0x23272b, roughness: .38, metalness: .1, side: THREE.DoubleSide }),
+  rubber: std({ color: 0x0c0c0d, roughness: .95, metalness: 0 }),
+  foam: std({ color: 0x18191b, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2 }),
+  copper: std({ color: 0xc9743c, roughness: .28, metalness: 1 }),
+  brass: std({ color: 0xc9a245, roughness: .32, metalness: 1 }),
+  gold: std({ color: 0xc9a44c, roughness: .42, metalness: .9, emissive: 0x000000 }),
+  alu: std({ color: 0xcfd4d8, roughness: .35, metalness: .9 }),
+  red: std({ color: 0xb3261e, roughness: .45, metalness: .1 }),
+  blue: std({ color: 0x1f5fa8, roughness: .5, metalness: .1 }),
+  cap: std({ color: 0x20262c, roughness: .35, metalness: .3 }),
+  heater: std({ color: 0xb5622a, roughness: .6, metalness: .1, emissive: 0xff5a14, emissiveIntensity: 0 }),
+  vessel: std({ color: 0xffffff, roughness: .45, metalness: .3, map: T.vessel }),
+  pcb: std({ color: 0xffffff, roughness: .55, metalness: .2, map: T.pcb }),
+  plateLab: std({ color: 0xffffff, roughness: .5, metalness: .1, map: T.plate }),
+  flame: std({ color: 0xffffff, roughness: .6, map: T.flame, transparent: true }),
+  led: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 2.2, 0.9) }),
+  term: std({ color: 0x9aa39a, roughness: .6, metalness: .1 }),
+  shellC: std({ color: 0x0e1012, roughness: .28, metalness: .5, side: THREE.DoubleSide }),
+  // involucro (trasparente a comando)
+  sGreen: xr(std({ color: 0x4d613d, roughness: .58, metalness: .02, bumpMap: T.noise, bumpScale: .5 })),
+  sSlat: xr(std({ color: 0x546941, roughness: .52, metalness: .02 })),
+  sDark: xr(std({ color: 0x2a2d31, roughness: .55, metalness: .25, bumpMap: T.noise, bumpScale: .5 })),
+  sSide: xr(std({ color: 0x2c2f33, roughness: .52, metalness: .25, bumpMap: T.side, bumpScale: 5 })),
+  sGuard: xr(std({ color: 0x15171a, roughness: .5, metalness: .5 })),
+  sLetter: xr(std({ color: 0xffffff, roughness: .6, map: T.letter, transparent: true, polygonOffset: true, polygonOffsetFactor: -2 })),
+  sScrew: xr(std({ color: 0xaab0b4, roughness: .35, metalness: 1 })),
+  sFelt: xr(std({ color: 0x4b4f55, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 3, side: THREE.DoubleSide })),
+  sJacket: xr(std({ color: 0x141517, roughness: .85, metalness: 0, bumpMap: T.noise, bumpScale: 2, side: THREE.DoubleSide })),
+  sDoor: xr(std({ color: 0x0e1012, roughness: .28, metalness: .5, side: THREE.DoubleSide })),
+  sLid: xr(std({ color: 0x24282c, roughness: .5, metalness: .4 })),
+  sLabel: xr(std({ color: 0xffffff, roughness: .5, map: T.plate })),
 };
-const mesh = (g, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); return o; };
-const cyl = (r, h, n = 24, open = false) => new THREE.CylinderGeometry(r, r, h, n, 1, open), box = (w, h, d) => new THREE.BoxGeometry(w, h, d), rbox = (w, h, d, r = .01) => new RoundedBoxGeometry(w, h, d, 2, r);
-const tubo = (pts, r, n = 6) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', .3), Math.max(12, pts.length * 6), r, n);
-const elica = (r, y0, y1, giri, k = 14) => { const p = []; for (let i = 0; i <= giri * k; i++) { const a = i / k * PI * 2; p.push(V(Math.sin(a) * r, lerp(y0, y1, i / (giri * k)), Math.cos(a) * r)); } return p; };
-const radiale = (o, az) => { o.rotation.order = 'YXZ'; o.rotation.set(PI / 2, az, 0); return o; };   // asse del cilindro verso l'esterno all'azimut dato
+// modalità fantasma per il giro nel circuito: tutto tranne tubi e rame diventa quasi trasparente
+let GHM = null, ghostNow = 0;
+function setGhost(x) {
+  if (!GHM) { const keep = [M.copper, M.brass, M.led]; GHM = Object.values(M).filter(m => !XRM.includes(m) && !keep.includes(m)); for (const m of GHM) { m.userData.o = m.opacity; m.userData.t = m.transparent; } }
+  if (x === ghostNow) return; ghostNow = x;
+  for (const m of GHM) { m.opacity = lerp(m.userData.o, .07, x); const tr = x > .004 || m.userData.t; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; }
+}
+function setXray(x) { for (const m of XRM) { const o = lerp(m.userData.o, 0.06, x); m.opacity = o; const tr = x > 0.004 || m.map === T.letter || m.map === T.flame; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < 0.5; } }
+
+// ───────── geometrie ─────────
+const G = {
+  box: (w, h, d) => new THREE.BoxGeometry(w, h, d),
+  rbox: (w, h, d, r = .005) => new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2.01, h / 2.01, d / 2.01)),
+  cyl: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s),
+  cylZ: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s).rotateX(PI / 2),
+  cylX: (r, h, s = 24, r2 = r) => new THREE.CylinderGeometry(r2, r, h, s).rotateZ(PI / 2),
+  open: (r, h, a0, al, s = 40) => new THREE.CylinderGeometry(r, r, h, s, 1, true, a0, al),
+  dome: (r, k, up = true) => new THREE.SphereGeometry(r, 32, 12, 0, PI * 2, up ? 0 : PI / 2, PI / 2).scale(1, k, 1),
+  torus: (R, r, arc = PI * 2, s = 40) => new THREE.TorusGeometry(R, r, 10, s, arc),
+  plane: (w, h) => new THREE.PlaneGeometry(w, h),
+};
+function annulus(ro, ri, h, a0 = 0, a1 = PI * 2, seg = 44) {   // anello con asse Y, centrato
+  const s = new THREE.Shape(); s.absarc(0, 0, ro, a0, a1, false);
+  if (a1 - a0 >= PI * 2 - 1e-4) { const hl = new THREE.Path(); hl.absarc(0, 0, ri, 0, PI * 2, true); s.holes.push(hl); } else { s.absarc(0, 0, ri, a1, a0, true); s.closePath(); }
+  const g = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false, curveSegments: seg }); g.translate(0, 0, -h / 2); g.rotateX(PI / 2); return g;
+}
+const curveOf = pts => new THREE.CatmullRomCurve3(pts.map(p => V(p[0], p[1], p[2])), false, 'catmullrom', 0.12);
+const tubeGeo = (pts, r, seg) => new THREE.TubeGeometry(curveOf(pts), seg || Math.max(16, pts.length * 12), r, 10, false);
+function mesh(geo, mat, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); return m; }
+const screwGeo = mergeGeometries([new THREE.CylinderGeometry(.0062, .0062, .0042, 6).translate(0, .0031, 0), new THREE.CylinderGeometry(.0082, .0082, .001, 14).translate(0, .0005, 0), new THREE.CylinderGeometry(.0027, .0027, .014, 8).translate(0, -.007, 0)]);
+
 
 // ───────── motore del montaggio ─────────
-const root = new THREE.Group(); scene.add(root);
-const G = []; let cur;
-function gruppo(nome, facile, tecnico, t0, t1, vista, esp) { cur = { nome, facile, tecnico, t0, t1, vista, esp: V(...esp), pezzi: [] }; G.push(cur); }
-// liv = quanto si allontana il pezzo nello strumento Smonta (0 resta vicino, 1 va lontano); se manca vale l'ordine di arrivo
-function P(o, da = [0, .7, 0], rit = 0, liv = rit) { cur.pezzi.push({ o, home: o.position.clone(), da: V(...da), dir: V(...da).normalize(), rit, liv }); o.traverse(c => { c.userData.g = G.length - 1; }); root.add(o); return o; }
+// Ogni pezzo ha una posizione finale, un istante di partenza e uno di arrivo: lo stato della macchina è una funzione
+// pura del tempo t e del fattore di esplosione E, quindi si può scorrere avanti e indietro.
+const machine = new THREE.Group(); scene.add(machine);
+const GROUPS = [], PIECES = [];
+let CUR = null;
+const BEAT = 0.125;                       // i pezzi vanno in sede su una griglia di sedicesimi a 120 bpm
 
+function group(key, name, spec, t0, t1, o = {}) {
+  const node = new THREE.Group(); machine.add(node);
+  CUR = { key, name, spec, t0, t1, node, i: GROUPS.length, stage: V(...(o.stage || [0, .3, 1])), ex: V(...(o.ex || [0, 0, 0])), spread: o.spread ?? .9,
+    trav: o.trav ?? .45, pieces: [], c: V(), size: .3, az: o.az ?? 30, el: o.el ?? 14, zoom: o.zoom ?? 1, keys: o.keys || null, info: o.info || null };
+  GROUPS.push(CUR); return CUR;
+}
+function piece(o, base) {
+  const p = Object.assign({ g: CUR, st: -1, d: o.d ?? 0, dur: o.dur ?? .5, from: o.from ? V(...o.from) : null, spin: o.spin ? V(...o.spin) : null,
+    k: o.k ? V(...o.k) : null, ease: o.ease || eob, n: o.n || null, snd: o.snd || 'click' }, base);
+  CUR.pieces.push(p); PIECES.push(p); return p;
+}
+function P(m, o = {}) { (o.parent || CUR.node).add(m); m.userData.g = CUR.i; piece(o, { m, im: null, inst: -1, fp: m.position.clone(), fq: m.quaternion.clone(), fs: m.scale.clone() }); return m; }
+// pezzi ripetuti: list = [{p:[x,y,z], r:[rx,ry,rz] | q:Quaternion, s:[sx,sy,sz]}]
+function PIN(geo, mat, list, o = {}) {
+  const im = new THREE.InstancedMesh(geo, mat, list.length); im.frustumCulled = false; im.userData.g = CUR.i; (o.parent || CUR.node).add(im);
+  const n = list.length, e = new THREE.Euler();
+  list.forEach((it, i) => {
+    const f = n > 1 ? i / (n - 1) : 0, q = it.q ? it.q.clone() : new THREE.Quaternion().setFromEuler(e.set(...(it.r || [0, 0, 0])));
+    const pick = v => typeof v === 'function' ? v(i, it, f) : v;
+    piece({ d: o.df ? o.df(i, f) : lerp(o.d0 ?? 0, o.d1 ?? (o.d0 ?? 0), f), dur: o.dur, from: pick(o.from), spin: pick(o.spin), k: pick(o.k), ease: o.ease, n: i === 0 ? o.n : null, snd: o.snd || 'tick' },
+      { m: null, im, inst: i, fp: V(...it.p), fq: q, fs: V(...(it.s || [1, 1, 1])) });
+  });
+  return im;
+}
+// viti: entrano lungo il proprio asse avvitandosi. list = [{p, r}] con l'asse della vite su +Y locale
+function screws(list, o = {}) {
+  const e = new THREE.Euler();
+  return PIN(screwGeo, o.mat || M.steel, list, Object.assign({ dur: .34, ease: eoc, snd: 'screw', spin: [0, 12, 0], from: (i, it) => { const a = V(0, 1, 0).applyEuler(e.set(...(it.r || [0, 0, 0]))).multiplyScalar(.11); return [a.x, a.y, a.z]; } }, o));
+}
 
-// ───────── HP 300PSDX · pagina completa: film di montaggio e strumenti ─────────
-// Dal manuale installatore 00340944 (p.12-15, 18, 30, 32, 37) e dal depliant 00341057: quote, altezze degli attacchi, elenco dei componenti,
-// materiali, set e temperature. Vedi src/dati/acs.json.
-// RICOSTRUITO (il manuale ha solo una vista d'insieme, p.13): disposizione dei componenti sopra il serbatoio e percorso dei tubi in rame,
-// angolo di attacchi, coperture e maniglie attorno al cilindro, estensione del condensatore lungo il serbatoio, numero di spire, interno del compressore.
-const B = .035, R = .30, RT = .25, YC = B + 1.51, AT = h => B + h;    // piedini, raggio esterno, raggio del serbatoio, inizio del coperchio, altezza di un attacco
-// 1 ─ serbatoio
-gruppo('Serbatoio', 'Il cuore: trecento litri d\'acqua in un serbatoio di acciaio inossidabile.', 'Acciaio inox Duplex 2205 · 300 l · pressione massima 10 bar · anodo in magnesio contro la corrosione', 2, 7, { az: 25, el: 10, d: 5.6, y: 1.0 }, [0, 0, 0]);
-for (let i = 0; i < 3; i++) { const a = i * PI * 2 / 3 + PI / 6; P(mesh(cyl(.03, B, 12), M.gomma, Math.sin(a) * .22, B / 2, Math.cos(a) * .22), [0, -.3, 0], .0); }
-const profT = [[0, .10], [.15, .115], [.23, .17], [RT, .25], [RT, 1.32], [.23, 1.40], [.15, 1.445], [0, 1.455]].map(([r, y]) => new THREE.Vector2(r, y + B));
-P(mesh(new THREE.LatheGeometry(profT, 48), M.inox), [0, 1.6, 0], .1);
-{ const a = mesh(cyl(.011, .36, 12), M.magnesio, .13, AT(1.17), 0); a.rotation.z = PI / 2; P(a, [.8, 0, 0], .55);            // anodo in magnesio, dall'attacco a 1170
-  const az = rad(150), d = V(Math.sin(az), 0, Math.cos(az)), r = new THREE.Group();                                            // resistenza 1,5 kW, dalla copertura a 950
-  for (const s of [-.02, .02]) { const b = mesh(cyl(.006, .30, 8), M.res); b.rotation.z = PI / 2; b.position.set(-.15, s, 0); r.add(b); }
-  r.position.copy(d.clone().multiplyScalar(RT)).setY(AT(.95)); r.rotation.y = az - PI / 2; P(r, [d.x * .8, 0, d.z * .8], .75); }
-// 2 ─ serpentino
-gruppo('Serpentino', 'Una spirale in basso, dentro l\'acqua: ci passa il calore di un\'altra fonte, per esempio i pannelli solari termici.', 'AISI 316 · 1,2 m² · attacchi G 3/4 a 235 e 855 mm · per solare termico o fonte ausiliaria', 7, 11, { az: 18, el: 8, d: 3.4, y: .6 }, [0, -.75, 0]);
-{ const p = elica(.185, AT(.27), AT(.72), 9); p.unshift(V(RT + .06, AT(.235), 0), V(.2, AT(.235), .02)); p.push(V(.12, AT(.80), .12), V(.2, AT(.855), .03), V(RT + .06, AT(.855), 0));
-  P(mesh(tubo(p, .011), M.inox2), [0, -1.1, 0], .1); }
-// 3 ─ condensatore
-gruppo('Condensatore', 'Qui arriva il calore preso dall\'aria: un nastro di alluminio avvolto attorno al serbatoio scalda l\'acqua senza toccarla.', 'Alluminio a flusso parallelo, all\'esterno del serbatoio · nessun contatto con l\'acqua sanitaria · non si incrosta', 11, 15, { az: -22, el: 10, d: 3.8, y: .95 }, [-.85, 0, 0]);
-{ const o = mesh(tubo(elica(RT + .008, AT(.45), AT(1.30), 16, 16), .009, 5), M.allu); o.scale.set(1, 1, 1); P(o, [0, 1.5, 0], .1); }
-// 4 ─ isolamento e rivestimento
-gruppo('Isolamento e rivestimento', 'Il cappotto: tiene l\'acqua calda per ore. Fuori, la lamiera grigio argento con gli attacchi dell\'acqua.', 'Poliuretano espanso 50 mm · attacchi G 3/4 a 32,5 / 235 / 855 / 1270 mm, condensa G 1/2 a 1370 mm · Ø 600 mm', 15, 20, { az: 62, el: 8, d: 5.4, y: 1.0 }, [.95, 0, 0]);
-P(mesh(cyl(R - .006, YC - B - .06, 48, true), M.schiuma, 0, (YC + B) / 2, 0), [0, 1.9, 0], 0);
-P(mesh(cyl(R, YC - B, 48, true), M.argento, 0, (YC + B) / 2, 0), [0, 2.1, 0], .25);
-P(mesh(cyl(R, .012, 48), M.scuro, 0, B + .006, 0), [0, -.3, 0], .1);
-for (const [h, r, m] of [[.0325, .014, M.ottone], [.235, .014, M.ottone], [.855, .014, M.ottone], [1.17, .016, M.scuro], [1.27, .014, M.ottone], [1.37, .011, M.ottone]]) { const a = mesh(cyl(r, .05, 14), m, R + .012, AT(h), 0); a.rotation.z = PI / 2; P(a, [.5, 0, 0], .6 + h * .2); }
-for (const h of [.95, 1.15]) { const az = rad(150); P(radiale(mesh(cyl(.055, .014, 22), M.scuro, Math.sin(az) * (R + .004), AT(h), Math.cos(az) * (R + .004)), az), [Math.sin(az) * .5, 0, Math.cos(az) * .5], .8); }
-for (const az of [rad(10), rad(190)]) P(radiale(mesh(box(.09, .012, .03), M.scuro, Math.sin(az) * (R + .002), AT(.6), Math.cos(az) * (R + .002)), az), [Math.sin(az) * .4, 0, Math.cos(az) * .4], .7);   // maniglie
-// 5 ─ gruppo pompa di calore
-gruppo('Pompa di calore', 'Il motore: un ventilatore aspira l\'aria della stanza, l\'evaporatore le toglie calore, il compressore lo porta al serbatoio.', 'Compressore rotativo · evaporatore a microcanali · valvola di espansione elettronica · propano R290, 150 g · 1500 W resi con 365 W assorbiti (aria 20 °C)', 20, 27, { az: 38, el: 30, d: 2.7, y: 1.72 }, [0, .55, 0]);
-P(mesh(cyl(R - .012, .012, 48), M.acciaio, 0, YC + .006, 0), [0, .9, 0], 0);                                                      // piastra
-const Y5 = YC + .012;
-P(mesh(cyl(.06, .2, 24), M.scuro, 0, Y5 + .1, -.17), [0, .8, -.3], .15); P(mesh(cyl(.028, .15, 16), M.scuro, .1, Y5 + .075, -.2), [0, .8, -.3], .22);   // compressore e separatore
-const tEv = cv(64, 128, (g, w, h) => { g.fillStyle = '#9aa3a8'; g.fillRect(0, 0, w, h); g.fillStyle = '#5c666c'; for (let y = 0; y < h; y += 8) g.fillRect(0, y, w, 2); g.fillStyle = 'rgba(40,48,54,.5)'; for (let x = 0; x < w; x += 3) g.fillRect(x, 0, 1, h); });
-const evap = P(mesh(box(.035, .27, .30), std({ map: tEv, roughness: .5, metalness: .6, emissive: 0x2a8cff, emissiveIntensity: 0 }), .15, Y5 + .15, .02), [.7, .3, 0], .3);
-const chiocc = mesh(cyl(.095, .09, 28), M.plast, -.04, Y5 + .15, -.01); chiocc.rotation.z = PI / 2; P(chiocc, [-.6, .4, 0], .42);        // ventilatore centrifugo
-const girante = mesh(cyl(.07, .02, 12), M.scuro, .012, Y5 + .15, -.01); girante.rotation.z = PI / 2; P(girante, [-.6, .4, 0], .45);
-P(mesh(box(.11, .2, .13), M.plast, -.14, Y5 + .27, -.01), [-.6, .5, 0], .5);                                                              // canale verso l'uscita aria
-P(mesh(box(.2, .2, .06), M.acciaio, -.1, Y5 + .11, .2), [0, .5, .6], .58);                                                                // box elettrico
-P(mesh(cyl(.016, .06, 12), M.ottone, .13, Y5 + .03, -.18), [.4, .5, -.3], .68); P(mesh(cyl(.02, .035, 12), std({ color: 0x1f5fae, roughness: .5 }), .13, Y5 + .075, -.18), [.4, .5, -.3], .7);   // valvola di espansione elettronica
-P(mesh(cyl(.014, .05, 12), M.ottone, -.14, Y5 + .03, -.16), [-.4, .5, -.3], .74);                                                         // valvola a 2 vie
-P(mesh(tubo([V(0, Y5 + .2, -.17), V(-.05, Y5 + .25, -.2), V(-.12, Y5 + .12, -.22), V(-.15, Y5, -.2), V(-.17, YC - .12, -.19)], .006), M.rame), [0, .7, -.3], .8);      // mandata verso il condensatore
-P(mesh(tubo([V(.2, YC - .12, -.16), V(.17, Y5 + .02, -.18), V(.13, Y5 + .1, -.18), V(.15, Y5 + .2, -.12), V(.15, Y5 + .29, -.02)], .006), M.rame), [.3, .7, -.3], .85);  // dal condensatore alla valvola e all'evaporatore
-P(mesh(tubo([V(.15, Y5 + .02, .05), V(.1, Y5 + .03, -.1), V(.1, Y5 + .16, -.2)], .007), M.rame), [.3, .7, 0], .9);                                                      // aspirazione
-// 6 ─ coperchio
-gruppo('Coperchio', 'Il cappello nero: da un imbocco entra l\'aria, dall\'altro esce più fredda. Davanti, lo schermo per comandarlo.', 'Plastica isolata acusticamente · imbocchi aria Ø 177 mm, interasse 320 mm · schermo touch · Wi-Fi · 51 dB(A) di potenza sonora', 27, 31, { az: 20, el: 16, d: 4.4, y: 1.5 }, [0, 1.25, 0]);
-const profC = [[R, 0], [R, .06], [.296, .26], [.275, .355], [.235, .4], [.0885, .405]].map(([r, y]) => new THREE.Vector2(r, y));
-P(mesh(new THREE.LatheGeometry(profC, 48), M.nero, 0, YC, 0), [0, 1.1, 0], 0);
-const tGr = cv(64, 64, (c) => { c.fillStyle = '#0b0c0d'; c.fillRect(0, 0, 64, 64); c.strokeStyle = '#3a3d41'; c.lineWidth = 3; for (let r = 6; r < 32; r += 7) { c.beginPath(); c.arc(32, 32, r, 0, 7); c.stroke(); } });
-{ const top = mesh(new THREE.CircleGeometry(.09, 32), M.nero, 0, YC + .405, 0); top.rotation.x = -PI / 2; P(top, [0, 1.1, 0], 0); }
-for (const x of [-.16, .16]) { P(mesh(cyl(.0885, .04, 28, true), M.nero, x, YC + .425, 0), [0, 1.2, 0], .3); const d = mesh(new THREE.CircleGeometry(.086, 28), std({ map: tGr, roughness: .6, transparent: true, opacity: .9 }), x, YC + .44, 0); d.rotation.x = -PI / 2; P(d, [0, 1.2, 0], .32); }
-const tUI = cv(128, 128, (c) => { c.fillStyle = '#101214'; c.fillRect(0, 0, 128, 128); });
-const ui = mesh(new THREE.PlaneGeometry(.1, .1), new THREE.MeshBasicMaterial({ map: tUI }), 0, YC + .2, .299); ui.rotation.x = -.14; P(ui, [0, .3, .6], .6);
-function schermo(txt) { const c = tUI.image.getContext('2d'); c.fillStyle = '#101214'; c.fillRect(0, 0, 128, 128); c.fillStyle = '#9fd8ff'; c.font = '700 44px sans-serif'; c.textAlign = 'center'; c.fillText(txt, 64, 78); tUI.needsUpdate = true; }
+function finalize() {
+  machine.updateMatrixWorld(true);
+  const R = rng(7), q = new THREE.Quaternion();
+  for (const g of GROUPS) {
+    const W = g.t1 - g.t0, box = new THREE.Box3();
+    g.ta = g.t0 + W * g.trav; g.tb = g.t1 - .12;
+    for (const p of g.pieces) {
+      const c = V();
+      if (p.im) c.copy(p.fp).applyMatrix4(p.im.parent.matrixWorld);
+      else { p.m.geometry.computeBoundingBox(); p.m.geometry.boundingBox.getCenter(c); p.m.updateMatrixWorld(true); c.applyMatrix4(p.m.matrixWorld); }
+      p.wc = c; box.expandByPoint(c);
+    }
+    box.getCenter(g.c); g.size = Math.max(.14, box.getSize(V()).length() / 2); g.box = box;
+    for (const p of g.pieces) {
+      p.ts = g.t0 + p.d * (W - .95);
+      p.te = Math.max(p.ts + .2, Math.round((p.ts + p.dur) / BEAT) * BEAT);
+      if (p.te > g.t1 - .1) { p.te = g.t1 - .1; p.ts = Math.min(p.ts, p.te - .2); }
+      if (!p.from) p.from = V((R() - .5) * .5, .16 + R() * .4, .12 + R() * .42);
+      if (!p.spin) p.spin = V((R() - .5) * 2.2, (R() - .5) * 2.2, (R() - .5) * 2.2);
+      if (!p.k) p.k = p.wc.clone().sub(g.c).multiplyScalar(g.spread);
+      const par = p.im ? p.im.parent : p.m.parent; par.getWorldQuaternion(q).invert(); p.from.applyQuaternion(q); p.k.applyQuaternion(q);
+    }
+  }
+}
 
-// acqua stratificata (visibile in sezione e in funzione), frecce d'acqua, aria
-const tAcqua = cv(4, 256, () => {}), acquaM = new THREE.MeshBasicMaterial({ map: tAcqua, transparent: true, opacity: .62, depthWrite: false });
-const acqua = mesh(cyl(RT - .006, 1.30, 40), acquaM, 0, B + .78, 0); acqua.renderOrder = 2; root.add(acqua);
+const _v = V(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _m = new THREE.Matrix4(), _s = V(), ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+let lastE = -1, lastShr = -1, onLand = null, onStart = null, placed = 0;
+function apply(t, E = 0, shr = 1, emit = false) {
+  for (const g of GROUPS) { g.q = eio(clamp((t - g.ta) / (g.tb - g.ta))); g.node.position.copy(g.stage).multiplyScalar(1 - g.q).addScaledVector(g.ex, E); }
+  const same = E === lastE && shr === lastShr, dirty = new Set(); let n = 0;
+  for (const p of PIECES) {
+    let a = (t - p.ts) / (p.te - p.ts); const st = a <= 0 ? 0 : a >= 1 ? 2 : 1;
+    if (st === 2) n++;
+    if (st === p.st && st !== 1 && same) continue;
+    if (emit && st === 2 && p.st === 1 && onLand) onLand(p);
+    if (emit && st >= 1 && p.st === 0 && p.n && onStart) onStart(p);
+    p.st = st;
+    if (st === 0) { if (p.im) { p.im.setMatrixAt(p.inst, ZERO); dirty.add(p.im); } else p.m.visible = false; continue; }
+    a = clamp(a); const r = 1 - p.ease(a), sc = Math.min(1, a * 5) * shr;
+    _v.copy(p.fp).addScaledVector(p.from, r).addScaledVector(p.k, E);
+    _q.setFromEuler(_e.set(p.spin.x * r, p.spin.y * r, p.spin.z * r)).premultiply(p.fq); _s.copy(p.fs).multiplyScalar(sc);
+    if (p.im) { _m.compose(_v, _q, _s); p.im.setMatrixAt(p.inst, _m); dirty.add(p.im); }
+    else { p.m.visible = sc > .001; p.m.position.copy(_v); p.m.quaternion.copy(_q); p.m.scale.copy(_s); }
+  }
+  dirty.forEach(im => { im.instanceMatrix.needsUpdate = true; }); lastE = E; lastShr = shr; placed = n;
+}
+
+// ───────── Pagine prodotto · base comune (dopo uhp/a_core.js e uhp/b_engine.js, prima dei pezzi del prodotto) ─────────
+// Tutto quello che la pagina dell'ibrido si era scritta da sé e che serve uguale agli altri prodotti: aiuti per i pezzi, bianchi che non sfondano,
+// particelle, flussi lungo i tubi, scintille. Il film e gli strumenti stanno in p2_show.js e p3_ui.js, dopo i pezzi.
+const PIPE = {};
+const qBasis = (x, y) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, V().crossVectors(x, y)));
+const node = (x, y, z, s = 1) => { const n = new THREE.Group(); n.position.set(x, y, z); n.scale.setScalar(s); CUR.node.add(n); return n; };
+const sposta = (pts, dx, dy, dz) => pts.map(p => [p[0] + dx, p[1] + dy, p[2] + dz]);
+// Rilievi (bumpMap) su facce viste di taglio: lo shader normalizza un vettore nullo e il bagliore allarga il pixel non valido a mezza schermata. Corretto una volta per tutti.
+THREE.ShaderChunk.bumpmap_pars_fragment = THREE.ShaderChunk.bumpmap_pars_fragment.replace('return normalize( abs( fDet ) * surf_norm - vGrad );', 'vec3 nb = abs( fDet ) * surf_norm - vGrad; return dot( nb, nb ) > 1e-14 ? normalize( nb ) : surf_norm;');
+const BIANCO = '#c9cccf', C_BIANCO = 0xc9cccf;     // bianco tenuto basso: con le luci della scena arriva al bianco senza sfondare nel bagliore
+Object.assign(M, {
+  sWhite: xr(std({ color: C_BIANCO, roughness: .8, metalness: 0, bumpMap: T.noise, bumpScale: .25 })),
+  sWhite2: xr(std({ color: C_BIANCO, roughness: .84, metalness: 0, side: THREE.DoubleSide })),
+  sGrid: xr(std({ color: 0xb4b8bb, roughness: .75, metalness: .05 })),
+  sClear: xr(std({ color: 0x8f9aa2, roughness: .35, metalness: 0, transparent: true, opacity: .3 })),
+  sFoam: xr(std({ color: 0x17181a, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2.2 })),
+  sGrey: xr(std({ color: 0x565b60, roughness: .7, metalness: .1 })),
+  fin: std({ color: 0x8f969b, roughness: .45, metalness: .8 }),
+  zinc: std({ color: 0xa3a9ad, roughness: .4, metalness: .85, map: T.spangle }),
+  white: std({ color: C_BIANCO, roughness: .84, metalness: 0 }),
+  grey: std({ color: 0x8f969b, roughness: .55, metalness: .1 }),
+  wRed: std({ color: 0xc8322a, roughness: .5 }), wBlue: std({ color: 0x2b62b8, roughness: .5 }), wYel: std({ color: 0xd9b23a, roughness: .45, metalness: .3 }), wOr: std({ color: 0xe07a1f, roughness: .5 }),
+});
+// l'intensità dell'ambiente si regola per materiale solo se il materiale ha la sua mappa: gliela do io, più bassa
+const AMB_B = .3, AMB_M = .42;
+const ambiente = (keys, k) => { for (const n of keys) { const m = M[n]; if (!m) continue; m.envMap = scene.environment; m.envMapIntensity = k; } };
+const ambienteBase = () => { ambiente(['sWhite', 'sWhite2', 'sGrid', 'sClear', 'white', 'grey', 'term', 'sGrey'], AMB_B); ambiente(['galv', 'steel', 'inox', 'alu', 'fin', 'zinc', 'lam'], AMB_M); ambiente(['copper', 'brass'], .6); };
+
+// particelle
+const PTS = [];
+function points(n, size, add = true) {
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+  const p = new THREE.Points(g, new THREE.PointsMaterial({ size, map: T.glow, vertexColors: true, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }));
+  p.frustumCulled = false; p.userData.size = size; PTS.push(p); return p;
+}
+function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; }
+// i flussi corrono dentro i tubi: li disegno un po' più vicini alla camera, così non restano nascosti dalla parete del tubo
+function pushed(p, d = .022) { p.material.onBeforeCompile = s => { s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
+const R0 = rng(99);
+// flussi lungo i tubi: campioni di posizione e colore per ogni tratto
+class Flow {
+  constructor(parent, n, size, push) { this.pts = pushed(points(n, size), push); this.n = n; parent.add(this.pts); this.ph = new Float32Array(n); this.jit = new Float32Array(n * 3); this.pts.visible = false; for (let i = 0; i < n; i++) { this.ph[i] = (i + R0() * .6) / n; for (let k = 0; k < 3; k++) this.jit[i * 3 + k] = (R0() - .5) * .008; } }
+  path(segs, S = 420) {
+    const cs = segs.map(s => { const c = curveOf(s.rev ? s.pts.slice().reverse() : s.pts); return { c, L: c.getLength(), s }; }), tot = cs.reduce((a, b) => a + b.L, 0);
+    const P = new Float32Array(S * 3), C = new Float32Array(S * 3); let k = 0; const marks = [];
+    for (const o of cs) { const m = Math.max(2, Math.round(S * o.L / tot)); marks.push(k / S); for (let i = 0; i < m && k < S; i++, k++) { const f = i / (m - 1), v = o.c.getPointAt(f); P[k * 3] = v.x; P[k * 3 + 1] = v.y; P[k * 3 + 2] = v.z; for (let j = 0; j < 3; j++) C[k * 3 + j] = lerp(o.s.c0[j], o.s.c1[j], f); } }
+    for (; k < S; k++) for (let j = 0; j < 3; j++) { P[k * 3 + j] = P[(k - 1) * 3 + j]; C[k * 3 + j] = C[(k - 1) * 3 + j]; }
+    return { P, C, S, marks, tot };
+  }
+  upd(now, amt, spd, pa) {
+    this.pts.visible = amt > .01; if (!this.pts.visible) return; const p = this.pts.geometry.attributes.position, c = this.pts.geometry.attributes.color, S = pa.S;
+    for (let i = 0; i < this.n; i++) { const u = (((this.ph[i] + now * spd) % 1) + 1) % 1, f = u * (S - 1), a = f | 0, b = Math.min(S - 1, a + 1), t = f - a;
+      p.setXYZ(i, lerp(pa.P[a * 3], pa.P[b * 3], t) + this.jit[i * 3], lerp(pa.P[a * 3 + 1], pa.P[b * 3 + 1], t) + this.jit[i * 3 + 1], lerp(pa.P[a * 3 + 2], pa.P[b * 3 + 2], t) + this.jit[i * 3 + 2]);
+      c.setXYZ(i, pa.C[a * 3] * amt, pa.C[a * 3 + 1] * amt, pa.C[a * 3 + 2] * amt); }
+    p.needsUpdate = c.needsUpdate = true;
+  }
+}
+const seg = (k, c0, c1, rev) => ({ pts: Array.isArray(k) ? k : PIPE[k], c0, c1, rev: !!rev });
+// un percorso su cui far correre la camera (strumento Giro): la curva passa per i campioni del flusso
+const giroDi = r => { r.curve = new THREE.CatmullRomCurve3(Array.from({ length: 300 }, (_, i) => { const q = Math.round(i / 299 * (r.S - 1)); return V(r.P[q * 3], r.P[q * 3 + 1], r.P[q * 3 + 2]); }), false, 'centripetal'); return r; };
+const HOT = [1.7, .26, .06], WARM = [1.5, .7, .12], COLD = [.1, .5, 1.8], COOL = [.3, .9, 1.6], PALE = [.45, .8, 1.3], W0 = [.12, .45, 1.6], W1 = [1.7, .5, .08];
+// scintille all'arrivo dei pezzi e anello a terra quando un gruppo va al suo posto
+const NK = 240, spark = points(NK, .011), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
+function emitSpark(pos, n) { const p = spark.geometry.attributes.position; for (let k = 0; k < n; k++) { const i = spI = (spI + 1) % NK; p.setXYZ(i, pos.x, pos.y, pos.z); spV[i * 4] = (Math.random() - .5) * 1.1; spV[i * 4 + 1] = Math.random() * 1.0 + .2; spV[i * 4 + 2] = (Math.random() - .5) * 1.1; spV[i * 4 + 3] = 1; } }
+function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 3.2 * k, 1.5 * k * k, .4 * k * k); } p.needsUpdate = c.needsUpdate = true; }
+const ring = mesh(new THREE.RingGeometry(.93, 1, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(.7, 1.4, 1.1), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 0, .01, 0, -PI / 2); scene.add(ring); let ringT = 9;
+// nel Giro restano accesi solo il fluido e la sua scia: i materiali in SOLO si fanno da parte ([materiale, opacità])
+let soloNow = 0; const SOLO = [[M.copper, .2], [M.brass, .25]];
+function soloAcqua(x) { if (x === soloNow) return; soloNow = x; for (const [m, o] of SOLO) { m.opacity = lerp(1, o, x); const tr = x > .004; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.depthWrite = x < .5; } }
+// terreno e ombra di base; ogni prodotto aggiunge la sua scenografia
+const ground = mesh(new THREE.CircleGeometry(11, 64), new THREE.MeshBasicMaterial({ map: T.ground }), 0, 0, 0, -PI / 2); scene.add(ground);
+
+// ───────── HP 300PSDX · pezzi, scena e film (motore della UHP, pagina comune) ─────────
+// Dal manuale installatore 00340944: p.12 (caratteristiche: serbatoio inox Duplex 2205, anodo, condensatore esterno, PU 50 mm, R290), p.13 (vista
+// d'insieme con i componenti: coperchio con uscita e ingresso aria, interfaccia, motore ventilatore, piastra, box elettrico, evaporatore, compressore,
+// valvola a 2 vie, valvola di espansione elettronica), p.14-15 (quote e attacchi 1-13), p.18 (circuito: valvola di by-pass, pressostato di bassa,
+// presa di servizio, sonde T1-T5), p.26 (box elettrico con coperchio a 4 viti), p.30-32 e p.37 (set, antilegionella, contatto fotovoltaico, dati).
+// Depliant 00341057: condensatore a flusso parallelo a sezione ovale, evaporatore a microcanali, compressore rotativo, regolatore touch screen.
+// RICOSTRUITO (il manuale ha una sola vista d'insieme, p.13): posizione dei componenti sopra la piastra e percorso dei tubi, interno del compressore,
+// numero di bande del condensatore e di spire del serpentino, posizione angolare delle coperture posteriori, altezza delle sonde T2 e T3.
+const B = .035, R = .30, RT = .25, YC = B + 1.51, Y5 = YC + .012, AT = h => B + h;     // piedini, raggio esterno, raggio del serbatoio, inizio del coperchio, piastra, quota di un attacco
+const polare = (az, r, y) => [Math.sin(rad(az)) * r, y, Math.cos(rad(az)) * r];
+const radiale = (m, az) => { m.rotation.order = 'YXZ'; m.rotation.set(PI / 2, rad(az), 0); return m; };    // asse Y del pezzo verso l'esterno, all'angolo az
+const CX = .18, CZ = -.12, EX = .03, FX = -.15, FY = Y5 + .13, FZ = .066, KS = .6;          // compressore, evaporatore, ventilatore; scala del compressore
+// texture e materiali propri
+T.evap = cv(64, 256, g => { g.fillStyle = '#7d878d'; g.fillRect(0, 0, 64, 256); for (let y = 0; y < 256; y += 4) { g.fillStyle = y % 8 ? '#a9b1b6' : '#5e676d'; g.fillRect(0, y, 64, 2); } });
+T.jack = cv(256, 64, g => { const r = rng(5); g.fillStyle = '#b9bdc0'; g.fillRect(0, 0, 256, 64); for (let i = 0; i < 900; i++) { const v = 170 + r() * 50 | 0; g.fillStyle = `rgba(${v},${v + 2},${v + 4},.35)`; g.fillRect(r() * 256, r() * 64, 1, 4 + r() * 30); } });
+T.pu = cv(128, 128, g => { const r = rng(9); g.fillStyle = '#d9c78a'; g.fillRect(0, 0, 128, 128); for (let i = 0; i < 700; i++) { const v = r(); g.fillStyle = `rgba(${150 + v * 60 | 0},${130 + v * 50 | 0},${70 + v * 40 | 0},.4)`; g.beginPath(); g.arc(r() * 128, r() * 128, .6 + r() * 1.8, 0, 7); g.fill(); } });
+T.targa = cv(512, 300, g => { g.fillStyle = '#e9ece9'; g.fillRect(0, 0, 512, 300); drawUnicalLogo(g, 22, 22, 128); g.fillStyle = '#16191b'; g.font = '700 32px Barlow, Arial, sans-serif'; g.fillText('HP 300PSDX', 250, 56); g.fillRect(22, 74, 468, 3); g.font = '500 24px Barlow, Arial, sans-serif';
+  ['Scaldacqua a pompa di calore', 'Bollitore 300 l, inox Duplex 2205', 'Refrigerante R290', 'Resistenza 1500 W'].forEach((s, i) => g.fillText(s, 26, 122 + i * 40)); });
+T.logoCop = cv(256, 64, g => { g.clearRect(0, 0, 256, 64); drawUnicalLogo(g, 70, 8, 116); });
+T.schermo = cv(256, 256, () => {});
+T.muroA = rep(cv(256, 256, g => { const r = rng(31); g.fillStyle = '#4a4e52'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 62 + r() * 34 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 3, 4);
+T.piastrelle = rep(cv(256, 256, g => { g.fillStyle = '#3d4246'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#2a2e31'; g.lineWidth = 4; g.strokeRect(2, 2, 252, 252); }), 4, 3);
+Object.assign(M, {
+  sTank: xr(std({ color: 0xb8bec2, roughness: .32, metalness: .9, side: THREE.DoubleSide })),
+  sJack: xr(std({ color: 0xb4b8bb, roughness: .42, metalness: .72, map: T.jack })),
+  sPU: xr(std({ color: 0xffffff, roughness: .95, metalness: 0, map: T.pu, bumpMap: T.noise, bumpScale: 2 })),
+  sCov: xr(std({ color: 0x2a2d30, roughness: .55, metalness: .1, side: THREE.DoubleSide })),
+  sBox: xr(std({ color: 0x9aa1a6, roughness: .45, metalness: .75, map: T.spangle })),
+  sTarga: xr(std({ color: 0xc8c8c8, roughness: .55, map: T.targa })),
+  logoC: new THREE.MeshBasicMaterial({ map: T.logoCop, transparent: true }),
+  evap: std({ color: 0xffffff, roughness: .45, metalness: .7, map: T.evap, emissive: 0x2a8cff, emissiveIntensity: 0 }),
+  condA: std({ color: 0xb5bcc1, roughness: .4, metalness: .85, side: THREE.DoubleSide, emissive: 0xff5a1c, emissiveIntensity: 0 }),
+  mag: std({ color: 0x7c8086, roughness: .7, metalness: .4 }),
+  res: std({ color: 0x55585c, roughness: .5, metalness: .6, emissive: 0xff3a10, emissiveIntensity: 0 }),
+  schermo: new THREE.MeshBasicMaterial({ map: T.schermo }),
+  muro: std({ color: 0x9aa0a4, roughness: .95, map: T.muroA, bumpMap: T.noise, bumpScale: 1.5 }),
+  pav: std({ color: 0x8c9196, roughness: .8, map: T.piastrelle }),
+});
+ambienteBase(); ambiente(['sTank', 'sJack', 'sBox', 'condA', 'evap', 'mag'], AMB_M); ambiente(['sTarga', 'sPU', 'sCov'], AMB_B);
+SOLO.push([M.sTank, .12], [M.condA, .2], [M.muro, .35]);
+
+// lavanderia: parete e pavimento (scenografia, non pezzi)
+scene.add(mesh(G.plane(2.4, 2.7), M.muro, .15, 1.35, -.62));
+scene.add(mesh(G.box(2.4, .01, 1.5), M.pav, .15, -.005, .1));
+const ombra = mesh(G.plane(1.0, 1.0), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), 0, .002, 0, -PI / 2); scene.add(ombra);
+
+// 1 ─ Serbatoio
+const gTank = group('tank', 'Serbatoio', 'Trecento litri in acciaio inox Duplex 2205: resiste alla corrosione e non serve trattarlo.', 3.5, 9.0, { stage: [0, 0, 0], ex: [0, 0, 0], az: 24, el: 8, zoom: .5,
+  info: { e: 'Il cuore: trecento litri d\'acqua in un serbatoio d\'acciaio inossidabile. L\'acqua fredda entra dal fondo, quella calda esce dall\'alto.', s: 'Acciaio inox Duplex 2205 · 300 l · anodo in magnesio · resistenza 1500 W con termostato 85 °C · termostato 80 °C · attacchi G 3/4 · manuale 00340944 p.12-15' } });
+{
+  const o = x => x;
+  for (let i = 0; i < 3; i++) { const a = i * PI * 2 / 3 + PI / 6; P(mesh(G.cyl(.03, B, 16), M.rubber, Math.sin(a) * .22, B / 2, Math.cos(a) * .22), o({ d: i * .03, from: [0, -.3, 0], n: i ? null : 'Piedini' })); }
+  P(mesh(G.cyl(R - .004, .012, 48), M.black, 0, B + .006, 0), o({ d: .1, from: [0, -.4, 0], spin: [0, 1, 0], n: 'Fondo' }));
+  PIN(G.cyl(.012, .07, 12), M.galv, [0, 1, 2].map(i => { const a = i * PI * 2 / 3 + PI / 2; return { p: [Math.sin(a) * .15, B + .047, Math.cos(a) * .15] }; }), o({ d0: .14, d1: .16, n: 'Supporti del serbatoio' }));
+  const prof = [[0, .10], [.15, .115], [.23, .17], [RT, .25], [RT, 1.32], [.23, 1.40], [.15, 1.445], [0, 1.455]].map(([r, y]) => new THREE.Vector2(r, y + B));
+  P(mesh(new THREE.LatheGeometry(prof.slice(0, 4), 48), M.sTank), o({ d: .2, from: [0, -.5, 0], spin: [0, 1, 0], dur: .55, n: 'Fondo bombato' }));
+  P(mesh(new THREE.LatheGeometry(prof.slice(3, 5), 48), M.sTank), o({ d: .26, from: [0, 1.2, 0], spin: [0, .6, 0], dur: .65, n: 'Mantello in inox Duplex 2205' }));
+  P(mesh(new THREE.LatheGeometry(prof.slice(4), 48), M.sTank), o({ d: .34, from: [0, .7, 0], spin: [0, 1, 0], dur: .55, n: 'Calotta superiore' }));
+  [B + .25, B + 1.32].forEach((y, i) => P(mesh(G.torus(RT, .0035, PI * 2, 64), M.inox, 0, y, 0, PI / 2, 0, 0), o({ d: .4 + i * .02, n: i ? null : 'Saldature', snd: 'tick' })));
+  // manicotti sul fianco destro: acqua fredda, serpentino, anodo, acqua calda
+  [[1.17, 'Manicotto dell\'anodo'], [1.27, 'Manicotto dell\'acqua calda']].forEach(([h, n], i) => P(mesh(G.cylX(.016, .04, 16), M.inox, RT + .015, AT(h), 0), o({ d: .46 + i * .02, from: [.3, 0, 0], spin: [2, 0, 0], n, snd: 'screw' })));
+  P(mesh(G.cyl(.016, .03, 16), M.inox, .15, B + .1, 0), o({ d: .5, from: [0, -.3, 0], spin: [0, 2, 0], n: 'Manicotto dell\'acqua fredda, sul fondo', snd: 'screw' }));
+  // acqua fredda: entra in basso e sbocca sul fondo; acqua calda: prelevata in alto
+  P(mesh(tubeGeo([[R - .01, AT(.0325), 0], [.19, AT(.0325), 0], [.155, B + .05, 0], [.15, B + .09, 0]], .009, 24), M.inox), o({ d: .56, n: 'Ingresso dell\'acqua fredda, sotto il serbatoio' }));
+  P(mesh(G.cyl(.022, .012, 16), M.inox, .15, B + .14, 0), o({ d: .58, n: 'Diffusore' }));
+  P(mesh(tubeGeo([[RT + .03, AT(1.27), 0], [.16, AT(1.27), 0], [.08, AT(1.33), 0], [.04, AT(1.42), 0]], .009, 24), M.inox), o({ d: .6, n: 'Presa dell\'acqua calda, in cima' }));
+  // anodo, resistenza, pozzetti
+  P(mesh(G.cylX(.011, .36, 14), M.mag, RT - .18, AT(1.17), 0), o({ d: .64, from: [.8, 0, 0], spin: [0, 0, 0], n: 'Anodo in magnesio' }));
+  { const a9 = 205, d9 = polare(a9, RT - .15, AT(.95)), geo = mergeGeometries([G.cylX(.006, .3, 10).translate(0, -.02, 0), G.cylX(.006, .3, 10).translate(0, .02, 0), G.torus(.02, .006, PI).rotateZ(PI / 2).translate(-.15, 0, 0)]);
+    const r = mesh(geo, M.res, ...d9, 0, rad(a9) - PI / 2, 0); P(r, o({ d: .7, from: [-.5, 0, -.6], spin: [0, 0, 0], n: 'Resistenza 1500 W' })); }
+  P(radiale(mesh(G.cyl(.04, .02, 24), M.brass, ...polare(205, RT + .008, AT(.95))), 205), o({ d: .74, n: 'Flangia della resistenza', snd: 'screw' }));
+  [[205, 1.15, 'Pozzetto del termostato 80 °C', .14], [150, .855, 'Pozzetto della sonda ausiliaria', .16], [205, .5, 'Pozzetto della sonda T2', .12], [205, 1.25, 'Pozzetto della sonda T3', .12]].forEach(([az, h, n, L], i) => {
+    const m = mesh(G.cyl(.007, L, 10), M.inox, ...polare(az, RT - L / 2 + .01, AT(h)), PI / 2, rad(az), 0); m.rotation.order = 'YXZ'; m.rotation.set(PI / 2, rad(az), 0); P(m, o({ d: .78 + i * .04, n })); });
+}
+// acqua stratificata, dentro il serbatoio: segue il gruppo ma non è un pezzo
+const tAcqua = cv(4, 256, () => {}), acquaM = new THREE.MeshBasicMaterial({ map: tAcqua, transparent: true, opacity: 0, depthWrite: false });
+const acqua = mesh(new THREE.CylinderGeometry(RT - .008, RT - .008, 1.3, 40, 1, true), acquaM, 0, B + .78, 0); acqua.renderOrder = 2; gTank.node.add(acqua);
 function disegnaAcqua(caldo, set) { const c = tAcqua.image.getContext('2d'), g = c.createLinearGradient(0, 0, 0, 256), k = clamp(caldo, .001, .999), top = set >= 70 ? '#ff2d1a' : set >= 65 ? '#ff5a1f' : '#ff8a2e';
   g.addColorStop(0, top); g.addColorStop(Math.max(0, k - .05), top); g.addColorStop(Math.min(1, k + .05), '#2a7fd6'); g.addColorStop(1, '#1d5fb0'); c.fillStyle = g; c.fillRect(0, 0, 4, 256); tAcqua.needsUpdate = true; }
-const tFlow = cv(64, 8, (c) => { const g = c.createLinearGradient(0, 0, 64, 0); g.addColorStop(0, '#666'); g.addColorStop(.5, '#fff'); g.addColorStop(.62, '#666'); g.addColorStop(1, '#666'); c.fillStyle = g; c.fillRect(0, 0, 64, 8); }); tFlow.wrapS = THREE.RepeatWrapping; tFlow.repeat.set(3, 1);
-const freccia = (h, col) => { const tx = tFlow.clone(); tx.needsUpdate = true; const o = mesh(new THREE.TubeGeometry(new THREE.LineCurve3(V(R + .04, AT(h), 0), V(R + .4, AT(h), 0)), 4, .012, 8), new THREE.MeshBasicMaterial({ map: tx, color: col, transparent: true, opacity: 0 })); root.add(o); return o; };
-const fFredda = freccia(.0325, 0x58b8ff), fCalda = freccia(1.27, 0xff5a3c);
-const ARIA = new THREE.CatmullRomCurve3([V(.16, YC + .75, 0), V(.16, YC + .42, 0), V(.2, Y5 + .16, .02), V(.08, Y5 + .15, 0), V(-.04, Y5 + .15, -.01), V(-.15, Y5 + .3, -.01), V(-.16, YC + .45, 0), V(-.16, YC + .8, 0)]);
-const NA = 60, aPos = new Float32Array(NA * 3), aCol = new Float32Array(NA * 3), aGeo = new THREE.BufferGeometry(); aGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3)); aGeo.setAttribute('color', new THREE.BufferAttribute(aCol, 3));
-const aria = new THREE.Points(aGeo, new THREE.PointsMaterial({ size: .022, vertexColors: true, transparent: true, opacity: 0, depthWrite: false })); aria.renderOrder = 3; root.add(aria);
 
-// ───────── stato: acqua, modi, film ─────────
-// Numeri a schermo, tutti dal manuale: set di fabbrica 55 °C (p.32); 65 °C massimo con la sola pompa di calore e 70 °C con la resistenza (p.37);
-// contatto fotovoltaico che porta il set al massimo (p.32); antilegionella a 65 °C per circa 30 minuti una volta a settimana (p.30).
+// 2 ─ Serpentino
+group('coil', 'Serpentino', 'Una spirale in acciaio AISI 316 da 1,2 m², in basso: porta nell\'acqua il calore di un\'altra fonte, per esempio il solare termico.', 9.0, 12.5, { stage: [0, 0, .9], ex: [0, 0, .85], az: 18, el: 10, zoom: .75, trav: .72,
+  info: { e: 'Una seconda strada per il calore: se in casa c\'è un impianto solare termico, il suo calore entra nell\'acqua da qui.', s: 'AISI 316 · 1,2 m² di superficie di scambio · attacchi G 3/4 a 235 mm (uscita al solare) e 855 mm (ingresso dal solare) · manuale 00340944 p.15' } });
+{
+  const NT = 9, y0 = AT(.30), y1 = AT(.78), rc = .185;
+  for (let i = 0; i < NT; i++) { const p = []; for (let k = 0; k <= 24; k++) { const a = (i + k / 24) * PI * 2, y = lerp(y0, y1, (i + k / 24) / NT); p.push([Math.cos(a) * rc, y, Math.sin(a) * rc]); }
+    P(mesh(tubeGeo(p, .011, 48), M.inox), { d: .1 + i * .07, from: [0, .25, .3], spin: [0, 2, 0], dur: .45, n: i ? null : 'Spire in AISI 316', snd: 'fin' }); }
+  P(mesh(tubeGeo([[RT + .03, AT(.235), 0], [.2, AT(.235), 0], [rc, y0, 0]], .011, 20), M.inox), { d: .76, n: 'Uscita verso il solare (2)' });
+  P(mesh(tubeGeo([[rc, y1, 0], [.2, AT(.82), 0], [RT + .03, AT(.855), 0]], .011, 20), M.inox), { d: .8, n: 'Ingresso dal solare (3)' });
+  [[RT + .015, AT(.235)], [RT + .015, AT(.855)]].forEach(([x, y], i) => P(mesh(G.cylX(.016, .04, 16), M.inox, x, y, 0), { d: .84 + i * .03, from: [.3, 0, 0], spin: [2, 0, 0], snd: 'screw', n: i ? null : 'Manicotti' }));
+  PIN(G.box(.012, y1 - y0 + .06, .02), M.inox, [0, 1, 2].map(i => { const a = i * PI * 2 / 3 + .4; return { p: [Math.cos(a) * rc, (y0 + y1) / 2, Math.sin(a) * rc], r: [0, -a, 0] }; }), { d0: .9, d1: .94, n: 'Supporti' });
+}
+
+// 3 ─ Condensatore a flusso parallelo, avvolto all'esterno del serbatoio
+group('cond', 'Condensatore avvolto', 'Bande piatte di alluminio a flusso parallelo, avvolte fuori dal serbatoio: il gas caldo cede il calore all\'acqua senza mai toccarla.', 12.5, 16.5, { stage: [0, 1.5, 0], ex: [-.85, 0, 0], az: -24, el: 10, zoom: .5,
+  info: { e: 'Qui il calore preso dall\'aria passa all\'acqua. Il gas scorre in bande d\'alluminio strette al serbatoio: niente contatto con l\'acqua di casa, niente calcare.', s: 'Alluminio, flusso parallelo, sezione ovale · all\'esterno del bollitore: anti-contaminazione e anti-incrostazione · depliant 00341057 · numero di bande: ricostruito' } });
+{
+  const NB = 18, ya = AT(.52), yb = AT(1.27), rb = RT + .006, a0 = rad(194), al = PI * 2 - rad(28);
+  PIN(G.open(rb, .022, a0, al, 72), M.condA, Array.from({ length: NB }, (_, i) => ({ p: [0, lerp(yb, ya, i / (NB - 1)), 0] })), { d0: .08, d1: .62, dur: .4, from: [0, .45, 0], spin: [0, 1.4, 0], ease: eoc, n: 'Bande in alluminio a sezione ovale', snd: 'fin' });
+  [[170, 'Collettore di ingresso del gas'], [190, 'Collettore di uscita']].forEach(([az, n], i) => P(mesh(G.cyl(.011, yb - ya + .05, 16), M.condA, ...polare(az, rb + .006, (ya + yb) / 2)), { d: .66 + i * .05, from: [0, .6, 0], n }));
+  PIN(G.box(.02, .012, .004), M.galv, [0, 1, 2, 3].flatMap(k => [60, 300].map(az => ({ p: polare(az, rb + .004, lerp(ya, yb, k / 3)), r: [0, rad(az), 0] }))), { d0: .78, d1: .9, n: 'Fascette di tenuta' });
+}
+
+// 4 ─ Isolamento e rivestimento
+group('iso', 'Isolamento e rivestimento', 'Cinque centimetri di poliuretano espanso tengono il calore; fuori, la lamiera grigio argento con tutti gli attacchi.', 16.5, 21.0, { stage: [0, 0, 0], ex: [.95, 0, 0], az: 58, el: 8, zoom: .5,
+  info: { e: 'Il cappotto: tiene l\'acqua calda per ore. Fuori, la lamiera con gli attacchi dell\'acqua sul fianco destro e le coperture sul retro.', s: 'Poliuretano espanso 50 mm · Ø 600 mm · attacchi 1-6 sul fianco destro a 32,5 / 235 / 855 / 1170 / 1270 / 1370 mm · coperture 7-13 sul retro · manuale 00340944 p.14-15' } });
+{
+  const H0 = B + .012, HH = YC - H0;
+  [[PI / 2, PI * 1.5, -1], [-PI / 2, PI / 2, 1]].forEach(([a, b2, s], i) => P(mesh(annulus(R - .005, RT + .016, HH, a, b2, 48), M.sPU, 0, H0 + HH / 2, 0), { d: i * .06, from: [s * .7, 0, 0], spin: [0, 0, 0], dur: .55, ease: eoc, n: i ? null : 'Poliuretano espanso, 50 mm' }));
+  P(mesh(G.cyl(R - .005, .03, 48), M.sPU, 0, YC - .015, 0), { d: .14, from: [0, .5, 0], spin: [0, 0, 0] });
+  [[PI / 2, PI * 1.5, -1, 'Rivestimento grigio argento'], [-PI / 2, PI / 2, 1, null]].forEach(([a, b2, s, n], i) => P(mesh(annulus(R, R - .003, HH, a, b2, 64), M.sJack, 0, H0 + HH / 2, 0), { d: .22 + i * .07, from: [s * .9, 0, 0], spin: [0, 0, 0], dur: .6, ease: eoc, n }));
+  P(mesh(G.torus(R, .006, PI * 2, 64), M.black, 0, YC - .003, 0, PI / 2, 0, 0), { d: .36, from: [0, .4, 0], n: 'Bordo superiore' });
+  // attacchi 1-6 sul fianco destro
+  [[.0325, M.brass, .014, 'Acqua fredda (1)'], [.235, M.brass, .014, 'Al solare (2)'], [.855, M.brass, .014, 'Dal solare (3)'], [1.17, M.black, .017, 'Tappo dell\'anodo (4)'], [1.27, M.brass, .014, 'Acqua calda (5)'], [1.37, M.brass, .011, 'Condensa G 1/2 (6)']].forEach(([h, m, r, n], i) => {
+    P(mesh(G.cylX(r, .045, 16), m, R + .02, AT(h), 0), { d: .42 + i * .03, from: [.3, 0, 0], spin: [4, 0, 0], snd: 'screw', n });
+    if (m === M.brass) P(mesh(G.cylX(r + .006, .012, 6), m, R + .006, AT(h), 0), { d: .44 + i * .03, from: [.3, 0, 0], spin: [6, 0, 0], snd: 'screw' }); });
+  // coperture e passaggi sul retro (7-13)
+  const ret = (az, h) => { const m = mesh(G.cyl(1, 1, 24), M.black); m.position.set(...polare(az, R + .004, AT(h))); m.rotation.order = 'YXZ'; m.rotation.set(PI / 2, rad(az), 0); return m; };
+  [[150, .855, .012, .02, 'Pozzetto della sonda ausiliaria PG9 (7)'], [228, .86, .05, .014, 'Copertura dei morsetti ausiliari (8)'], [205, .95, .055, .014, 'Copertura della resistenza (9)'], [205, 1.15, .045, .014, 'Copertura del termostato (10)'],
+    [228, 1.33, .012, .02, 'Sonda solare (11)'], [228, 1.42, .014, .02, 'Passaggio alimentazione (12)'], [228, .79, .012, .02, 'Passaggio cavi ausiliari (13)']].forEach(([az, h, r, t, n], i) => { const m = ret(az, h); m.scale.set(r, t, r); const d = polare(az, .4, 0); P(m, { d: .62 + i * .03, from: [d[0], 0, d[2]], spin: [0, 0, 0], n }); });
+  P(mesh(G.plane(.16, .094), M.sTarga, ...polare(180, R + .002, AT(.62)), 0, PI, 0), { d: .86, from: [0, 0, -.4], spin: [0, 0, 0], n: 'Targhetta' });
+  // acqua di casa: tubi e valvole fino alla parete (percorso indicativo)
+  const tw = (h, n, d) => { P(mesh(tubeGeo([[R + .045, AT(h), 0], [.4, AT(h), 0], [.43, AT(h), -.04], [.43, AT(h), -.3], [.43, AT(h), -.6]], .011, 40), M.copper), { d, dur: .5, n });
+    P(mesh(G.rbox(.034, .034, .05, .006), M.brass, .43, AT(h), -.25), { d: d + .03, n: 'Valvola a sfera' }); P(mesh(G.box(.012, .07, .012), h < .5 ? M.blue : M.red, .43, AT(h) + .04, -.25), { d: d + .04, from: [0, .2, 0] }); };
+  tw(.0325, 'Tubo dell\'acqua fredda', .9); tw(1.27, 'Tubo dell\'acqua calda', .94);
+}
+
+// 5 ─ Compressore rotativo (in sezione finché non arriva la chiusura: interno di principio)
+group('comp', 'Compressore rotativo', 'Un pistone rotante schiaccia il propano R290 e lo scalda. Sotto, la piastra che regge tutto il gruppo frigorifero.', 21.0, 26.5, { stage: [0, .1, .85], ex: [0, .5, 0], az: 34, el: 14, trav: .55,
+  keys: [[.03, 30, 18, 1.15, 0], [.3, 22, 10, .7, -.02], [.5, 40, 12, .85, 0], [.72, 28, 8, .72, -.01], [.9, 36, 14, 1.15, 0]],
+  info: { e: 'Il motore della pompa di calore: schiaccia il gas, che si scalda, e lo manda al condensatore attorno al serbatoio.', s: 'Compressore rotativo · propano R290 · interno: schema di principio · manuale 00340944 p.13, depliant 00341057' } });
+let cmp, crank;
+{
+  P(mesh(G.cyl(R - .014, .012, 56), M.galv, 0, YC + .006, 0), { d: 0, from: [0, -.3, 0], spin: [0, 1, 0], n: 'Piastra di appoggio del gruppo frigorifero' });
+  PIN(annulus(.03, .02, .013), M.rubber, [[.06, -.24], [-.03, -.25], [.07, .23]].map(([x, z]) => ({ p: [x, YC + .006, z] })), { d0: .04, d1: .06, n: 'Passaggi dei tubi' });
+  cmp = new THREE.Group(); cmp.position.set(CX, Y5, CZ); cmp.scale.setScalar(KS); CUR.node.add(cmp); crank = new THREE.Group(); cmp.add(crank);
+  const AX = -.115, AZ = .05, cp = (m, o) => P(m, Object.assign({ parent: cmp }, o)), ck = (m, o) => P(m, Object.assign({ parent: crank, spin: [0, 4, 0], from: [0, .35, 0] }, o));
+  cp(mesh(G.rbox(.2, .012, .2, .004), M.galv, 0, .006, 0), { d: .08, from: [0, -.2, 0], n: 'Supporto antivibrante' });
+  const gr = [0, 1, 2].map(i => { const a = rad(90 + i * 120); return { p: [Math.cos(a) * .082, .027, Math.sin(a) * .082] }; });
+  PIN(G.cyl(.017, .03, 16), M.rubber, gr, { parent: cmp, d0: .1, d1: .13, n: 'Gommini' });
+  cp(mesh(new THREE.CylinderGeometry(.11, .11, .005, 3), M.black, 0, .0445, 0, 0, rad(-30), 0), { d: .15, n: 'Piede' });
+  screws(gr.map(g => ({ p: [g.p[0], .048, g.p[2]] })), { parent: cmp, d0: .16, d1: .18 });
+  cp(mesh(G.dome(.066, .45, false), M.shellC, 0, .075, 0), { d: .2, from: [0, -.25, 0], spin: [0, 2, 0], n: 'Fondello' });
+  cp(mesh(G.cyl(.05, .014, 32), M.cast, 0, .09, 0), { d: .23, n: 'Supporto inferiore' });
+  ck(mesh(G.cyl(.0105, .25, 20), M.steel, 0, .19, 0), { d: .26, dur: .6, n: 'Albero eccentrico' });
+  ck(mesh(G.cyl(.024, .028, 28), M.steel, .009, .12, 0), { d: .3 }); ck(mesh(annulus(.032, .024, .028), M.brass, .009, .12, 0), { d: .32, n: 'Pistone rotante' });
+  cp(mesh(annulus(.058, .041, .03), M.cast, 0, .12, 0), { d: .36, n: 'Camera di compressione' });
+  cp(mesh(G.box(.02, .028, .004), M.steel, .049 * Math.sin(rad(215)), .12, .049 * Math.cos(rad(215)), 0, rad(125), 0), { d: .39, n: 'Paletta' });
+  cp(mesh(G.cyl(.05, .014, 32), M.cast, 0, .152, 0), { d: .43, n: 'Supporto superiore' });
+  cp(mesh(G.cyl(.042, .018, 28, .034), M.steel, 0, .168, 0), { d: .45, n: 'Silenziatore' });
+  ck(mesh(G.cyl(.0345, .075, 36), M.lam, 0, .235, 0), { d: .48, n: 'Rotore' });
+  cp(mesh(annulus(.0615, .0375, .075), M.lam, 0, .235, 0), { d: .52, from: [0, .45, 0], spin: [0, 1.5, 0], dur: .6, n: 'Statore' });
+  [.283, .187].forEach((y, i) => cp(mesh(G.torus(.0495, .0115), M.copper, 0, y, 0, PI / 2, 0, 0), { d: .55 + i * .01, n: i ? null : 'Avvolgimenti in rame' }));
+  cp(mesh(G.open(.066, .26, PI / 2, rad(250)), M.shellC, 0, .205, 0), { d: .58, from: [-.2, .35, -.25], spin: [0, 2.5, 0], dur: .65, n: 'Mantello' });
+  cp(mesh(G.cyl(.03, .19, 28), M.shellC, AX, .225, AZ), { d: .62, n: 'Separatore di liquido' });
+  cp(mesh(G.dome(.03, .5), M.shellC, AX, .32, AZ), { d: .63 }); cp(mesh(G.dome(.03, .5, false), M.shellC, AX, .13, AZ), { d: .63 });
+  cp(mesh(annulus(.0325, .03, .014), M.steel, AX, .25, AZ), { d: .64 });
+  { const L = Math.hypot(AX, AZ), ux = AX / L, uz = AZ / L; cp(mesh(tubeGeo([[AX, .118, AZ], [AX * .8, .1, AZ * .8], [ux * .085, .12, uz * .085], [ux * .062, .12, uz * .062]], .0068, 28), M.copper), { d: .66, n: 'Aspirazione' }); }
+  cp(mesh(G.cyl(.008, .05, 14), M.copper, AX, .36, AZ), { d: .68 });
+  cp(mesh(G.dome(.066, .45), M.shellC, 0, .335, 0), { d: .7, from: [0, .4, 0], spin: [0, 2, 0], n: 'Calotta' });
+  cp(mesh(G.rbox(.052, .03, .05, .006), M.plastic, .012, .366, .026), { d: .72, n: 'Scatola morsetti' });
+  cp(mesh(G.cyl(.008, .07, 14), M.copper, -.02, .39, -.02), { d: .74, n: 'Mandata' });
+  const dn = [Math.sin(rad(35)), 0, Math.cos(rad(35))];
+  cp(mesh(G.open(.066, .26, rad(-20), rad(110)), M.sDoor, 0, .205, 0), { d: .86, from: [dn[0] * .3, .04, dn[2] * .3], spin: [0, 0, 0], dur: .6, ease: eoc, n: 'Chiusura del mantello' });
+  cp(mesh(G.open(.0725, .275, PI / 2, PI), M.sFelt, 0, .2, 0), { d: .92, from: [0, 0, -.35], spin: [0, 0, 0], ease: eoc, n: 'Cuffia insonorizzante' });
+  cp(mesh(G.open(.0725, .275, -PI / 2, PI), M.sFelt, 0, .2, 0), { d: .94, from: [0, 0, .35], spin: [0, 0, 0], ease: eoc });
+  PIPE.comp = [[AX, .4, AZ], [AX, .3, AZ], [AX, .14, AZ], [AX * .8, .1, AZ * .8], [-.04, .12, .02], [.012, .12, 0], [0, .16, -.01], [.01, .21, .012], [-.01, .27, 0], [0, .32, -.01], [-.02, .37, -.02], [-.02, .43, -.02]];
+}
+const qcw = p => [CX + p[0] * KS, Y5 + p[1] * KS, CZ + p[2] * KS];
+
+// 6 ─ Evaporatore, ventilatore e circuito del propano
+const FP = {
+  dis: [qcw([-.02, .43, -.02]), [CX - .012, Y5 + .3, CZ - .03], [.12, Y5 + .3, -.2], [.06, YC - .02, -.25], [.0455, AT(1.38), -.258], [.0455, AT(1.29), -.258]],
+  cond: (() => { const a = [], n = 64; for (let i = 0; i <= n; i++) { const f = i / n, az = 170 - f * 700; a.push(polare(az, RT + .012, lerp(AT(1.27), AT(.52), f))); } return a; })(),
+  liq: [[-.0455, AT(.5), -.258], [-.05, AT(.6), -.27], [-.06, AT(1.0), -.272], [-.06, AT(1.4), -.27], [-.03, YC + .02, -.262], [.08, Y5 + .02, -.255], [.2, Y5 + .02, -.2], [.25, Y5 + .02, -.06], [.23, Y5 + .03, .08], [.17, Y5 + .05, .13]],
+  exp: [[.17, Y5 + .09, .13], [.13, Y5 + .1, .17], [.07, Y5 + .06, .17], [EX + .012, Y5 + .05, .16]],
+  evap: (() => { const a = []; for (let i = 0; i < 5; i++) { const y = Y5 + .055 + i * .057, f = i % 2 === 0; a.push([EX + .014, y, f ? .15 : -.19], [EX + .014, y, f ? -.19 : .15]); } return a; })(),
+  suc: [[EX + .01, Y5 + .3, -.2], [.06, Y5 + .33, -.17], [CX - .115 * KS, Y5 + .3, CZ + .05 * KS], [CX - .115 * KS, Y5 + .24, CZ + .05 * KS]],
+  bypass: [[.12, Y5 + .3, -.2], [.15, Y5 + .22, -.06], [.11, Y5 + .13, .07], [.07, Y5 + .07, .16]],
+  cond6: [[EX + .03, Y5 + .012, .1], [.08, YC - .02, .2], [.22, AT(1.45), .14], [.27, AT(1.375), .03], [R, AT(1.37), 0]],
+  aria: [[.16, YC + .75, 0], [.16, YC + .45, 0], [.15, Y5 + .22, .0], [.08, Y5 + .16, -.02], [EX - .02, Y5 + .15, -.02], [FX + .06, FY, FZ], [FX, FY - .02, FZ - .02], [FX, FY + .1, FZ - .066], [FX - .005, YC + .3, -.01], [-.16, YC + .45, 0], [-.16, YC + .8, 0]],
+};
+for (const k in FP) PIPE[k] = FP[k];
+const fanRot = new THREE.Group();
+group('frig', 'Evaporatore, ventilatore e circuito R290', 'Il ventilatore aspira l\'aria della stanza attraverso l\'evaporatore a microcanali: il propano le toglie calore. Valvola di espansione elettronica e by-pass.', 26.5, 31.5, { stage: [0, 0, 0], ex: [0, .8, 0], az: 30, el: 30, zoom: .95,
+  info: { e: 'Qui la pompa di calore prende il calore dall\'aria della stanza: l\'aria esce più fresca e più asciutta, per questo sta bene in lavanderia o in dispensa.', s: 'Evaporatore a microcanali · ventilatore centrifugo · valvola di espansione elettronica · valvola a 2 vie di by-pass · pressostato di bassa · presa di servizio · sonde T1, T4, T5 · box elettrico con coperchio a 4 viti · manuale 00340944 p.13, 18, 26' } });
+{
+  // evaporatore a microcanali, in piedi tra la camera d'ingresso e quella del ventilatore
+  P(mesh(G.box(.06, .012, .38), M.galv, EX, Y5 + .016, -.02), { d: 0, from: [0, -.2, 0], n: 'Vaschetta della condensa' });
+  [-.2, .16].forEach((z, i) => P(mesh(G.cyl(.011, .28, 16), M.alu, EX, Y5 + .17, z), { d: .03 + i * .02, from: [0, .4, 0], n: i ? null : 'Collettori' }));
+  PIN(G.box(.018, .003, .34), M.alu, Array.from({ length: 14 }, (_, i) => ({ p: [EX, Y5 + .05 + i * .019, -.02] })), { d0: .07, d1: .2, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Microcanali', snd: 'fin' });
+  PIN(G.box(.016, .016, .34), M.evap, Array.from({ length: 13 }, (_, i) => ({ p: [EX, Y5 + .0595 + i * .019, -.02] })), { d0: .2, d1: .3, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Alette a feritoie', snd: 'fin' });
+  P(mesh(G.box(.004, .29, .4), M.galv, EX - .016, Y5 + .17, -.02), { d: .32, from: [-.3, 0, 0], spin: [0, 0, 0], n: 'Paratia' });
+  P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, EX + .014, Y5 + .27, -.2), { d: .34, n: 'Sonda T4 dell\'evaporatore' });
+  // ventilatore centrifugo: chiocciola, girante, motore
+  const sh = new THREE.Shape(); sh.moveTo(.032, .063); for (let i = 0; i <= 40; i++) { const f = i / 40, a = lerp(.35 * PI, 2 * PI, f), r = lerp(.07, .1, f); sh.lineTo(r * Math.cos(a), r * Math.sin(a)); } sh.lineTo(.1, .14); sh.lineTo(.032, .14); sh.closePath();
+  const hole = new THREE.Path(); hole.absarc(0, 0, .046, 0, PI * 2, true); sh.holes.push(hole);
+  const vg = new THREE.ExtrudeGeometry(sh, { depth: .09, bevelEnabled: false, curveSegments: 24 }); vg.translate(0, 0, -.045); vg.rotateY(PI / 2);
+  P(mesh(vg, M.plastic, FX, FY, FZ), { d: .38, from: [-.4, .2, 0], spin: [1, 0, 0], dur: .55, n: 'Chiocciola del ventilatore' });
+  fanRot.position.set(FX, FY, FZ); CUR.node.add(fanRot);
+  PIN(G.box(.07, .022, .003), M.black, Array.from({ length: 30 }, (_, i) => { const a = i / 30 * PI * 2; return { p: [0, Math.cos(a) * .058, Math.sin(a) * .058], r: [-a + .45, 0, 0] }; }), { parent: fanRot, d0: .44, d1: .56, from: [.3, 0, 0], spin: [3, 0, 0], ease: eoc, n: 'Girante a pale curve', snd: 'tick' });
+  P(mesh(G.cylX(.064, .004, 32), M.black, -.036, 0, 0), { parent: fanRot, d: .58, from: [.3, 0, 0], spin: [3, 0, 0] });
+  P(mesh(G.cylX(.04, .065, 28), M.black, FX - .08, FY, FZ), { d: .62, from: [-.4, 0, 0], spin: [4, 0, 0], n: 'Motore del ventilatore' });
+  P(mesh(G.box(.006, .1, .1), M.galv, FX - .048, FY, FZ), { d: .64, from: [-.3, 0, 0], spin: [0, 0, 0] });
+  P(mesh(G.box(.09, YC + .3 - (FY + .14), .068), M.plastic, FX, (YC + .3 + FY + .14) / 2, FZ - .066), { d: .66, from: [0, .4, 0], spin: [0, 0, 0], n: 'Condotto verso l\'uscita dell\'aria' });
+  // circuito del propano
+  const tub = (k, r, d, n, m = M.copper) => P(mesh(tubeGeo(FP[k], r, FP[k].length * 14), m), { d, dur: .5, n });
+  tub('dis', .005, .7, 'Mandata del gas caldo'); tub('liq', .004, .73, 'Linea del liquido'); tub('exp', .004, .76, null); tub('suc', .0065, .79, 'Aspirazione'); tub('bypass', .0035, .82, 'Linea di by-pass');
+  P(mesh(tubeGeo(FP.suc.slice(0, 3), .012, 30), M.foam), { d: .84, n: 'Isolamento dell\'aspirazione' });
+  tub('cond6', .006, .845, 'Scarico della condensa (6)', M.grey);
+  P(mesh(G.cyl(.011, .036, 14), M.brass, .17, Y5 + .065, .13), { d: .85, n: 'Valvola di espansione elettronica' }); P(mesh(G.cyl(.018, .032, 20), M.blue, .17, Y5 + .1, .13), { d: .86 });
+  P(mesh(G.cyl(.01, .03, 12), M.brass, .11, Y5 + .13, .07), { d: .87, n: 'Valvola a 2 vie di by-pass' }); P(mesh(G.rbox(.03, .03, .03, .004), M.black, .11, Y5 + .16, .07), { d: .88 });
+  P(mesh(G.cyl(.0065, .02, 6), M.brass, .065, Y5 + .34, -.17), { d: .89, n: 'Pressostato di bassa pressione' }); P(mesh(G.cyl(.0085, .018, 12), M.plastic, .065, Y5 + .358, -.17), { d: .895 });
+  P(mesh(G.cyl(.005, .018, 8), M.brass, .09, Y5 + .325, -.135), { d: .9, n: 'Presa di servizio' }); P(mesh(G.cyl(.0065, .008, 6), M.blue, .09, Y5 + .338, -.135), { d: .905 });
+  P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, .1, Y5 + .3, -.115), { d: .91, n: 'Sonda T5 di aspirazione' });
+  P(mesh(G.rbox(.012, .022, .012, .003), M.plastic, .17, Y5 + .33, .06), { d: .915, n: 'Sonda T1 dell\'aria ambiente' });
+  // box elettrico, con il coperchio metallico a 4 viti
+  const bx = -.16, by = Y5 + .1, bz = -.14;
+  P(mesh(G.box(.05, .18, .12), M.galv, bx, by, bz), { d: .92, from: [-.4, 0, -.2], spin: [0, 0, 0], n: 'Box elettrico' });
+  P(mesh(G.box(.003, .16, .1), M.pcb, bx + .02, by, bz), { d: .94, from: [.3, 0, 0], spin: [0, 0, 0], n: 'Scheda di controllo' });
+  PIN(G.cyl(.008, .022, 12), M.cap, [[-.04, -.02], [-.04, .02], [.0, -.02]].map(([y, z]) => ({ p: [bx + .032, by + y, bz + z], r: [0, 0, PI / 2] })), { d0: .95, d1: .96 });
+  P(mesh(G.box(.003, .18, .12), M.sBox, bx + .027, by, bz), { d: .97, from: [.4, 0, 0], spin: [0, 0, 0], n: 'Coperchio del box' });
+  screws([[-.08, -.05], [-.08, .05], [.08, -.05], [.08, .05]].map(([y, z]) => ({ p: [bx + .029, by + y, bz + z], r: [0, 0, -PI / 2] })), { d0: .98, d1: 1, n: 'Quattro viti' });
+}
+
+// 7 ─ Coperchio e interfaccia
+group('cop', 'Coperchio e interfaccia', 'Il cappello in plastica, isolato acusticamente: da un imbocco entra l\'aria, dall\'altro esce. Davanti, il regolatore touch screen.', 31.5, 35.0, { stage: [0, 0, 0], ex: [0, 1.2, 0], az: 20, el: 16, zoom: 1.0,
+  info: { e: 'Il cappello: protegge la pompa di calore, smorza il rumore e porta l\'aria dentro e fuori. Davanti, lo schermo per comandarlo, anche dal telefono via Wi-Fi.', s: 'Plastica isolata acusticamente · imbocchi aria Ø 177 mm a 320 mm di interasse, canalizzabili DN 180 · regolatore touch screen · Wi-Fi integrato · manuale 00340944 p.12-14' } });
+{
+  const prof = [[R, 0], [R, .06], [.296, .26], [.275, .355], [.235, .4], [.0885, .405]].map(([r, y]) => new THREE.Vector2(r, y));
+  P(mesh(new THREE.LatheGeometry(prof.map(v => new THREE.Vector2(v.x - .012, v.y - .006)), 48), M.sFelt, 0, YC, 0), { d: 0, from: [0, .8, 0], spin: [0, 1, 0], dur: .55, n: 'Isolamento acustico' });
+  P(mesh(new THREE.LatheGeometry(prof, 56), M.sCov, 0, YC, 0), { d: .14, from: [0, 1.0, 0], spin: [0, .8, 0], dur: .65, n: 'Coperchio superiore in plastica' });
+  P(mesh(G.cyl(.0885, .002, 32), M.sCov, 0, YC + .405, 0), { d: .2, from: [0, .6, 0] });
+  [[-.16, 'Uscita dell\'aria'], [.16, 'Ingresso dell\'aria']].forEach(([x, n], k) => {
+    P(mesh(G.open(.0885, .04, 0, PI * 2, 40), M.sCov, x, YC + .425, 0), { d: .26 + k * .14, from: [0, .5, 0], spin: [0, 2, 0], n });
+    for (let i = 0; i < 4; i++) P(mesh(G.torus(.022 + i * .019, .003, PI * 2, 40), M.black, x, YC + .438, 0, PI / 2, 0, 0), { d: .3 + k * .14 + i * .02, from: [0, .35, 0], spin: [0, 0, 0], snd: 'tick', n: i ? null : 'Griglia' });
+    PIN(G.box(.17, .004, .004), M.black, [0, 1, 2].map(i => ({ p: [x, YC + .438, 0], r: [0, i * PI / 3, 0] })), { d0: .38 + k * .14, d1: .39 + k * .14, from: [0, .3, 0], spin: [0, 1, 0] }); });
+  // regolatore touch screen sul fronte
+  const sy = YC + .2, sz = .296;
+  P(mesh(G.rbox(.13, .13, .02, .01), M.black, 0, sy, sz - .006, -.14, 0, 0), { d: .66, from: [0, .1, .4], spin: [0, 0, 0], n: 'Regolatore touch screen' });
+  P(mesh(G.plane(.1, .1), M.schermo, 0, sy + .001, sz + .0045, -.14, 0, 0), { d: .72, from: [0, 0, .3], spin: [0, 0, 0] });
+  P(mesh(G.plane(.12, .03), M.logoC, 0, YC + .31, .278, -.4, 0, 0), { d: .76, from: [0, 0, .3], spin: [0, 0, 0], n: 'Logo' });
+  screws([0, 90, 180, 270].map(a => ({ p: polare(a + 45, R + .002, YC + .03), r: [PI / 2, 0, -rad(a + 45)] })), { d0: .82, d1: .9, mat: M.steel, n: 'Viti del coperchio' });
+}
+finalize();
+function schermo(set, lav) { const c = T.schermo.image.getContext('2d'); c.fillStyle = '#0d1114'; c.fillRect(0, 0, 256, 256); c.fillStyle = '#9fd8ff'; c.font = '700 92px Barlow, Arial, sans-serif'; c.textAlign = 'center'; c.fillText(set + '°', 128, 150);
+  c.font = '600 26px Barlow, Arial, sans-serif'; c.fillStyle = lav ? '#ffb070' : '#5a6a74'; c.fillText(lav ? 'IN FUNZIONE' : 'ATTESA', 128, 205); T.schermo.needsUpdate = true; }
+
+// ───────── HP 300PSDX · flussi, logica dell'acqua, film e strumenti ─────────
+// Numeri a schermo, tutti dal manuale 00340944: set di fabbrica 55 °C (p.32); 65 °C massimo con la sola pompa di calore e 70 °C con la resistenza (p.37);
+// contatto fotovoltaico che porta il set a 65 °C (p.32); antilegionella a 65 °C (p.30). La velocità di scarico e ricarica del serbatoio è qualitativa.
+const TA = 3.5, TR = 35, TE = 49;
+const ST = { ghost: 0, xray: 0, E: 0, shr: 1, read: 0, comp: 0, fan: 0, ref: 0, air: 0, demo: 0, water: 0, dw: 0, heat: 0, caldo: 1, set: 55, who: 0 };
 const A = { caldo: 1, doccia: false, fv: false, anti: false, res: false, comp: false, set: 55 };
-const FINE_M = 31, FINE = 39;
-const U = { mode: 'start', t: 0, tool: 'tocca', e: 0, eTo: 0, sez: 0, sezTo: 0, x: 0, az: rad(25), el: rad(10), zoom: 1, auto: true };
+let setPrima = 55;
 function passoAcqua(dt) {
   A.set = A.res ? 70 : (A.fv || A.anti) ? 65 : 55;
+  if (A.set > setPrima) A.caldo = Math.min(A.caldo, .7); setPrima = A.set;                 // set più alto: il serbatoio non è più "pieno"
   if (A.doccia) A.caldo = Math.max(0, A.caldo - dt * .075);
   A.comp = A.doccia ? A.caldo < .6 : A.caldo < 1; if (A.comp) A.caldo = Math.min(1, A.caldo + dt * (A.res ? .06 : .03));
   if (A.doccia && A.caldo <= 0) A.doccia = false;
 }
-const VISTA_F = { az: 28, el: 9, d: 5.8, y: 1.0 };
-function vistaFilm(t) { let v = G[0].vista; for (let i = 0; i < G.length; i++) { const k = sm(G[i].t0 - .5, G[i].t0 + .7, t), w = G[i].vista; v = { az: lerp(v.az, w.az, k), el: lerp(v.el, w.el, k), d: lerp(v.d, w.d, k), y: lerp(v.y, w.y, k) }; }
-  const k = sm(FINE_M - .3, FINE_M + 1.2, t); return { az: lerp(v.az, VISTA_F.az, k) + (t - FINE_M > 0 ? (t - FINE_M) * 2.5 : 0), el: lerp(v.el, VISTA_F.el, k), d: lerp(v.d, VISTA_F.d, k), y: lerp(v.y, VISTA_F.y, k) }; }
-let stretto = false, lastSet = 0, lastCaldo = -1;
-function posa(now, dt) {
-  const film = U.mode === 'film', t = film ? U.t : FINE;
-  for (const g of G) for (const p of g.pezzi) { const dur = (g.t1 - g.t0) * .42, k = film ? Math.max(1 - sm(1.2, 2.0, t), clamp((t - (g.t0 + p.rit * (g.t1 - g.t0 - dur))) / dur)) : 1, e = eoc(k);   // i primi due secondi: la macchina finita, poi si apre e si rimonta
-    p.o.visible = k > 0; p.o.position.copy(p.home).addScaledVector(p.da, 1 - e).addScaledVector(g.esp, U.e); }
-  // in funzione (fine film): rivestimento ai raggi X; negli strumenti che guardano dentro: sezione
-  U.x = film ? sm(FINE_M, FINE_M + 1.2, t) : 0; U.sez = lerp(U.sez, U.sezTo, 1 - Math.exp(-dt * 6));
-  for (const m of RAGGI) { m.opacity = lerp(m.userData.o, .1, U.x); m.depthWrite = U.x < .5; }
-  M.inox.opacity = film ? lerp(1, .32, Math.max(sm(G[1].t0 - .3, G[1].t0 + .8, t))) : .32; M.inox.depthWrite = M.inox.opacity > .9;
-  TAGLIO.constant = lerp(.75, 0, U.sez); const cl = U.sez > .01 ? [TAGLIO] : null; for (const m of TAGLIABILI) m.clippingPlanes = cl;
-  const dentro = Math.max(U.x, U.sez, U.e > .15 ? 1 : 0);
-  acqua.visible = !film || t > FINE_M; acquaM.opacity = .62 * (film ? U.x : 1); acqua.position.y = B + .78 + G[0].esp.y * U.e;
-  if (film) { A.doccia = t > FINE_M + 2.2 && t < FINE_M + 5.4; if (t < FINE_M + 2.2) A.caldo = 1; }
-  if (!film || t > FINE_M) passoAcqua(dt);
-  if (Math.abs(A.caldo - lastCaldo) > .004 || A.set !== lastSet) { disegnaAcqua(A.caldo, A.set); lastCaldo = A.caldo; if (A.set !== lastSet) { lastSet = A.set; schermo(A.set + '°'); $('oSet').textContent = A.set + ' °C'; } $('bCaldo').style.width = (A.caldo * 100).toFixed(1) + '%'; }
-  const on = A.comp ? 1 : 0; M.allu.emissiveIntensity = lerp(M.allu.emissiveIntensity, on * (.5 + .2 * Math.sin(now * 5)), .1); evap.material.emissiveIntensity = lerp(evap.material.emissiveIntensity, on * .5, .1);
-  M.res.emissiveIntensity = lerp(M.res.emissiveIntensity, A.res ? 1.6 : 0, .1); if (on) girante.rotation.x += dt * 14;
-  for (const [f, v] of [[fFredda, -1], [fCalda, 1]]) { f.material.opacity = lerp(f.material.opacity, A.doccia ? 1 : 0, .15); f.material.map.offset.x -= dt * 1.6 * v; f.visible = f.material.opacity > .02; }
-  aria.material.opacity = lerp(aria.material.opacity, on * (dentro > .3 ? .9 : .0), .1);
-  if (aria.material.opacity > .02) { for (let i = 0; i < NA; i++) { const u = (now * .22 + i / NA) % 1, p = ARIA.getPoint(u), j = Math.sin(i * 12.9898) * .5; aPos[i * 3] = p.x + j * .05; aPos[i * 3 + 1] = p.y + G[4].esp.y * U.e * (u > .15 && u < .85 ? 1 : .6); aPos[i * 3 + 2] = p.z + Math.cos(i * 78.233) * .04;
-      const fr = sm(.3, .45, u); aCol[i * 3] = lerp(1, .55, fr); aCol[i * 3 + 1] = lerp(.92, .8, fr); aCol[i * 3 + 2] = lerp(.82, 1, fr); } aGeo.attributes.position.needsUpdate = true; aGeo.attributes.color.needsUpdate = true; }
-  // camera
-  let v; if (film) v = vistaFilm(t); else { if (U.auto) U.az += dt * .12; v = { az: U.az / PI * 180, el: U.el / PI * 180, d: 5.8 * U.zoom, y: 1.0 + .3 * U.e }; }
-  const d = v.d * (stretto ? 1.18 : 1), ce = Math.cos(rad(v.el)), yy = v.y - (stretto ? .0 : 0) - (U.mode === 'free' ? d * (stretto ? .075 : .05) : 0);
-  camera.position.set(Math.sin(rad(v.az)) * ce * d, yy + Math.sin(rad(v.el)) * d, Math.cos(rad(v.az)) * ce * d); camera.lookAt(0, yy, 0);
+// flussi
+const PATH = {};
+{
+  const fRef = new Flow(machine, 360, .018), fCmp = new Flow(cmp, 60, .012), fAir = new Flow(machine, 220, .03, .01), fC = new Flow(machine, 90, .026), fH = new Flow(machine, 90, .026);
+  const compW = PIPE.comp.map(qcw), cw = [[.43, AT(.0325), -.6], [.43, AT(.0325), -.04], [.4, AT(.0325), 0], [R - .01, AT(.0325), 0], [.19, AT(.0325), 0], [.155, B + .05, 0], [.15, B + .14, 0]];
+  const hw = [[.04, AT(1.42), 0], [.08, AT(1.33), 0], [.16, AT(1.27), 0], [R + .045, AT(1.27), 0], [.4, AT(1.27), 0], [.43, AT(1.27), -.04], [.43, AT(1.27), -.6]];
+  const giro = [seg(compW, PALE, HOT), seg('dis', HOT, HOT), seg('cond', HOT, WARM), seg('liq', WARM, WARM), seg('exp', WARM, COLD), seg('evap', COLD, COOL), seg('suc', PALE, PALE)];
+  PATH.ref = fRef.path(giro); PATH.ride = giroDi(fRef.path(giro, 900)); PATH.cmp = fCmp.path([seg(PIPE.comp, COLD, HOT)]);
+  PATH.aria = fAir.path([seg(FP.aria.slice(0, 5), [1.0, .8, .55], [.9, .78, .6]), seg(FP.aria.slice(4), [.3, .7, 1.5], [.45, .75, 1.3])]);
+  PATH.cw = fC.path([seg(cw, W0, W0)]); PATH.hw = fH.path([seg(hw, W1, W1)]);
+  Object.assign(PATH, { fRef, fCmp, fAir, fC, fH });
+}
+let fanA = 0, crankA = 0, lastAcq = '', lastScr = '';
+const CFG = {
+  id: 'acs', nome: 'HP', modello: '300PSDX', sub: 'Unical · scaldacqua a pompa di calore · 300 l · R290',
+  start: { k: 'Scaldacqua a pompa di calore Unical HP 300PSDX', p: 'Prende il calore dall\'aria della stanza e lo mette nell\'acqua. Poi provalo tu: smontalo, guardaci dentro, segui il gas, apri la doccia.', dur: '45 secondi' },
+  T_ASM: TA, T_RUN: TR, T_END: TE, MC: V(.06, 1.02, 0), BW: 1.25, BH: 2.3, S: ST,
+  ganci: [[.1, 1.5, '55 °C', 'var(--heat)', 'acqua calda presa dall\'aria della stanza'], [1.55, TA - .2, 'R290', 'var(--ice)', 'il propano: un refrigerante naturale']],
+  letture: [['Temperatura impostata', s => s.set + ' °C', 'var(--heat)'], ['Al lavoro', s => ['In attesa', 'Pompa di calore', 'Pompa di calore + resistenza'][s.who], null, 'gen']],
+  caps: [[0, 'In funzione', 'Il compressore scalda il propano, che cede il calore all\'acqua attraverso il condensatore avvolto. L\'acqua calda si raccoglie in alto.'],
+    [4.5, 'Una doccia', 'L\'acqua calda esce dall\'alto, quella fredda entra dal fondo. Quando la riserva cala, la pompa di calore riparte.'],
+    [8.6, 'Il sole sul tetto', 'Con il contatto fotovoltaico la temperatura sale a 65 °C: l\'energia del sole si mette da parte come acqua calda.'],
+    [12, 'Unical HP 300PSDX', '300 litri in inox Duplex · propano R290 · fino a 65 °C con la sola pompa di calore, 70 °C con la resistenza.']],
+  camRun(H, TUTTO) { H(TR + .9, TUTTO, 10, 9); H(TR + 4.6, { off: [.06, .8, 0], w: 1.0, h: 1.7 }, -24, 6); H(TR + 8.5, { off: [.0, 1.65, 0], w: .95, h: .85 }, 28, 20); H(TR + 12, TUTTO, 6, 9); },
+  film(t, fase) {
+    if (fase === 0) Object.assign(ST, { xray: 0, comp: 1.5, fan: 4, air: 1, ref: 0, demo: 0, water: 0, dw: 0, heat: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0, who: 1, set: 55, caldo: 1 });
+    else if (fase === 1) { const a = 21.0; Object.assign(ST, { xray: .85 * sm(10.9, 11.4, t) * (1 - sm(12.25, 12.6, t)), comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), fan: 0, air: 0, ref: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), water: 0, dw: 0, heat: 0, E: 0, shr: 1, read: 0, who: 1, set: 55, caldo: 1 }); }
+    else { const r = t - TR, x = sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r));
+      Object.assign(ST, { xray: x, comp: 3 * sm(.6, 2, r), fan: 5 * sm(.3, 1.8, r), air: sm(.8, 2, r), ref: sm(1.4, 2.4, r) * x, demo: 0, water: sm(.2, 1, r), dw: sm(4.6, 5, r) * (1 - sm(7.8, 8.2, r)), heat: 0, E: 0, shr: 1, read: r > 1 ? 1 : 0,
+        caldo: 1 - .45 * sm(4.8, 7.8, r) + .45 * sm(8.4, 11.5, r), set: r > 8.6 ? 65 : 55, who: 1 }); }
+  },
+  look(now, dt) {
+    fanA += dt * ST.fan * PI * 2; fanRot.rotation.x = fanA; crankA += dt * ST.comp * PI * 2; crank.rotation.y = crankA;
+    acqua.visible = ST.water > .01; acquaM.opacity = .62 * ST.water;
+    const ka = ST.caldo.toFixed(3) + '|' + ST.set; if (ka !== lastAcq) { lastAcq = ka; disegnaAcqua(ST.caldo, ST.set); }
+    const ks = ST.set + '|' + (ST.comp > 1 ? 1 : 0); if (ks !== lastScr) { lastScr = ks; schermo(ST.set, ST.comp > 1); }
+    const on = clamp(ST.comp / 3); M.condA.emissiveIntensity = on * (.3 + .1 * Math.sin(now * 4)); M.evap.emissiveIntensity = on * .35; M.res.emissiveIntensity = ST.heat * 1.6;
+    PATH.fRef.upd(now, ST.ref, .05 + ST.comp * .006, PATH.ref); PATH.fCmp.upd(now, ST.demo * .55, .55, PATH.cmp); PATH.fAir.upd(now, ST.air, .09 + ST.fan * .01, PATH.aria);
+    PATH.fC.upd(now, ST.dw, .14, PATH.cw); PATH.fH.upd(now, ST.dw, .14, PATH.hw);
+    ombra.material.opacity = .85 * (1 - clamp(ST.E * 1.5)) * ST.shr;
+  },
+  libero() { Object.assign(A, { caldo: .85, doccia: false, fv: false, anti: false, res: false, comp: true }); setPrima = 55; Object.assign(ST, { comp: 3, fan: 5, ref: 0, air: 1, demo: 0, water: 1, dw: 0, heat: 0, caldo: .85, set: 55, who: 1 }); },
+  short: { tank: 'Serbatoio', coil: 'Serpentino', cond: 'Condensatore', iso: 'Rivestimento', comp: 'Compressore', frig: 'Evaporatore', cop: 'Coperchio' },
+  gusci: ['iso', 'cop'], aperti: [],
+  tick(dt, { U, ease, inside, calm }) {
+    passoAcqua(dt); const run = A.comp || U.ride;
+    ease('comp', run ? 3 * calm : 0); ease('fan', A.comp ? 5 * calm : 0); ease('ref', run && inside ? calm : 0, 3); ease('air', A.comp && !U.ride ? calm : 0); ease('water', 1); ease('dw', A.doccia ? calm : 0, 3); ease('heat', A.res && A.comp ? 1 : 0);
+    ST.caldo = A.caldo; ST.set = A.set; ST.who = A.comp ? (A.res ? 2 : 1) : 0;
+    if (U.tool === 'doccia') uiDoccia();
+  },
+  entra() { },
+  ronzio: s => [s.fan, s.comp],
+  stato: () => ({ caldo: +A.caldo.toFixed(3), doccia: A.doccia, set: A.set, comp: A.comp, who: ST.who, fan: +ST.fan.toFixed(2), water: +ST.water.toFixed(2) }),
+};
+function uiDoccia() { $('kDoccia').textContent = A.doccia ? 'Chiudi la doccia' : 'Apri la doccia'; press($('kDoccia'), A.doccia); $('bCaldo').style.width = (A.caldo * 100).toFixed(1) + '%';
+  $('pDoccia').textContent = A.doccia ? (A.comp ? 'La riserva è scesa: la pompa di calore riparte e la ricarica mentre fai la doccia.' : 'Esce l\'acqua calda dall\'alto, entra quella fredda dal fondo.')
+    : A.comp ? 'Doccia chiusa: la pompa di calore ricarica il serbatoio.' : 'Serbatoio carico: la pompa di calore aspetta.'; }
+function uiModi() { press($('kFv'), A.fv); press($('kAnti'), A.anti); press($('kRes'), A.res);
+  $('pModi').textContent = A.res ? 'Resistenza accesa: l\'acqua arriva fino a 70 °C. Serve quando fuori dalla lavanderia fa molto freddo o c\'è fretta.'
+    : A.fv ? 'Contatto fotovoltaico: quando i pannelli producono, la temperatura sale a 65 °C e il sole si mette da parte come acqua calda.'
+    : A.anti ? 'Antilegionella: una volta a settimana l\'acqua sale a 65 °C per circa mezz\'ora.' : 'Di fabbrica l\'acqua è a 55 °C. Prova un modo.'; }
+CFG.strumenti = ['touch', 'expl',
+  { k: 'xray', nota: 'Arancio: acqua calda, blu: acqua fredda. Dentro il cerchio il propano corre nei tubi, rosso quando è caldo e azzurro quando è freddo.' },
+  { k: 'ride', titolo: 'Segui il propano nel suo giro', path: () => PATH.ride, vel: .7, dist: [.7, 1.1], inizio: 'Si parte dal compressore',
+    frasi: [[0, 'Nel compressore il propano viene schiacciato e si scalda'], [1, 'Caldo, scende verso il serbatoio'], [2, 'Gira intorno al serbatoio e cede il calore all\'acqua attraverso l\'acciaio'], [3, 'Ormai liquido, risale verso la valvola di espansione'],
+      [4, 'La valvola lo fa espandere: diventa freddissimo'], [5, 'Nell\'evaporatore prende il calore dall\'aria della stanza'], [6, 'Torna al compressore come gas, e il giro ricomincia']],
+    fine: 'Giro finito: è sempre lo stesso gas, che porta il calore dall\'aria all\'acqua.' },
+  { k: 'doccia', nome: 'Doccia', icona: '<path d="M4 20V9a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5M11 9h8M12 13v1.5M15 13v2.5M18 13v1.5M13.500 18v1.500M16.500 18v1.500"/>',
+    html: '<div class="how"><i class="gest tap"></i><span>Apri la doccia e guarda il serbatoio.</span></div><div class="row"><button class="btn" id="kDoccia" type="button" aria-pressed="false">Apri la doccia</button><div class="prog" style="flex:1" aria-label="Acqua calda nel serbatoio"><i id="bCaldo"></i></div></div><p class="note" id="pDoccia"></p>',
+    init() { $('kDoccia').onclick = () => { A.doccia = !A.doccia; uiDoccia(); }; }, entra() { uiDoccia(); } },
+  { k: 'modi', nome: 'Modi', icona: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.500M12 19v2.500M2.500 12H5M19 12h2.500M5.300 5.300l1.800 1.800M16.900 16.900l1.800 1.800M18.700 5.300l-1.800 1.800M7.100 16.900l-1.800 1.800"/>',
+    html: '<div class="keys" style="grid-template-columns:repeat(3,1fr)"><button class="key" id="kFv" type="button" aria-pressed="false">Sole sul tetto</button><button class="key" id="kAnti" type="button" aria-pressed="false">Antilegionella</button><button class="key" id="kRes" type="button" aria-pressed="false">Resistenza</button></div><p class="note" id="pModi"></p>',
+    init() { $('kFv').onclick = () => { A.fv = !A.fv; uiModi(); }; $('kAnti').onclick = () => { A.anti = !A.anti; uiModi(); }; $('kRes').onclick = () => { A.res = !A.res; uiModi(); }; }, entra() { uiModi(); } },
+];
+
+// ───────── Pagine prodotto · camera, didascalie e film (dopo i pezzi del prodotto) ─────────
+// Il prodotto, nei suoi file, ha già costruito i pezzi (group, P, PIN, screws, finalize) e ha definito CFG:
+//   id, nome, modello, sub, start { k, p, dur }           testi della pagina
+//   T_ASM, T_RUN, T_END, MC, BW, BH                       tempi del film (aggancio, montaggio, funzionamento) e inquadratura d'insieme
+//   ganci [[t0, t1, grande, colore, piccolo], ...]        le scritte dell'aggancio iniziale
+//   letture [[etichetta, S => testo, colore, classe], ...] i numeri in alto a sinistra
+//   caps [[dt, titolo, testo], ...]                       didascalie della parte in funzione (dt dopo T_RUN); l'ultima senza numero è la firma
+//   S                                                     stato visivo (deve avere xray, ghost, E, shr, read)
+//   film(t, fase)                                         riempie S: fase 0 aggancio, 1 montaggio, 2 in funzione
+//   look(now, dt)                                         applica S alla scena (rotazioni, flussi, luci)
+//   libero()                                              stato all'ingresso nella parte libera
+//   scossa(t), dx(g), stato()                             facoltativi
+const { T_ASM, T_RUN, T_END, MC, BW, BH } = CFG, S = CFG.S;
+$('bN').innerHTML = CFG.nome + ' <span>' + CFG.modello + '</span>'; $('bSub').textContent = CFG.sub; $('sK').textContent = CFG.start.k; $('sP').textContent = CFG.start.p; $('sDur').textContent = CFG.start.dur;
+CFG.letture.forEach(([l, , col, cls]) => { const d = document.createElement('div'); if (cls) d.className = cls; const s = document.createElement('small'), b = document.createElement('b'); s.textContent = l; if (col) b.style.color = col; d.append(s, b); $('read').appendChild(d); });
+
+// ───────── camera ─────────
+const KEYS = [], rig = { t: V(), az: 0, el: 0, w: 2, h: 1.5 }, _a = V(), _b = V(), _o = V();
+const K = (t, g, az, el, w, h, off) => KEYS.push({ t, g, az: rad(az), el: rad(el), w, h, off: off || [0, 0, 0] });
+const H = (t, hm, az, el, k = 1) => K(t, -1, az, el, hm.w * k, hm.h * k, [hm.off[0] - MC.x, hm.off[1] - MC.y, hm.off[2] - MC.z]);
+const TUTTO = { off: MC.toArray(), w: BW, h: BH };
+K(0, -1, 10, 6, BW * .92, BH * .9); K(T_ASM - 1.2, -1, 16, 8, BW * .84, BH * .82); K(T_ASM - .25, -1, 22, 13, BW * 1.55, BH * 1.45);
+for (const g of GROUPS) {
+  const W = g.t1 - g.t0, z = g.size * 2.3 * g.zoom, dx = CFG.dx ? CFG.dx(g) * z : 0, hm = g.home || TUTTO;
+  if (g.keys) for (const [f, az, el, zm, oy] of g.keys) K(g.t0 + f * W, g.i, az, el, z * zm, z * zm, [dx * zm, oy, 0]);
+  else { K(g.t0 + .45, g.i, g.az, g.el, z, z, [dx, 0, 0]); K(g.t0 + .58 * W, g.i, g.az + 14, g.el, z * 1.05, z * 1.05, [dx, 0, 0]); }
+  H(g.t1 - .6, hm, (g.keys ? g.keys[g.keys.length - 1][1] : g.az + 14) + 8, 12);
+}
+if (CFG.camRun) CFG.camRun(H, TUTTO); else { H(T_RUN + .9, TUTTO, 8, 10); H((T_RUN + T_END) / 2, TUTTO, -6, 10, .9); }
+H(T_END + .5, TUTTO, 10, 9);
+function keyTarget(k, out) { if (k.g < 0) out.copy(MC); else { const g = GROUPS[k.g]; out.copy(g.node.position).add(g.c); } return out.add(_o.set(k.off[0], k.off[1], k.off[2])); }
+function camFilm(t) {
+  let i = 0; while (i < KEYS.length - 2 && KEYS[i + 1].t <= t) i++;
+  const a = KEYS[i], b = KEYS[i + 1], u = sm(a.t, b.t, t);
+  keyTarget(a, _a); keyTarget(b, _b); rig.t.lerpVectors(_a, _b, u); rig.az = lerp(a.az, b.az, u) + Math.sin(t * .6) * .02; rig.el = lerp(a.el, b.el, u); rig.w = lerp(a.w, b.w, u); rig.h = lerp(a.h, b.h, u);
+  let sh = 0; for (const g of GROUPS) if (t > g.tb && g.stage.lengthSq() > 0) sh = Math.max(sh, Math.exp(-(t - g.tb) * 9));
+  if (t > T_ASM - 1.15 && t < T_ASM) sh = Math.max(sh, Math.exp(-(t - T_ASM + 1.15) * 5));
+  rig.t.x += Math.sin(t * 97) * .007 * sh; rig.t.y += Math.cos(t * 83) * .007 * sh;
+}
+function placeCam(r) {
+  const f = Math.tan(rad(camera.fov / 2)), d = Math.max(r.h / 2 / f, r.w / 2 / (f * camera.aspect)) * 1.1;
+  camera.position.set(r.t.x + d * Math.sin(r.az) * Math.cos(r.el), r.t.y + d * Math.sin(r.el), r.t.z + d * Math.cos(r.az) * Math.cos(r.el)); camera.lookAt(r.t);
+  return d;
 }
 
-// ───────── interfaccia ─────────
-function resize() { const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight); renderer.setSize(w, h, false); camera.aspect = w / h; stretto = w < h; camera.fov = stretto ? 38 : 30; camera.updateProjectionMatrix(); }
-addEventListener('resize', resize); new ResizeObserver(resize).observe(stage); resize();
-const setMode = m => { U.mode = m; document.body.className = m; };
-function didascalia(t) { let i = 0; for (let k = 0; k < G.length; k++) if (t >= G[k].t0 - .3) i = k; const run = t >= FINE_M;
-  $('num').textContent = run ? '' : String(i + 1).padStart(2, '0'); $('name').textContent = t < G[0].t0 - .3 ? 'Unical HP 300PSDX' : run ? 'In funzione' : G[i].nome;
-  $('spec').textContent = t < G[0].t0 - .3 ? 'Scaldacqua a pompa di calore da 300 litri' : run ? (A.doccia ? 'Apri la doccia: l\'acqua fredda entra dal basso, quella calda esce dall\'alto.' : 'La pompa di calore prende calore dall\'aria e ricarica il serbatoio.') : G[i].facile; }
-function startFilm() { U.t = 0; U.e = U.eTo = 0; U.sezTo = 0; A.caldo = 1; A.doccia = A.fv = A.anti = A.res = false; setMode('film'); }
-function libero(annuncia) { setMode('free'); U.auto = true; U.az = rad(28); U.el = rad(10); U.zoom = 1; setTool('tocca'); if (annuncia) { const t = $('toast'); t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); } }
-const TESTI = {
-  doccia: () => A.doccia ? 'Doccia aperta. L\'acqua fredda entra dal basso (attacco a 32,5 mm), quella calda esce dall\'alto (1270 mm): finché resta lo strato caldo, la doccia è calda.' : A.comp ? 'Doccia chiusa. La pompa di calore riparte da sola e ricarica il serbatoio con il calore dell\'aria.' : 'Serbatoio pieno di acqua calda: 300 litri pronti.',
-  modi: () => A.res ? 'Resistenza elettrica da 1,5 kW: aiuta la pompa di calore e porta l\'acqua fino a 70 °C.' : A.anti ? 'Antilegionella: una volta a settimana porta tutto il serbatoio a 65 °C per circa 30 minuti.' : A.fv ? 'Contatto fotovoltaico chiuso: quando i pannelli producono, il set sale a 65 °C e l\'energia del sole resta nell\'acqua.' : 'Set di fabbrica 55 °C. Con la sola pompa di calore arriva a 65 °C. Prova i tre pulsanti.',
-};
-function aggiorna() { $('kDoccia').setAttribute('aria-pressed', A.doccia); $('kDoccia').textContent = A.doccia ? 'Chiudi la doccia' : 'Apri la doccia'; $('pDoccia').textContent = TESTI.doccia(); $('pModi').textContent = TESTI.modi();
-  $('kFv').setAttribute('aria-pressed', A.fv); $('kAnti').setAttribute('aria-pressed', A.anti); $('kRes').setAttribute('aria-pressed', A.res); }
-function setTool(n) { U.tool = n; for (const b of $('tabs').children) b.setAttribute('aria-pressed', b.dataset.tool === n); for (const s of $('panel').children) s.classList.toggle('on', s.dataset.tool === n);
-  U.eTo = n === 'smonta' ? +$('sE').value : 0; U.sezTo = (n === 'sezione' || n === 'doccia' || n === 'modi') ? 1 : 0; if (U.sezTo) { U.auto = false; U.az = rad(20); U.el = rad(8); } if (n === 'tocca') scheda(-1); aggiorna(); }
-function scheda(i) { $('pTocca').innerHTML = i < 0 ? 'Trascina per girare, pizzica per avvicinarti. Tocca un pezzo o un nome.' : ''; if (i >= 0) { const b = document.createElement('b'), s = document.createElement('small'); b.textContent = G[i].nome + '. '; s.textContent = G[i].tecnico; $('pTocca').append(b, G[i].facile, document.createElement('br'), s); }
-  for (const b of $('nomi').children) b.setAttribute('aria-pressed', +b.dataset.i === i); }
-G.forEach((g, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.i = i; b.textContent = g.nome; b.onclick = () => scheda(i); $('nomi').appendChild(b); });
-for (const b of $('tabs').children) b.onclick = () => setTool(b.dataset.tool);
-$('sE').addEventListener('input', e => { U.eTo = +e.target.value; });
-$('kDoccia').onclick = () => { A.doccia = !A.doccia && A.caldo > .02; aggiorna(); };
-$('kFv').onclick = () => { A.fv = !A.fv; aggiorna(); }; $('kAnti').onclick = () => { A.anti = !A.anti; aggiorna(); }; $('kRes').onclick = () => { A.res = !A.res; aggiorna(); };
-$('bGo').onclick = startFilm; $('bExplore').onclick = () => libero(false); $('bFilm').onclick = startFilm;
-// gesti nella parte libera
-const dita = new Map(), ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let mosso = 0, pinch = 0;
-canvas.addEventListener('pointerdown', e => { if (U.mode !== 'free') return; canvas.setPointerCapture(e.pointerId); dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; });
-canvas.addEventListener('pointermove', e => { const p = dita.get(e.pointerId); if (!p) return;
-  if (dita.size === 1) { const dx = e.clientX - p[0], dy = e.clientY - p[1]; mosso += Math.abs(dx) + Math.abs(dy); if (mosso > 6) U.auto = false; U.az -= dx * .008; U.el = clamp(U.el + dy * .006, rad(-4), rad(62)); }
-  dita.set(e.pointerId, [e.clientX, e.clientY]);
-  if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) U.zoom = clamp(U.zoom * pinch / d, .3, 1.5); pinch = d; mosso += 20; } });
-for (const ev of ['pointerup', 'pointercancel']) canvas.addEventListener(ev, e => { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
-  if (p && mosso < 8 && U.mode === 'free') { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(root.children, true).find(h => h.object.userData.g !== undefined && h.object.visible); if (hit) { if (U.tool !== 'tocca') setTool('tocca'); scheda(hit.object.userData.g); } } });
-canvas.addEventListener('wheel', e => { if (U.mode !== 'free') return; e.preventDefault(); U.zoom = clamp(U.zoom * Math.exp(e.deltaY * .0012), .3, 1.5); U.auto = false; }, { passive: false });
+// ───────── didascalie ─────────
+const CAPS = [];
+GROUPS.forEach(g => CAPS.push({ t: g.t0, n: String(g.i + 1).padStart(2, '0'), a: g.name, b: g.spec }));
+const NR = String(GROUPS.length + 1).padStart(2, '0');
+CFG.caps.forEach(([dt, a, b], i) => CAPS.push({ t: T_RUN + dt, n: i === CFG.caps.length - 1 ? '' : NR, a, b }));
+const el = { cap: $('cap'), num: $('num'), name: $('name'), spec: $('spec'), tick: $('tick'), count: $('count').firstElementChild, hook: $('hook'), hk1: $('hk1'), hk2: $('hk2'), read: $('read'), flash: $('flash'), segs: $('segs') };
+const SEGS = GROUPS.map(g => [g.t0, g.t1]).concat([[T_RUN, T_END]]);
+SEGS.forEach(s => { const i = document.createElement('i'); i.style.flex = String(s[1] - s[0]); i.appendChild(document.createElement('b')); el.segs.appendChild(i); });
+let capI = -2, lastCount = -1, hookK = -2; const lastR = [];
+const fmtT = v => (v < 0 ? '−' : '') + Math.abs(Math.round(v)) + ' °C';
+function setCap(n, a, b) { el.num.textContent = n; el.name.textContent = a; el.spec.textContent = b; el.tick.textContent = ''; el.cap.classList.remove('in'); void el.cap.offsetWidth; el.cap.classList.add('in'); }
+function hud(t) {
+  let i = -1; for (let k = 0; k < CAPS.length; k++) if (CAPS[k].t <= t) i = k;
+  if (i !== capI) { capI = i; if (i >= 0) setCap(CAPS[i].n, CAPS[i].a, CAPS[i].b); }
+  el.cap.style.opacity = t < T_ASM ? 0 : 1;
+  let hk = -1; CFG.ganci.forEach((h, k) => { if (t >= h[0] && t < h[1]) hk = k; });
+  if (hk !== hookK) { hookK = hk; if (hk >= 0) { const h = CFG.ganci[hk]; el.hk1.textContent = h[2]; el.hk1.style.color = h[3]; el.hk2.textContent = h[4]; } }
+  el.hook.style.opacity = hk < 0 ? 0 : sm(CFG.ganci[hk][0], CFG.ganci[hk][0] + .35, t) * (1 - sm(CFG.ganci[hk][1] - .25, CFG.ganci[hk][1], t));
+  el.flash.style.opacity = Math.max(0, 1 - Math.abs(t - T_ASM) / .22) * .9;
+  const n = t < T_ASM ? PIECES.length : placed; if (n !== lastCount) { lastCount = n; el.count.textContent = n; }
+  SEGS.forEach((s, k) => { el.segs.children[k].firstChild.style.transform = `scaleX(${clamp((t - s[0]) / (s[1] - s[0]))})`; });
+  readout();
+}
+function readout() { el.read.classList.toggle('on', S.read > .5); CFG.letture.forEach(([, f], i) => { const v = f(S); if (v !== lastR[i]) { lastR[i] = v; el.read.children[i].lastChild.textContent = v; } }); }
+onStart = p => { el.tick.textContent = p.n; el.tick.classList.remove('in'); void el.tick.offsetWidth; el.tick.classList.add('in'); };
+let sfx = null;                       // riempito dal modulo dei comandi quando l'audio è attivo
+const _w = V();
+onLand = p => { _w.copy(p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
 
-// ciclo di disegno
-let last = 0, lenti = 0, tAgg = 0;
-function passo(dt, now) { if (U.mode === 'film') { U.t += dt; didascalia(U.t); if (U.t >= FINE) libero(true); } U.e = lerp(U.e, U.eTo, 1 - Math.exp(-dt * 6)); posa(now, dt); if (U.mode === 'free' && now - tAgg > .25) { tAgg = now; aggiorna(); } }
-function frame(ts) { requestAnimationFrame(frame); if (document.hidden) { last = 0; return; } const now = ts / 1000, grezzo = last ? now - last : 0, dt = Math.min(.05, grezzo); last = now;
-  passo(dt, now); renderer.render(scene, camera);
-  if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1); }
-disegnaAcqua(1, 55); schermo('55°'); U.mode = 'start'; posa(0, 0);
-// per le prove automatiche
-window.__acs = { U, A, G, setTool, scheda, startFilm, libero, seek(t) { if (U.mode !== 'film') startFilm(); U.t = t; passo(0, t); renderer.render(scene, camera); }, avanti(s) { for (let i = 0; i < s * 20; i++) passo(.05, last + i * .05); renderer.render(scene, camera); },
-  stato: () => ({ mode: U.mode, tool: U.tool, t: +U.t.toFixed(2), e: +U.e.toFixed(3), sez: +U.sez.toFixed(3), caldo: +A.caldo.toFixed(3), set: A.set, doccia: A.doccia, comp: A.comp, pezzi: G.reduce((n, g) => n + g.pezzi.length, 0), calls: renderer.info.render.calls }) };
+// ───────── linea del tempo del filmato ─────────
+function filmState(t, emit) {
+  if (t < T_ASM) { CFG.film(t, 0); apply(T_RUN, S.E, S.shr, false); }
+  else if (t < T_RUN) {
+    CFG.film(t, 1); apply(t, 0, 1, emit);
+    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, g.c.z); if (sfx) sfx('dock'); }
+  } else { CFG.film(t, 2); apply(T_RUN, 0, 1, false); }
+}
+function applyLook(now, dt) {
+  setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost); soloAcqua(S.ghost < .003 ? 0 : S.ghost);
+  CFG.look(now, dt); updSparks(dt);
+  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar(.3 + k * 1.5); ring.material.opacity = (1 - k) * .8; } else ring.material.opacity = 0;
+}
+
+// ───────── ciclo di disegno ─────────
+// Si parte da una schermata d'inizio: il film comincia solo quando chi guarda lo chiede.
+const setBody = c => { document.body.className = c; };
+let vistaProva = null;       // solo per le prove: inquadratura fissa decisa da fuori
+let mode = 'film', started = false, playing = false, Tm = 0, now = 0, last = performance.now(), frames = 0, slow = 0, freeTick = null;
+function draw() { if (HQ && composer) composer.render(); else renderer.render(scene, camera); }
+function frame(ts) {
+  requestAnimationFrame(frame);
+  let dt = Math.min(.05, (ts - last) / 1000); last = ts; if (document.hidden) return; now += dt;
+  if (mode === 'film') {
+    if (playing) Tm += dt;
+    if (Tm >= T_END) { enterFree(); }
+    else { filmState(Tm, playing); camFilm(Tm); if (!started) { rig.az += Math.sin(now * .22) * .12; rig.w *= 1.06; rig.h *= 1.06; } hud(Tm); placeCam(rig); }
+  }
+  if (mode === 'free' && freeTick) freeTick(dt);
+  if (vistaProva) { rig.t.set(...vistaProva.t); rig.az = rad(vistaProva.az); rig.el = rad(vistaProva.el); rig.w = vistaProva.w; rig.h = vistaProva.h; placeCam(rig); }
+  applyLook(now, playing || mode === 'free' || !started ? dt : 0); draw();
+  if (++frames > 20 && frames < 140) { if (dt > .04) slow++; if (frames === 139) { if (slow > 70 && HQ) { HQ = false; renderer.setPixelRatio(1); resize(); ptSizes(); } else if (slow > 24) { renderer.setPixelRatio(Math.min(renderer.getPixelRatio(), 1.25)); resize(); ptSizes(); } } }
+}
+// modalità libera: senza il modulo dei comandi resta un modello che gira piano
+const free = { az: rad(10), el: rad(9), zoom: 1, t: MC.clone(), auto: true };
+function enterFree() {
+  const wasFree = mode === 'free'; mode = 'free'; started = true; playing = false; Tm = T_END; filmState(T_END - .001, false); hud(T_END - .001);
+  S.xray = 0; S.ghost = 0; S.read = 1; CFG.libero();
+  free.az = rig.az % (PI * 2); free.el = rig.el; free.zoom = 1; free.t.copy(MC); free.auto = true;
+  setBody('free'); if (!wasFree) { const t = $('toast'); t.classList.remove('on'); void t.offsetWidth; t.classList.add('on'); }
+  if (typeof uiEnter === 'function') uiEnter(); else freeTick = dt => { free.az += dt * .12; rig.t.copy(free.t); rig.az = free.az; rig.el = free.el; rig.w = BW; rig.h = BH; placeCam(rig); };
+}
+function startFilm(t = 0) { const wasFree = mode === 'free'; mode = 'film'; started = true; playing = true; Tm = t; capI = -2; for (const p of PIECES) p.st = -1; lastE = -1; setBody('film'); $('bPlay').textContent = 'Pausa'; if (wasFree && typeof uiLeave === 'function') uiLeave(); }
+$('bPlay').onclick = () => { playing = !playing; $('bPlay').textContent = playing ? 'Pausa' : 'Riprendi'; };
+$('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $('bExplore').onclick = () => enterFree();
+
+resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
+queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
+// per le prove: tempo, esplosione e vista comandabili da fuori
+window['__' + CFG.id] = { GROUPS, PIECES, M, PIPE, CFG, vista(v) { vistaProva = v; },
+  seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(.016); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
+  setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
+  groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
+  stato: () => Object.assign({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }, CFG.stato ? CFG.stato() : {}) };
 requestAnimationFrame(frame);
+
+// ───────── Pagine prodotto · parte libera: gli strumenti, uno alla volta (come nella UHP) ─────────
+// Dal prodotto (CFG): short { chiave del gruppo: nome corto }, gusci [chiavi degli involucri], aperti [gruppi che non serve rendere trasparenti],
+//   strumenti [...]: 'touch', 'expl', { k: 'xray', nota }, { k: 'ride', titolo, path(), vel, frasi [[tratto, testo]], fine, inizio },
+//                    oppure uno suo { k, nome, icona (path SVG), html, init(), entra(), esce() },
+//   tick(dt, { U, ease, inner, inside, calm }) lo stato dell'impianto nella parte libera, entra(U) all'ingresso, ronzio(S) per l'audio.
+const U = { tool: 'touch', E: 0, Ecur: 0, lens: false, lensAuto: true, lx: -1, ly: -1, ride: false, ru: 0, rinit: true, sel: -1, selK: 0, snd: false, vkey: '' };
+const IMS = []; machine.traverse(o => { if (o.isInstancedMesh) IMS.push(o); });
+const comet = pushed(points(40, .03), .04); comet.visible = false; machine.add(comet); const camP = V(), camL = V();
+const ray = new THREE.Raycaster(), ptr = new Map(), _n = new THREE.Vector2(), _t = V(), _d = V();
+const TOOLS = CFG.strumenti.map(t => typeof t === 'string' ? { k: t } : t), RIDE = TOOLS.find(t => t.k === 'ride') || null;
+const ICONE = {
+  touch: ['Tocca', '<circle cx="12" cy="14" r="2.6"/><path d="M7.5 9.5a6.4 6.4 0 0 1 9 0M4.6 6.6a10.5 10.5 0 0 1 14.8 0"/>'],
+  expl: ['Smonta', '<rect x="9" y="9" width="6" height="6" rx="1"/><path d="M8 8 3.5 3.5M16 8l4.5-4.5M8 16l-4.5 4.5M16 16l4.5 4.5M3.5 3.5h3M3.5 3.5v3M20.5 3.5h-3M20.5 3.5v3M3.5 20.5h3M3.5 20.5v-3M20.5 20.5h-3M20.5 20.5v-3"/>'],
+  xray: ['Raggi X', '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M7.5 10.5h6M10.5 7.5v6"/>'],
+  ride: ['Giro', '<path d="M5 8c0-3.4 14-3.4 14 0S5 12.6 5 16s14 3.4 14 0"/><circle cx="19" cy="16" r="1.8" fill="currentColor"/>'],
+};
+const press = (b, v) => b.setAttribute('aria-pressed', v ? 'true' : 'false');
+const fill = i => i.style.setProperty('--p', ((i.value - i.min) / (i.max - i.min) * 100) + '%');
+const setE = v => { U.E = v / 100; $('sE').value = v; $('oE').textContent = Math.round(v) + '%'; fill($('sE')); };
+
+// audio sintetizzato: piccoli scatti all'arrivo dei pezzi, ventilatore e compressore in funzione
+let AC = null, humF = null, humC = null, lastS = 0;
+function audioOn(v) {
+  U.snd = v; press($('bSnd'), v); press($('bSnd2'), v);
+  if (!v) { sfx = null; if (AC) AC.suspend(); return; }
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)(); const out = AC.createGain(); out.gain.value = .5; out.connect(AC.destination); AC.out = out;
+      const nb = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const ns = AC.createBufferSource(); ns.buffer = nb; ns.loop = true; const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 420; bp.Q.value = .6; humF = AC.createGain(); humF.gain.value = 0; ns.connect(bp).connect(humF).connect(out); ns.start(); humF.bp = bp;
+      const os = AC.createOscillator(); os.type = 'sawtooth'; os.frequency.value = 55; const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 190; humC = AC.createGain(); humC.gain.value = 0; os.connect(lp).connect(humC).connect(out); os.start(); humC.os = os;
+    }
+    AC.resume();
+    sfx = k => {
+      const t = AC.currentTime; if (t - lastS < (k === 'fin' ? .05 : .02)) return; lastS = t;
+      const blip = (f, dur, g, type = 'triangle', at = 0) => { const o = AC.createOscillator(), a = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t + at); o.frequency.exponentialRampToValueAtTime(f * .5, t + at + dur); a.gain.setValueAtTime(g, t + at); a.gain.exponentialRampToValueAtTime(.0008, t + at + dur); o.connect(a).connect(AC.out); o.start(t + at); o.stop(t + at + dur + .02); };
+      if (k === 'fin' || k === 'tick') blip(2200 + Math.random() * 1600, .03, .05);
+      else if (k === 'screw') { blip(1500, .025, .07, 'square'); blip(1700, .025, .06, 'square', .05); blip(1900, .03, .06, 'square', .1); }
+      else if (k === 'dock') { blip(90, .35, .5, 'sine'); blip(320, .12, .12, 'triangle'); }
+      else { blip(620 + Math.random() * 500, .07, .13); blip(2400, .02, .04, 'square'); }
+    };
+  } catch (e) { U.snd = false; sfx = null; press($('bSnd'), false); press($('bSnd2'), false); }
+}
+function audioTick() { if (!AC || !U.snd || !CFG.ronzio) return; const t = AC.currentTime, vis = mode === 'film' ? (!started ? 0 : Tm < T_ASM ? .5 : Tm > T_RUN ? 1 : 0) : 1, [f, c] = CFG.ronzio(S); humF.gain.setTargetAtTime(Math.min(.2, f * .028) * vis, t, .15); humF.bp.frequency.setTargetAtTime(240 + f * 60, t, .2); humC.gain.setTargetAtTime(Math.min(.09, c * .025) * vis, t, .15); humC.os.frequency.setTargetAtTime(38 + c * 9, t, .2); }
+
+// scheda del gruppo
+function closeCard() { U.sel = -1; $('cardIn').hidden = true; $('howTouchRow').hidden = false; for (const c of $('chips').children) press(c, false); }
+function openCard(i) {
+  const g = GROUPS[i]; U.sel = i; free.auto = false;
+  $('cK').textContent = `Gruppo ${i + 1} di ${GROUPS.length} · ${g.pieces.length} pezzi`; $('cT').textContent = g.name; $('cE').textContent = g.info.e; $('cS').textContent = g.info.s;
+  $('cardIn').hidden = false; $('howTouchRow').hidden = true; [...$('chips').children].forEach((c, k) => { press(c, k === i); if (k === i) c.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); });
+}
+function pick(x, y) {
+  const r = canvas.getBoundingClientRect(); _n.set((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1); ray.setFromCamera(_n, camera);
+  for (const im of IMS) im.boundingSphere = null;
+  for (const h of ray.intersectObject(machine, true)) { const o = h.object; if (o.isPoints || o.userData.g === undefined || !o.visible) continue; const m = Array.isArray(o.material) ? o.material[0] : o.material; if (S.xray > .5 && XRM.includes(m)) continue; return o.userData.g; }
+  return -1;
+}
+function setLens(on) { U.lens = on; $('lens').style.display = on ? 'block' : 'none'; if (on) { U.lensAuto = true; } else LENS.value.z = 0; }
+function setRide(on) {
+  if (!RIDE) return; U.ride = on;
+  if (on) { U.ru = 0; U.rinit = true; camera.fov = 44; camera.updateProjectionMatrix(); ptSizes(); $('bRideGo').textContent = 'Ferma'; $('rT').textContent = RIDE.inizio || ''; }
+  else { comet.visible = false; resize(); U.vkey = ''; ptSizes(); $('bRideGo').textContent = 'Rifai il giro'; }
+}
+function setTool(t) {
+  const prima = TOOLS.find(x => x.k === U.tool);
+  if (U.tool === 'expl' && t !== 'expl') setE(0);
+  if (U.tool === 'xray' && t !== 'xray') setLens(false);
+  if (U.ride && t !== 'ride') setRide(false);
+  if (prima && prima.esce && t !== U.tool) prima.esce();
+  if (t !== 'touch') closeCard();
+  U.tool = t; free.auto = false;
+  for (const b of $('tabs').children) b.setAttribute('aria-selected', b.dataset.tool === t ? 'true' : 'false');
+  for (const x of TOOLS) $('p_' + x.k).hidden = x.k !== t;
+  if (t === 'expl') setE(55);                                   // ogni strumento si mostra da solo appena scelto
+  if (t === 'xray') setLens(true);
+  if (t === 'ride') setRide(true);
+  const ora = TOOLS.find(x => x.k === t); if (ora && ora.entra) ora.entra();
+}
+
+function uiTick(dt) {
+  U.Ecur += (U.E - U.Ecur) * Math.min(1, dt * 4.5); if (Math.abs(U.E - U.Ecur) < .0005) U.Ecur = U.E;
+  U.selK += ((U.sel >= 0 ? 1 : 0) - U.selK) * Math.min(1, dt * 5);
+  apply(T_RUN, U.Ecur, 1, false); S.E = U.Ecur;
+  if (U.sel >= 0 && U.selK > .001) { const g = GROUPS[U.sel]; _d.copy(g.ex); if (_d.lengthSq() < .01) _d.set(0, 0, 0); else _d.normalize(); g.node.position.addScaledVector(_d, .16 * U.selK * (1 - U.Ecur)); }
+  const ease = (key, v, r = 1.6) => { S[key] += (v - S[key]) * Math.min(1, dt * r); };
+  const g0 = U.sel >= 0 ? GROUPS[U.sel] : null, inner = !!g0 && !CFG.gusci.includes(g0.key) && !(CFG.aperti || []).includes(g0.key), inside = U.lens || U.ride || inner, calm = 1 - clamp(U.Ecur * 4);
+  ease('xray', U.ride ? 1 : inner ? .92 : 0, 4); ease('ghost', U.ride ? 1 : 0, 3);
+  CFG.tick(dt, { U, ease, inner, inside, calm }); S.read = 1; readout();
+  // la barra degli strumenti copre il fondo (o, col telefono in orizzontale, il fianco destro): sposto il modello nella parte libera
+  const r = stage.getBoundingClientRect(), dk = $('dock'), side = dk.offsetWidth < r.width - 4, dockH = side ? 0 : dk.offsetHeight, fr = Math.min(.46, dockH / Math.max(1, r.height)), fx = side ? Math.min(.5, dk.offsetWidth / Math.max(1, r.width)) : 0;
+  { const key = fx + ':' + r.width + ':' + r.height; if (key !== U.vkey) { U.vkey = key; if (fx) camera.setViewOffset(r.width, r.height, r.width * fx / 2, 0, r.width, r.height); else camera.clearViewOffset(); } }
+  if (!U.ride) {
+    if (free.auto) free.az = rad(8) + Math.sin(now * .22) * rad(26);
+    const g = g0; _t.copy(g ? _d.copy(g.node.position).add(g.c) : MC); free.t.lerp(_t, Math.min(1, dt * 4));
+    const zs = g && !(CFG.aperti || []).includes(g.key) ? Math.max(.24, g.size * 2.5 / BW) : 1 + U.Ecur * .55;
+    rig.az = free.az; rig.el = free.el; rig.w += (BW * zs * free.zoom / (1 - fx) - rig.w) * Math.min(1, dt * 4); rig.h += (BH * zs * free.zoom / (1 - fr) - rig.h) * Math.min(1, dt * 4); rig.t.copy(free.t); rig.t.y -= fr * rig.h * .5; placeCam(rig);
+  } else {
+    const pa = RIDE.path(); U.ru += dt * (RIDE.vel || .6) / pa.tot;
+    if (U.ru >= 1) { setRide(false); $('rT').textContent = RIDE.fine; $('rP').style.width = '100%'; }
+    else {
+      // camera da inseguimento: sta davanti al punto che corre nei tubi e lo segue con un po' di ritardo
+      const p = pa.curve.getPointAt(U.ru), dd = RIDE.dist || [.95, 1.4]; _d.set(.22, .16, 1).normalize(); _t.copy(p).addScaledVector(_d, camera.aspect < 1 ? dd[1] : dd[0]); _t.y = Math.max(.12, _t.y);
+      if (U.rinit) { camP.copy(_t); camL.copy(p); U.rinit = false; } else { camP.lerp(_t, Math.min(1, dt * 2)); camL.lerp(p, Math.min(1, dt * 5)); }
+      camera.position.copy(camP); camera.lookAt(camL.x, camL.y - fr * .34, camL.z);
+      const cp = comet.geometry.attributes.position, cc = comet.geometry.attributes.color; comet.visible = true;
+      for (let i = 0; i < 40; i++) { const u = Math.max(0, U.ru - i * .0007), f = u * (pa.S - 1), a = f | 0, b2 = Math.min(pa.S - 1, a + 1), t = f - a, kk = 1 - i / 40;
+        cp.setXYZ(i, lerp(pa.P[a * 3], pa.P[b2 * 3], t), lerp(pa.P[a * 3 + 1], pa.P[b2 * 3 + 1], t), lerp(pa.P[a * 3 + 2], pa.P[b2 * 3 + 2], t)); cc.setXYZ(i, (pa.C[a * 3] + .5) * kk, (pa.C[a * 3 + 1] + .5) * kk, (pa.C[a * 3 + 2] + .5) * kk); }
+      cp.needsUpdate = cc.needsUpdate = true;
+      let s = 0; for (let i = 0; i < pa.marks.length; i++) if (pa.marks[i] <= U.ru) s = i; let txt = RIDE.frasi[0][1]; for (const [m, tx] of RIDE.frasi) if (m <= s) txt = tx;
+      if ($('rT').textContent !== txt) $('rT').textContent = txt; $('rP').style.width = (U.ru * 100).toFixed(1) + '%';
+    }
+  }
+  // lente: finché nessuno la tocca passa da sola sul prodotto, per far capire cosa fa
+  if (U.lens) {
+    const R = Math.min(r.width * (1 - fx), r.height - dockH) * .2, pr = renderer.getPixelRatio(), L = $('lens'), cy = (r.height - dockH) * .5;
+    if (U.lensAuto) { U.lx = r.width * (1 - fx) * (.5 + .24 * Math.sin(now * .7)); U.ly = cy + (r.height - dockH) * .16 * Math.sin(now * 1.1 + 1); }
+    LENS.value.set(U.lx * pr, (r.height - U.ly) * pr, R * pr); L.style.width = L.style.height = R * 2 + 'px'; L.style.transform = `translate(${U.lx - R}px, ${U.ly - R}px)`;
+  }
+  audioTick();
+}
+function uiEnter() {
+  freeTick = uiTick; U.Ecur = 0; setE(0); rig.w = BW; rig.h = BH; if (CFG.entra) CFG.entra(U);
+  setTool('touch'); free.auto = true;
+  [...$('tabs').children].forEach((b, i) => { b.classList.remove('pulse'); setTimeout(() => { b.classList.add('pulse'); }, 1500 + i * 130); });
+}
+function uiLeave() { camera.clearViewOffset(); U.vkey = ''; if (U.lens) setLens(false); if (U.ride) setRide(false); const t = TOOLS.find(x => x.k === U.tool); if (t && t.esce) t.esce(); closeCard(); setE(0); S.ghost = 0; resize(); ptSizes(); freeTick = null; }
+
+function initUI() {
+  // schede e pannelli degli strumenti
+  $('pTouch').id = 'p_touch'; $('pExpl').id = 'p_expl'; $('pXray').id = 'p_xray'; $('pRide').id = 'p_ride';
+  for (const t of TOOLS) {
+    const [nome, ico] = ICONE[t.k] || [t.nome, t.icona.startsWith('<') ? t.icona : `<path d="${t.icona}"/>`], b = document.createElement('button');
+    b.className = 'tab'; b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.tool = t.k; b.setAttribute('aria-selected', 'false'); b.innerHTML = `<svg viewBox="0 0 24 24">${ico}</svg>${t.nome || nome}`; b.onclick = () => setTool(t.k); $('tabs').appendChild(b);
+    if (!ICONE[t.k]) { const s = document.createElement('section'); s.id = 'p_' + t.k; s.hidden = true; s.innerHTML = t.html; $('panel').appendChild(s); }
+  }
+  for (const k of ['touch', 'expl', 'xray', 'ride']) if (!TOOLS.find(t => t.k === k)) $('p_' + k).remove();
+  $('tabs').style.setProperty('--n', TOOLS.length);
+  $('nP').textContent = PIECES.length;
+  $('howTouch').textContent = COARSE ? 'Trascina per girare, pizzica per avvicinarti. Tocca un pezzo per sapere cos\'è.' : 'Trascina per girare, rotella per avvicinarti. Clicca un pezzo per sapere cos\'è.';
+  const tx = TOOLS.find(t => t.k === 'xray'); if (tx) { $('howX').textContent = (COARSE ? 'Muovi il dito' : 'Muovi il mouse') + ': dentro il cerchio lo vedi lavorare.'; $('xNote').textContent = tx.nota || ''; }
+  if (RIDE) $('rK').textContent = RIDE.titolo;
+  GROUPS.forEach((g, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = CFG.short[g.key] || g.name; b.setAttribute('aria-pressed', 'false'); b.onclick = () => (U.sel === i ? closeCard() : openCard(i)); $('chips').appendChild(b); });
+  for (const t of TOOLS) if (t.init) t.init();
+  // orbita, zoom, tocco
+  let down = null, pinch = 0;
+  const lensTo = e => { const r = stage.getBoundingClientRect(); U.lensAuto = false; U.lx = e.clientX - r.left; U.ly = e.clientY - r.top - (e.pointerType === 'mouse' ? 0 : Math.min(r.width, r.height) * .17); };   // col dito la lente sta sopra, per non coprirla
+  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
+  stage.addEventListener('pointermove', e => {
+    if (mode !== 'free') return;
+    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
+    const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY; if (down) down.far += Math.abs(dx) + Math.abs(dy);
+    if (U.ride) return;
+    if (ptr.size === 2) { const a = [...ptr.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (pinch > 0) free.zoom = clamp(free.zoom * pinch / d, .22, 1.7); pinch = d; free.auto = false; }
+    else { free.az -= dx * .007; free.el = clamp(free.el + dy * .005, rad(-2), rad(62)); free.auto = false; }
+  });
+  const up = e => {
+    if (!ptr.has(e.pointerId)) return; ptr.delete(e.pointerId); pinch = 0;
+    if (down && down.far < 8 && performance.now() - down.t < 450 && U.tool !== 'expl' && U.tool !== 'xray' && !U.ride) { const g = pick(e.clientX, e.clientY); if (g >= 0 && g !== U.sel) { if (U.tool !== 'touch') setTool('touch'); openCard(g); } else if (U.tool === 'touch') closeCard(); }
+    if (ptr.size === 0) down = null;
+  };
+  stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+  stage.addEventListener('wheel', e => { if (mode !== 'free' || U.ride || e.target.closest('#dock')) return; e.preventDefault(); free.zoom = clamp(free.zoom * Math.exp(e.deltaY * .0012), .22, 1.7); free.auto = false; }, { passive: false });
+  $('sE').addEventListener('input', e => setE(+e.target.value));
+  if (RIDE) $('bRideGo').onclick = () => setRide(!U.ride);
+  $('bSnd').onclick = $('bSnd2').onclick = () => audioOn(!U.snd); $('bFilm').onclick = () => startFilm(0);
+  window.__ui = { U, setTool, openCard, closeCard, pick, uiTick };
+}
 
 </script>
 </body>
