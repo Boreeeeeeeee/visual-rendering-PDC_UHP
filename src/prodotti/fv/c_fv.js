@@ -24,13 +24,13 @@ T.lcdI = cv(128, 96, () => {}); T.ledB = cv(32, 128, () => {});
 T.targaCR = s => cv(128, 64, g => { g.fillStyle = '#2a2f34'; g.fillRect(0, 0, 128, 64); g.fillStyle = '#e9ecee'; g.font = '700 30px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText(s, 64, 42); });
 T.parete = rep(cv(256, 256, g => { const r = rng(31); g.fillStyle = '#4a4e52'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 62 + r() * 34 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 4, 4);
 Object.assign(M, {
-  cella: std({ color: 0xffffff, roughness: .25, metalness: .4, map: T.cella, emissive: 0x2a5aa0, emissiveIntensity: 0 }),
-  celle: std({ color: 0xffffff, roughness: .22, metalness: .35, map: T.celle, emissive: 0x2a5aa0, emissiveIntensity: 0 }),
-  vetro: std({ color: 0x9fbfd3, roughness: .04, metalness: 0, transparent: true, opacity: .16, depthWrite: false }),
-  eva: std({ color: 0xe8f0f2, roughness: .3, metalness: 0, transparent: true, opacity: .06, depthWrite: false }),
+  cella: std({ color: 0xffffff, roughness: .45, metalness: .12, map: T.cella, emissive: 0x2a5aa0, emissiveIntensity: 0 }),
+  celle: std({ color: 0xffffff, roughness: .45, metalness: .12, map: T.celle, emissive: 0x2a5aa0, emissiveIntensity: 0 }),
+  vetro: std({ color: 0x9fbfd3, roughness: .18, metalness: 0, transparent: true, opacity: .16, depthWrite: false }),
+  eva: std({ color: 0xe8f0f2, roughness: .65, metalness: 0, transparent: true, opacity: .06, depthWrite: false }),
   nastro: std({ color: 0xd8dde0, roughness: .3, metalness: .9 }),
   telaio: std({ color: 0x15171a, roughness: .5, metalness: .6 }),
-  allu: std({ color: 0xb9bec2, roughness: .4, metalness: .8 }),
+  allu: std({ color: 0xb9bec2, roughness: .5, metalness: .8 }),
   tegole: std({ color: 0xffffff, roughness: .9, map: T.tegole }),
   sInv: xr(std({ color: 0xdde0e2, roughness: .35, metalness: .05 })), sBat: xr(std({ color: 0xdfe2e4, roughness: .4, metalness: .05 })), sPan: xr(std({ color: 0xc9cdd0, roughness: .6 })),
   logoW: new THREE.MeshBasicMaterial({ map: T.logoW, transparent: true }), lcdI: new THREE.MeshBasicMaterial({ map: T.lcdI }), ledB: new THREE.MeshBasicMaterial({ map: T.ledB }),

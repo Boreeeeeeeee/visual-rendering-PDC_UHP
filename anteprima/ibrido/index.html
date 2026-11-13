@@ -427,8 +427,9 @@ function annulus(ro, ri, h, a0 = 0, a1 = PI * 2, seg = 44) {   // anello con ass
   if (a1 - a0 >= PI * 2 - 1e-4) { const hl = new THREE.Path(); hl.absarc(0, 0, ri, 0, PI * 2, true); s.holes.push(hl); } else { s.absarc(0, 0, ri, a1, a0, true); s.closePath(); }
   const g = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false, curveSegments: seg }); g.translate(0, 0, -h / 2); g.rotateX(PI / 2); return g;
 }
-const curveOf = pts => new THREE.CatmullRomCurve3(pts.map(p => V(p[0], p[1], p[2])), false, 'catmullrom', 0.12);
-const tubeGeo = (pts, r, seg) => new THREE.TubeGeometry(curveOf(pts), seg || Math.max(16, pts.length * 12), r, 10, false);
+// let e non const: le pagine comuni (src/comune/p1_base.js) li sostituiscono con tubi a tratti dritti e curve vere; la UHP resta così
+let curveOf = pts => new THREE.CatmullRomCurve3(pts.map(p => V(p[0], p[1], p[2])), false, 'catmullrom', 0.12);
+let tubeGeo = (pts, r, seg) => new THREE.TubeGeometry(curveOf(pts), seg || Math.max(16, pts.length * 12), r, 10, false);
 function mesh(geo, mat, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); return m; }
 const screwGeo = mergeGeometries([new THREE.CylinderGeometry(.0062, .0062, .0042, 6).translate(0, .0031, 0), new THREE.CylinderGeometry(.0082, .0082, .001, 14).translate(0, .0005, 0), new THREE.CylinderGeometry(.0027, .0027, .014, 8).translate(0, -.007, 0)]);
 

@@ -32,7 +32,8 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 | `src/prodotti/uhp/a_core.js`, `b_engine.js` | Motore di montaggio della UHP (pezzi con nome, viti, pezzi ripetuti, raggi X). Lo riusa tale e quale la pagina dell'ibrido: l'elenco sta in `MOTORE_UHP` dentro `build.py`. |
 | `src/dati/` | Una scheda dati per prodotto, con documento e pagina di provenienza per ogni valore. |
 | `build.py` | Unisce i sorgenti. Solo Python 3, nessuna installazione. |
-| `prove/prova.mjs` | Prova automatica con Chrome senza finestra a 390×780, 844×390 e 1280×720. |
+| `prove/prova.mjs` | Prova automatica con Chrome senza finestra a 390×780, 844×390 e 1280×720. In fondo controlla, pagina per pagina, che nel montaggio nessun pezzo passi attraverso pezzi già posati più di quanto già noto (`prove/compenetrazioni.js` e l'elenco dei difetti noti `prove/compenetrazioni.json`, che si accorcia man mano che i prodotti vengono corretti). |
+| Tubi e cavi (pagine comuni) | `tubeGeo` e `curveOf` del motore sono sostituiti in `p1_base.js`: un tubo è la spezzata dei suoi punti con curve ad arco vere negli angoli, e nel film cresce lungo il percorso dal primo all'ultimo punto invece di arrivare in volo. Per un tubo che deve volare: `m.userData.vola = true`. I flussi seguono lo stesso percorso. |
 
 ## Comandi
 

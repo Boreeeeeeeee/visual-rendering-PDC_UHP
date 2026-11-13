@@ -21,7 +21,7 @@ T.schermo = cv(256, 256, () => {});
 T.muroA = rep(cv(256, 256, g => { const r = rng(31); g.fillStyle = '#4a4e52'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 62 + r() * 34 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 3, 4);
 T.piastrelle = rep(cv(256, 256, g => { g.fillStyle = '#3d4246'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#2a2e31'; g.lineWidth = 4; g.strokeRect(2, 2, 252, 252); }), 4, 3);
 Object.assign(M, {
-  sTank: xr(std({ color: 0xb8bec2, roughness: .32, metalness: .9, side: THREE.DoubleSide })),
+  sTank: xr(std({ color: 0xb8bec2, roughness: .55, metalness: .75, side: THREE.DoubleSide })),
   sJack: xr(std({ color: 0xb4b8bb, roughness: .42, metalness: .72, map: T.jack })),
   sPU: xr(std({ color: 0xffffff, roughness: .95, metalness: 0, map: T.pu, bumpMap: T.noise, bumpScale: 2 })),
   sCov: xr(std({ color: 0x2a2d30, roughness: .55, metalness: .1, side: THREE.DoubleSide })),

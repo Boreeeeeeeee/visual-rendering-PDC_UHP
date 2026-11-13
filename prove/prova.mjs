@@ -161,4 +161,18 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   for (const [h, vuole] of [['#casa', 'casa'], ['#uhp', 'prodotto'], ['#acs', 'prodotto'], ['#fv', 'prodotto'], ['#ibrido', 'prodotto'], ['#fcoil', 'prodotto'], ['#clima', 'prodotto'], ['#nonesiste', 'home'], ['', 'home']]) { await page.goto('about:blank'); await page.goto(base + h, { waitUntil: 'load' }); await fino(() => page.evaluate(() => !!window.__casa), 20000); ok(await scena(vuole), `indirizzo diretto ${h || '(vuoto)'} → ${vuole}`); }
   ok(errs.length === 0, 'console senza errori: ' + errs.join(' | ')); await ctx.close();
 }
+// pezzi che nel montaggio passano attraverso pezzi già posati: niente di nuovo rispetto all'elenco dei difetti noti (prove/compenetrazioni.json),
+// che si accorcia man mano che i prodotti vengono corretti. Un difetto noto che sparisce va tolto dall'elenco.
+{ const fn = fs.readFileSync(path.join(ROOT, 'prove/compenetrazioni.js'), 'utf8'), noti = JSON.parse(fs.readFileSync(path.join(ROOT, 'prove/compenetrazioni.json'), 'utf8'));
+  const ctx = await b.newContext({ viewport: { width: 640, height: 360 } }); await ctx.route('https://cdn.jsdelivr.net/npm/three@0.186.1/**', rt => fs.readFile(THREE + rt.request().url().split('three@0.186.1/')[1], (e, d) => e ? rt.fulfill({ status: 404, body: '' }) : rt.fulfill({ status: 200, contentType: 'text/javascript', body: d }))); await ctx.route(/fonts\.(googleapis|gstatic)\.com/, rt => rt.abort());
+  const attendi = async f => { const t = Date.now(); while (Date.now() - t < 20000) { if (await f()) return true; await sleep(150); } return false; };
+  for (const id of ['acs', 'fv', 'ibrido', 'fcoil', 'clima']) {   // la UHP non espone il motore alle prove: resta il riferimento
+    const page = await ctx.newPage(); await page.goto(base + id + '/', { waitUntil: 'load' }); await attendi(() => page.evaluate(id => !!window['__' + id] && !!window['__' + id].apply, id));
+    // senza il numero del pezzo ripetuto: quale aletta tocca dipende da quanto ha già girato il ventilatore
+    const trovati = [...new Set((await page.evaluate(`(${fn})('__${id}')`)).map(r => r.split('  ').slice(3).join('  ').replace(/ #\d+/g, '')))], conosciuti = noti[id] || [];
+    const nuovi = trovati.filter(k => !conosciuti.includes(k)), spariti = conosciuti.filter(k => !trovati.includes(k));
+    ok(nuovi.length === 0, `${id}: nessun pezzo nuovo che attraversa altri pezzi nel montaggio (nuovi: ${nuovi.join(' ; ')})`);
+    if (spariti.length) console.log(`   ${id}: difetti noti che non ci sono più, da togliere da prove/compenetrazioni.json: ${spariti.join(' ; ')}`);
+    await page.close(); }
+  await ctx.close(); }
 console.log(`${fatti - falliti} controlli passati su ${fatti}`); await b.close(); srv.close(); process.exit(falliti ? 1 : 0);

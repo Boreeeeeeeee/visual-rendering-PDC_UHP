@@ -71,20 +71,20 @@ function readout() { el.read.classList.toggle('on', S.read > .5); CFG.letture.fo
 onStart = p => { el.tick.textContent = p.n; el.tick.classList.remove('in'); void el.tick.offsetWidth; el.tick.classList.add('in'); };
 let sfx = null;                       // riempito dal modulo dei comandi quando l'audio è attivo
 const _w = V();
-onLand = p => { _w.copy(p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
+onLand = p => { _w.copy(p.cresce ? p.punta : p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
 
 // ───────── linea del tempo del filmato ─────────
 function filmState(t, emit) {
   if (t < T_ASM) { CFG.film(t, 0); apply(T_RUN, S.E, S.shr, false); }
   else if (t < T_RUN) {
     CFG.film(t, 1); apply(t, 0, 1, emit);
-    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, g.c.z); if (sfx) sfx('dock'); }
+    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, g.c.z); ring.userData.k = clamp(g.size * 1.4, .2, 1); if (sfx) sfx('dock'); }
   } else { CFG.film(t, 2); apply(T_RUN, 0, 1, false); }
 }
 function applyLook(now, dt) {
   setXray(S.xray); setGhost(S.ghost < .003 ? 0 : S.ghost); soloAcqua(S.ghost < .003 ? 0 : S.ghost);
   CFG.look(now, dt); updSparks(dt);
-  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar(.3 + k * 1.5); ring.material.opacity = (1 - k) * .8; } else ring.material.opacity = 0;
+  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar((.3 + k * 1.5) * (ring.userData.k || 1)); ring.material.opacity = (1 - k) * .5; } else ring.material.opacity = 0;
 }
 
 // ───────── ciclo di disegno ─────────
@@ -119,12 +119,12 @@ function startFilm(t = 0) { const wasFree = mode === 'free'; mode = 'film'; star
 $('bPlay').onclick = () => { playing = !playing; $('bPlay').textContent = playing ? 'Pausa' : 'Riprendi'; };
 $('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $('bExplore').onclick = () => enterFree();
 
-resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
+resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .46; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
 queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
 // per le prove: tempo, esplosione e vista comandabili da fuori
 window['__' + CFG.id] = { GROUPS, PIECES, M, PIPE, CFG, vista(v) { vistaProva = v; },
   seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(.016); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
-  setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
+  setHQ(v) { HQ = v; }, get bloom() { return bloom; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
   groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
   stato: () => Object.assign({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }, CFG.stato ? CFG.stato() : {}) };
 requestAnimationFrame(frame);
