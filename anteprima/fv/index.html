@@ -760,7 +760,7 @@ function tacche(soc) { const k = Math.round(clamp(soc) * 4), c = T.ledB.image.ge
 const TA = 3.5, TR = 36.5, TE = 50.5;
 const ST = { ghost: 0, xray: 0, E: 0, shr: 1, read: 0, sole: 0, soc: .45, bat: 0, rete: 0, casa: .35, s: 0, b: 0, c: 0, g: 0, dentro: 0 };
 const EN = { sole: .8, soc: .45, bat: 0, rete: 0, casa: .35 };
-function ripartisci(o) { const av = o.sole - o.casa; o.bat = av > 0 ? (o.soc < .995 ? Math.min(av, .5) : 0) : (o.soc > .105 ? Math.max(av, -.5) : 0); o.rete = av - o.bat; }
+function ripartisci(o) { const av = o.sole - o.casa; o.bat = av > 0 ? (o.soc < 1 ? Math.min(av, .5) : 0) : (o.soc > .1 ? Math.max(av, -.5) : 0); o.rete = av - o.bat; }
 function energia(dt) { ripartisci(EN); EN.soc = clamp(EN.soc + EN.bat * dt * .12, .1, 1); }
 const SOLE = [1.6, 1.25, .2], DC = [1.7, 1.35, .25], ACC = [1.5, 1.35, 1.1], BAT = [.35, 1.6, .55], RETE = [1.0, .55, 1.7];
 const PATH = {};
@@ -778,7 +778,7 @@ const CFG = {
   start: { k: 'Fotovoltaico con accumulo Unical', p: 'Moduli sul tetto, inverter e batteria in mansarda. Poi provalo tu: smontalo, guardaci dentro, segui l\'energia, fai sorgere e tramontare il sole.', dur: '50 secondi' },
   T_ASM: TA, T_RUN: TR, T_END: TE, MC: V(.25, 1.15, -.1), BW: 4.7, BH: 2.7, S: ST,
   ganci: [[.1, 1.5, '6,44 kWp', '#ffd84a', 'sul tetto della casa: 14 moduli'], [1.55, TA - .2, '15,36 kWh', '#7dff9a', 'da parte per la sera']],
-  letture: [['Sole', s => s.sole > .6 ? 'Pieno' : s.sole > .15 ? 'Velato' : 'Notte', '#ffd84a', 'gen'], ['Batteria', s => s.bat > .01 ? 'Si carica' : s.bat < -.01 ? 'Alimenta la casa' : s.soc >= .995 ? 'Piena' : 'Ferma', '#7dff9a', 'gen'],
+  letture: [['Sole', s => s.sole > .6 ? 'Pieno' : s.sole > .15 ? 'Velato' : 'Notte', '#ffd84a', 'gen'], ['Batteria', s => s.bat > .01 ? 'Si carica' : s.bat < -.01 ? 'Alimenta la casa' : s.soc >= 1 ? 'Piena' : 'Ferma', '#7dff9a', 'gen'],
     ['Rete', s => s.rete > .01 ? 'Riceve' : s.rete < -.01 ? 'Fornisce' : 'Ferma', '#c49bff', 'gen']],
   caps: [[0, 'Mezzogiorno', 'Il sole dà più di quello che serve: la casa prende la sua parte e la batteria si carica con il resto.'],
     [4.6, 'Tramonto', 'Il sole cala. Quello che manca lo dà la batteria: la rete non serve.'],
