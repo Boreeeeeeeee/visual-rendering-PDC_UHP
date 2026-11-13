@@ -15,7 +15,7 @@ Tre scene, un solo indirizzo:
 |---|---|
 | `#home` (o niente) | Home: i prodotti su un piatto girevole |
 | `#casa` | Casa in sezione, con il cursore "Una giornata in casa" e lo scambio del generatore: UHP da sola oppure ibrido HYBREER 3 |
-| `#uhp`, `#acs`, `#fv`, `#ibrido` (e gli altri prodotti quando ci saranno) | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX, `fv` = moduli MULTIVOLT, inverter ZOE1 e batteria SUM BL, `ibrido` = HYBREER 3 (pompa di calore HP_QOR 70, caldaia KONm 24 C, kit HYBREER) |
+| `#uhp`, `#acs`, `#fv`, `#ibrido`, `#fcoil`, `#clima` | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX, `fv` = fotovoltaico con accumulo, `ibrido` = HYBREER 3, `fcoil` = ventilconvettore F-COIL AGR 400, `clima` = climatizzatori mono e dual. |
 
 Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto. La pagina completa di un prodotto è un file a sé (`uhp/index.html`): si carica in un riquadro solo quando si entra nel prodotto e si scarica uscendo, così sul telefono la memoria torna libera.
 
@@ -28,7 +28,7 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 | `src/app/` | Home, Casa e passaggio tra le scene: `shell.html` (pagina e stile), `a_base.js`, `b_home.js`, `c_casa.js`, `d_app.js`, `og.jpg`. |
 | `src/prodotti/<id>/` | Un prodotto: `leggero.js` (livello leggero e registrazione nel sito), `shell.html` e i file `?_*.js` della pagina completa. |
 | `src/comune/logo.js` | Logo Unical vettoriale, preso dai PDF dei manuali. |
-| `src/comune/kit.js` | Base comune alle pagine complete di HP 300PSDX e fotovoltaico: resa, scena, materiali, motore del montaggio. |
+| `src/comune/prodotto.html`, `p1_base.js`, `p2_show.js`, `p3_ui.js` | Pagina comune dei prodotti sul motore della UHP: intestazione, particelle e flussi, film con aggancio e didascalie, strumenti (Tocca, Smonta, Raggi X, Giro e quelli propri del prodotto). La usano `acs`, `fv`, `fcoil`, `clima` (elenco `MOTORE_COMUNE` in `build.py`): il prodotto scrive solo i pezzi e un oggetto `CFG`, i testi della testata stanno nel suo `meta.json`. `src/comune/kit.js` non lo usa più nessuno. |
 | `src/prodotti/uhp/a_core.js`, `b_engine.js` | Motore di montaggio della UHP (pezzi con nome, viti, pezzi ripetuti, raggi X). Lo riusa tale e quale la pagina dell'ibrido: l'elenco sta in `MOTORE_UHP` dentro `build.py`. |
 | `src/dati/` | Una scheda dati per prodotto, con documento e pagina di provenienza per ogni valore. |
 | `build.py` | Unisce i sorgenti. Solo Python 3, nessuna installazione. |
