@@ -21,9 +21,9 @@ const shadow = mesh(G.plane(2.1, 1.2), new THREE.MeshBasicMaterial({ map: T.shad
 // dentro la parete della lavanderia con caldaia e kit. Ogni faccia è un piano con un lato solo: da dietro non si vede, così la camera può girare intorno alle macchine.
 const WX0 = -.06, WX1 = .14, WZ1 = .25, WH = 2.62;
 const mMuro = std({ color: 0x9aa0a4, roughness: .95, map: T.muro, bumpMap: T.noise, bumpScale: 1.5 }), mFuori = std({ color: 0xa8a297, roughness: .97, bumpMap: T.noise, bumpScale: 2.2 });
-T.sezione = cv(128, 128, (g, w, h) => { g.fillStyle = '#b9b39a'; g.fillRect(0, 0, w * .3, h); g.fillStyle = '#8a5f4c'; g.fillRect(w * .3, 0, w * .62, h); g.fillStyle = '#c9c9c4'; g.fillRect(w * .92, 0, w * .08, h); g.strokeStyle = 'rgba(40,24,18,.5)'; g.lineWidth = 2; for (let i = -h; i < w; i += 14) { g.beginPath(); g.moveTo(w * .3 + Math.max(0, i), Math.max(0, -i)); g.lineTo(Math.min(w * .92, w * .3 + i + h), Math.min(h, h - Math.max(0, i + h - w * .62))); g.stroke(); } g.fillStyle = 'rgba(60,56,40,.35)'; for (let i = 0; i < 70; i++) g.fillRect((i * 37 % 100) / 100 * w * .28, (i * 53 % 100) / 100 * h, 2, 2); });
+T.sezione = cv(128, 128, (g, w, h) => { g.fillStyle = '#a5a297'; g.fillRect(0, 0, w * .3, h); g.fillStyle = '#6f6660'; g.fillRect(w * .3, 0, w * .62, h); g.fillStyle = '#b3b3ae'; g.fillRect(w * .92, 0, w * .08, h); g.strokeStyle = 'rgba(30,24,20,.32)'; g.lineWidth = 2; for (let i = -h; i < w; i += 14) { g.beginPath(); g.moveTo(w * .3 + Math.max(0, i), Math.max(0, -i)); g.lineTo(Math.min(w * .92, w * .3 + i + h), Math.min(h, h - Math.max(0, i + h - w * .62))); g.stroke(); } g.fillStyle = 'rgba(60,56,40,.35)'; for (let i = 0; i < 70; i++) g.fillRect((i * 37 % 100) / 100 * w * .28, (i * 53 % 100) / 100 * h, 2, 2); });
 T.sezione.wrapT = THREE.RepeatWrapping; T.sezione.repeat.set(1, 9);
-const mSez = std({ color: 0xb0b0b0, roughness: .95, map: T.sezione });
+const mSez = std({ color: 0x9c9c9c, roughness: .95, map: T.sezione });     // sezione del muro più quieta: era una striscia rosso mattone in ogni inquadratura
 const muro = mesh(G.plane(1.28, WH), mMuro, WX1 + .64, WH / 2, ZW); scene.add(muro);
 scene.add(mesh(G.plane(WZ1 - ZW, WH), mMuro, WX1, WH / 2, (WZ1 + ZW) / 2, 0, PI / 2, 0), mesh(G.plane(WZ1 - ZW, WH), mFuori, WX0, WH / 2, (WZ1 + ZW) / 2, 0, -PI / 2, 0), mesh(G.plane(WX1 - WX0, WH), mSez, (WX0 + WX1) / 2, WH / 2, WZ1));
 { const cap = mesh(G.plane(WX1 - WX0, WZ1 - ZW), std({ color: 0x8c8c88, roughness: .95 }), (WX0 + WX1) / 2, WH, (WZ1 + ZW) / 2, -PI / 2); scene.add(cap);
@@ -34,12 +34,14 @@ scene.add(mesh(G.plane(WZ1 - ZW, WH), mMuro, WX1, WH / 2, (WZ1 + ZW) / 2, 0, PI 
 function points(n, size, add = true) {
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
   const p = new THREE.Points(g, new THREE.PointsMaterial({ size, map: T.glow, vertexColors: true, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }));
+  p.material.onBeforeCompile = sh => { sh.uniforms.uPtMax = PT_MAX; sh.vertexShader = 'uniform float uPtMax;\n' + sh.vertexShader.replace('#include <fog_vertex>', 'gl_PointSize = min( gl_PointSize, uPtMax );\n#include <fog_vertex>'); };
   p.frustumCulled = false; p.userData.size = size; PTS.push(p); return p;
 }
-const PTS = [];
-function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; }
+// una particella vicinissima alla camera non deve diventare una macchia: grandezza massima in pixel, il 3,5 % dell'altezza dell'immagine
+const PTS = [], PT_MAX = { value: 40 }, V2 = new THREE.Vector2();
+function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; PT_MAX.value = Math.max(8, renderer.getDrawingBufferSize(V2).y * .035); }
 // i flussi corrono dentro i tubi: li disegno un po' più vicini alla camera, così non restano nascosti dalla parete del tubo
-function pushed(p, d = .022) { p.material.onBeforeCompile = s => { s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
+function pushed(p, d = .022) { const prima = p.material.onBeforeCompile; p.material.onBeforeCompile = s => { prima(s); s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
 const R0 = rng(99);
 // neve
 const NS = 1500, snow = points(NS, .015), snowB = new Float32Array(NS * 4); scene.add(snow);
@@ -106,9 +108,9 @@ const PATH = {
     seg([hK(HK.MCal, .3), hK(HK.MCal, .19), hK(.1182, .19), hK(.1182, .1)], WB, W1), seg('lMi', W1, W1), seg([[1.17, .05, -.25], [.22, .05, -.25]], W1, W0)], 900);
   r.curve = new THREE.CatmullRomCurve3(Array.from({ length: 300 }, (_, i) => { const q = Math.round(i / 299 * (r.S - 1)); return V(r.P[q * 3], r.P[q * 3 + 1], r.P[q * 3 + 2]); }), false, 'centripetal'); PATH.ride = r; }
 // scintille all'arrivo dei pezzi
-const NK = 240, spark = points(NK, .011), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
+const NK = 240, spark = points(NK, .009), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
 function emitSpark(pos, n) { const p = spark.geometry.attributes.position; for (let k = 0; k < n; k++) { const i = spI = (spI + 1) % NK; p.setXYZ(i, pos.x, pos.y, pos.z); spV[i * 4] = (Math.random() - .5) * 1.1; spV[i * 4 + 1] = Math.random() * 1.0 + .2; spV[i * 4 + 2] = (Math.random() - .5) * 1.1; spV[i * 4 + 3] = 1; } }
-function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 3.2 * k, 1.5 * k * k, .4 * k * k); } p.needsUpdate = c.needsUpdate = true; }
+function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 2.1 * k, 1.0 * k * k, .28 * k * k); } p.needsUpdate = c.needsUpdate = true; }
 const ring = mesh(new THREE.RingGeometry(.93, 1, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(.7, 1.4, 1.1), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 0, .01, 0, -PI / 2); scene.add(ring); let ringT = 9;
 
 // ───────── stato dell'impianto in funzione ─────────
@@ -130,7 +132,7 @@ function applyLook(now, dt) {
   fG.upd(now, S.watB, .2, PATH.gas); fF.upd(now, S.watB * .8, .16, PATH.fumi);
   shadow.material.opacity = .9 * (1 - clamp(S.E * 1.5)) * S.shr;
   updSparks(dt);
-  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar(.3 + k * 1.5); ring.material.opacity = (1 - k) * .8; } else ring.material.opacity = 0;
+  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar((.3 + k * 1.5) * (ring.userData.k || 1)); ring.material.opacity = (1 - k) * .5; } else ring.material.opacity = 0;
 }
 
 // ───────── camera ─────────
@@ -194,7 +196,7 @@ function readout() { el.read.classList.toggle('on', S.read > .5); const o = fmtT
 onStart = p => { el.tick.textContent = p.n; el.tick.classList.remove('in'); void el.tick.offsetWidth; el.tick.classList.add('in'); };
 let sfx = null;                       // riempito dal modulo dei comandi quando l'audio è attivo
 const _w = V();
-onLand = p => { _w.copy(p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
+onLand = p => { _w.copy(p.cresce ? p.punta : p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
 
 // ───────── linea del tempo del filmato ─────────
 const gCmp = GROUPS.find(g => g.key === 'qcomp'), gBru = GROUPS.find(g => g.key === 'kcomb');
@@ -208,7 +210,7 @@ function filmState(t, emit) {
     Object.assign(S, { cold: c, snow: c, xray: 0, fan: 0, comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), air: 0, ref: 0, watP: 0, watB: 0, watI: 0, boil: sm(b + 2.4, b + 2.8, t) * (1 - sm(b + 3.5, b + 3.85, t)), E: 0, shr: 1, read: 0, outT: 10, watT: 35,
       demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), who: 1, cool: false });
     apply(t, 0, 1, emit);
-    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, Math.max(g.c.z, -.2)); if (sfx) sfx('dock'); }
+    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, Math.max(g.c.z, -.2)); ring.userData.k = clamp(g.size * 1.4, .2, 1); if (sfx) sfx('dock'); }
   } else {
     const r = t - T_RUN, x = sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r)), cold = sm(6.2, 7.6, r), outT = r < 8.8 ? lerp(10, -3, sm(6.0, 7.4, r)) : lerp(-3, -18, sm(8.9, 10.0, r)), who = chi(Math.round(outT), false), pdc = 1 - sm(9.8, 10.6, r), cal = sm(6.8, 7.6, r);
     Object.assign(S, { cold, snow: cold, xray: x, fan: 6 * sm(.2, 2, r) * pdc, comp: 3 * sm(.6, 2.2, r) * pdc, air: sm(.8, 2, r) * pdc, ref: sm(1.6, 2.6, r) * x * pdc, watP: sm(1.6, 2.6, r) * pdc, watB: cal, watI: sm(2, 3, r), boil: cal, E: 0, shr: 1, read: r > 1 ? 1 : 0,
@@ -249,11 +251,11 @@ function startFilm(t = 0) { const wasFree = mode === 'free'; mode = 'film'; star
 $('bPlay').onclick = () => { playing = !playing; $('bPlay').textContent = playing ? 'Pausa' : 'Riprendi'; };
 $('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $('bExplore').onclick = () => enterFree();
 
-resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
+resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .55; M.steel.roughness = .58; M.galv.roughness = .62; M.zinc.roughness = .62; M.alu.roughness = .68; M.black.roughness = .42; M.copper.roughness = .36;     // metalli satinati: niente aloni di bagliore resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
 queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
 // per le prove: tempo, esplosione e vista comandabili da fuori
 window.__ibrido = { GROUPS, PIECES, M, PATH, PIPE, vista(v) { vistaProva = v; }, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
-  setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
+  setHQ(v) { HQ = v; }, get bloom() { return bloom; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
   groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
   stato: () => ({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, who: S.who, outT: Math.round(S.outT), watT: S.watT, cool: S.cool, fan: +S.fan.toFixed(2), boil: +S.boil.toFixed(2), xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }) };
 requestAnimationFrame(frame);

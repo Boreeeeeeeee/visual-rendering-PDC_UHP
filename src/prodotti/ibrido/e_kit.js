@@ -56,19 +56,22 @@ const qIn = [QX + QPX, .533, QZ - QD / 2 - .037], qOut = [QX + QPX, .368, QZ - Q
 const LP = {
   Mp: [qOut, [qOut[0], .368, -.2], [qOut[0], .368, ZT], [.25, .368, ZT], [.25, 1.13, ZT], [KX + HK.Mpdc, 1.13, ZT], [KX + HK.Mpdc, HY + .315, ZT]],
   Rp: [qIn, [qIn[0], .533, -.14], [qIn[0], .533, ZT + .06], [.19, .533, ZT + .06], [.19, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT], [KX + HK.Rpdc, HY + .29, ZT]],
-  Mc: [kwp(KA.M, -.045, KZ), kwp(KA.M, -.11, KZ), kwp(HK.MCal + .012, -.2, .14), [KX + HK.MCal, 1.07, ZT], [KX + HK.MCal, HY + .315, ZT]],
-  Rc: [kwp(KA.R, -.045, KZ), kwp(KA.R, -.09, KZ), kwp(HK.RCal + .015, -.17, .15), [KX + HK.RCal, 1.1, ZT], [KX + HK.RCal, HY + .29, ZT]],
-  Mi: [hw(.1182, .1, HZ), hw(.1182, -.35, HZ), [KX + .1182, .16, ZT], [KX + .14, .075, ZT + .03], [KX + .3, .05, ZT + .08], [1.17, .05, -.25]],
-  Ri: [hw(-.1182, .1, HZ), hw(-.1182, -.4, HZ), [KX - .1182, .16, ZT], [KX - .1, .09, ZT + .02], [KX + .2, .05, ZT + .03], [1.15, .05, ZT + .03], [1.23, .05, -.3]],
-  gas: [[.32, .05, ZW + .03], [.32, 1.23, ZW + .03], [.36, 1.262, ZW + .09], [.5, 1.262, ZW + KZ], [KX + KA.G, 1.262, ZW + KZ], kwp(KA.G, -.045, KZ)],
-  cond: [kwp(.012, -.035, .2), kwp(.03, -.1, .1), [KX + .2, 1.1, ZW + .03], [.87, .9, ZW + .03], [.87, .06, ZW + .03]],
+  // tratti dritti e curve vere: giù dagli attacchi della caldaia, indietro fino al piano degli attacchi del kit, di lato e giù nel kit
+  Mc: [kwp(KA.M, -.045, KZ), [KX + KA.M, 1.15, ZW + KZ], [KX + KA.M, 1.15, ZT], [KX + HK.MCal, 1.15, ZT], [KX + HK.MCal, HY + .315, ZT]],
+  Rc: [kwp(KA.R, -.045, KZ), [KX + KA.R, 1.185, ZW + KZ], [KX + KA.R, 1.185, ZT], [KX + HK.RCal, 1.185, ZT], [KX + HK.RCal, HY + .29, ZT]],
+  // impianto: giù lungo il muro, di lato a due quote diverse (mandata sotto, ritorno 6 cm più avanti), poi nel pavimento all'inizio e alla fine della serpentina
+  Mi: [hw(.1182, .1, HZ), [KX + .1182, .12, ZT], [1.17, .12, ZT], [1.17, .05, ZT], [1.17, .05, -.25]],
+  Ri: [hw(-.1182, .1, HZ), [KX - .1182, .2, ZT], [KX - .1182, .2, ZT + .06], [1.23, .2, ZT + .06], [1.23, .05, ZT + .06]],
+  gas: [[.32, .05, ZW + .03], [.32, 1.235, ZW + .03], [.32, 1.235, ZW + KZ], [KX + KA.G, 1.235, ZW + KZ], kwp(KA.G, -.045, KZ)],
+  cond: [kwp(.012, -.035, .2), [KX + .012, 1.1, ZW + .2], [KX + .012, 1.1, ZW + .04], [1.13, 1.1, ZW + .04], [1.13, .06, ZW + .04]],     // indietro fino al muro, poi lungo il muro a destra del kit relè
 };
 // pavimento radiante: dodici file, andata e ritorno
 const FL = { x0: .22, x1: 1.17, z0: -.25, dz: .083, n: 12, y: .05 };
 LP.floor = (() => { const a = []; for (let i = 0; i < FL.n; i++) { const z = FL.z0 + i * FL.dz, L = i % 2 === 0; a.push([L ? FL.x1 : FL.x0, FL.y, z], [L ? FL.x0 : FL.x1, FL.y, z]); } a.push([1.23, FL.y, FL.z0 + (FL.n - 1) * FL.dz], [1.23, FL.y, -.3]); return a; })();
 for (const k in LP) PIPE['l' + k] = LP[k];
 PIPE.fumiExt = [kwp(0, .72, .225), kwp(0, .93, .225), kwp(0, .98, .19), kwp(0, 1.0, .1), kwp(0, 1.0, -.06)];
-group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, kit e caldaia, sonda T1 sulla mandata, gas, scarico fumi e pavimento radiante.', 42.0, 45.5, { stage: [0, 0, .9], ex: [0, -.1, .7], az: 4, el: 16, zoom: .82,
+group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, kit e caldaia, sonda T1 sulla mandata, gas, scarico fumi e pavimento radiante.', 42.0, 45.5, { stage: [0, 0, 0], ex: [0, -.1, .7],     // al loro posto: arrivando in blocco da davanti i tubi passavano dentro la HP_QOR
+   az: 4, el: 16, zoom: .82,
   info: { e: 'Quello che unisce tutto: l\'acqua va e torna tra i due generatori, il kit e il pavimento di casa.', s: 'Pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal, impianto su R imp / M imp · sonda di mandata globale T1 00470021 sull\'attacco della pompa di calore · tubi coibentati per il raffrescamento · gas, fumi e pavimento: percorso indicativo' } }).home = { off: [-.03, 1.02, 0], w: 3.15, h: 2.5 };
 {
   const o = x => x, tubo = (k, r, m, opt) => P(mesh(tubeGeo(LP[k], r, LP[k].length * 14), m), opt);
@@ -81,7 +84,7 @@ group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, k
   P(mesh(G.cylZ(.02, .05, 18), M.brass, qOut[0], qOut[1], qOut[2] - .012), o({ d: .3, from: [0, 0, -.3], spin: [0, 0, 4], n: 'Raccordo con pozzetto della sonda' }));
   P(mesh(G.cyl(.008, .04, 12), M.brass, qOut[0], qOut[1] - .03, qOut[2] - .012), o({ d: .32, from: [0, -.2, 0] }));
   P(mesh(G.cyl(.004, .03, 10), M.copper, qOut[0], qOut[1] - .055, qOut[2] - .012), o({ d: .33, from: [0, -.2, 0], n: 'Sonda di mandata globale T1' }));
-  P(mesh(tubeGeo([[qOut[0], qOut[1] - .07, qOut[2] - .012], [qOut[0] + .05, .2, qOut[2] + .02], [qOut[0] + .12, .12, QZ - .1], [QX + .56, .4, QZ - .03]], .003, 24), M.wBlue), o({ d: .34 }));
+  P(mesh(tubeGeo([[qOut[0], qOut[1] - .07, qOut[2] - .012], [qOut[0], .16, qOut[2] - .012], [QX + .56, .16, qOut[2] - .012], [QX + .56, .16, QZ - .03], [QX + .56, .4, QZ - .03]], .003, 24), M.wBlue), o({ d: .34 }));
   tubo('Mp', .0135, M.copper, { d: .36, dur: .6, n: 'Mandata della pompa di calore → M pdc' });
   tubo('Rp', .0135, M.copper, { d: .4, dur: .6, n: 'R pdc → ritorno alla pompa di calore' });
   [[LP.Mp[2], LP.Mp[3]], [LP.Mp[3], LP.Mp[4]], [LP.Rp[3], LP.Rp[4]], [LP.Rp[2], LP.Rp[3]]].forEach(([a, b2], i) => { const A = V(...a), B = V(...b2), m = mesh(new THREE.CylinderGeometry(.024, .024, A.distanceTo(B) * .76, 14), M.sFoam);
@@ -99,6 +102,8 @@ group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, k
   P(mesh(annulus(.075, .05, .008), M.white, KX, KY + 1.0, ZW + .004, PI / 2, 0, 0), o({ d: .86, from: [0, 0, .3] }));
   // scarico della condensa e cavi del kit relè
   tubo('cond', .009, M.grey, { d: .88, dur: .5, n: 'Scarico della condensa' });
-  [[[KX + .28, HY + .13, ZW + .03], [KX + .26, 1.05, ZW + .04], [KX + .16, 1.2, ZW + .2], [KX + .13, KY + .02, ZW + .26]], [[KX + .39, HY + .13, ZW + .03], [KX + .4, .3, ZW + .03], [.9, .08, ZW + .03]], [[KX + .35, HY + .13, ZW + .03], [KX + .34, .2, ZW + .04], [.3, .1, ZW + .05], [QX + .59, .2, QZ - .12], [QX + .553, .39, QZ + .03]]].forEach((p, i) => P(mesh(tubeGeo(p, .0035, 36), M.plastic), o({ d: .92 + i * .025, dur: .5, n: i ? null : 'Cavi: caldaia, pompa di calore, termostato' })));
+  [[[KX + .28, HY + .13, ZW + .015], [KX + .28, HY + .08, ZW + .015], [KX + .23, HY + .08, ZW + .015], [KX + .23, 1.27, ZW + .015], [KX + .18, 1.27, ZW + .015], [KX + .18, 1.27, ZW + .15], [KX + .18, KY + .005, ZW + .15]],     // alla caldaia, tra il cofano del kit e il kit relè
+   [[KX + .39, HY + .13, ZW + .035], [KX + .39, .04, ZW + .035]],     // al termostato, nel pavimento
+   [[KX + .35, HY + .13, ZW + .035], [KX + .35, .1, ZW + .035], [KX + .35, .1, ZW + .06], [-.25, .1, ZW + .06], [-.25, .1, QZ + .03], [QX + .553, .1, QZ + .03], [QX + .553, .39, QZ + .03]]].forEach((p, i) => P(mesh(tubeGeo(p, .0035, 36), M.plastic), o({ d: .92 + i * .025, dur: .5, n: i ? null : 'Cavi: caldaia, pompa di calore, termostato' })));
 }
 finalize();

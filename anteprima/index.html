@@ -367,7 +367,7 @@ const IB = (() => {
 })();
 registra({
   id: 'ibrido', nome: 'HYBREER 3', riga: 'Ibrido: pompa di calore HP_QOR 70, caldaia a condensazione KONm 24 C e kit HYBREER', apri: 'Apri l\'ibrido', pagina: 'ibrido/',
-  alto: 2.0, ordine: 4,
+  alto: 2.25, ordine: 4,
   costruisci() {      // per la Home: la pompa di calore a terra e, su un pezzo di parete, la caldaia con il kit sotto
     const g = new THREE.Group(), q = IB.qor(); q.group.position.set(-.38, 0, .1); g.add(q.group);
     g.add(mesh(box(.62, 2.0, .03), std({ color: 0xb9b4a9, roughness: .9 }), .62, 1.0, -.2));     // pezzo di parete chiaro: su quello scuro l'ibrido spariva

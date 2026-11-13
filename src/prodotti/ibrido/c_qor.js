@@ -60,14 +60,15 @@ Object.assign(M, {
   sIn: xr(std({ color: 0xc8c8c8, roughness: .55, map: T.io('IN'), envMapIntensity: .4 })), sOut: xr(std({ color: 0xc8c8c8, roughness: .55, map: T.io('OUT'), envMapIntensity: .4 })),
   sKPanel: xr(std({ color: 0xd9d9d9, roughness: .84, map: T.kpanel, envMapIntensity: .45 })), sCof: xr(std({ color: 0xffffff, roughness: .84, map: T.cof, envMapIntensity: .45 })),
   sAlsi: xr(std({ color: 0x4d5155, roughness: .68, metalness: .55, bumpMap: T.noise, bumpScale: 1.2 })),
-  sBugne: xr(std({ color: 0x9da3a7, roughness: .4, metalness: .85, envMapIntensity: .6 })),
+  sBugne: xr(std({ color: 0x9da3a7, roughness: .58, metalness: .85, envMapIntensity: .6 })),
   sFoam: xr(std({ color: 0x17181a, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2.2 })),
   sClear: xr(std({ color: 0x8f9aa2, roughness: .35, metalness: 0, transparent: true, opacity: .3 })),
   sPP: xr(std({ color: 0xc4c5c0, roughness: .4, metalness: 0, envMapIntensity: .5 })),
   fin: std({ color: 0x8f969b, roughness: .45, metalness: .8, envMapIntensity: .55 }),
   alsi: std({ color: 0x4d5155, roughness: .68, metalness: .55, bumpMap: T.noise, bumpScale: 1.2 }),
   zinc: std({ color: 0xa3a9ad, roughness: .4, metalness: .85, map: T.spangle, envMapIntensity: .6 }),
-  backK: std({ color: 0xb4bbc0, roughness: .42, metalness: .85, map: T.spangle, bumpMap: T.emb, bumpScale: 3 }),
+  backK: std({ color: 0xb4bbc0, roughness: .6, metalness: .85, map: rep(T.spangle.clone(), 5, 8),     // cristalli della zincatura piccoli, non a macchie
+    bumpMap: T.emb, bumpScale: 3 }),
   fibra: std({ color: 0xffffff, roughness: .8, metalness: .3, map: T.fibra, emissive: 0xff5a1c, emissiveIntensity: 0 }),
   white: std({ color: C_BIANCO, roughness: .84, metalness: 0, envMapIntensity: .45 }),
   grey: std({ color: 0x8f969b, roughness: .55, metalness: .1 }),
@@ -241,7 +242,7 @@ const qcw = p => [QX + CMX + p[0] * .86, QB + p[1] * .86, QZ + CMZ + p[2] * .86]
 
 // 4 ─ Ventilatore
 const fanRot = new THREE.Group();
-group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e bassa rumorosità.', 16.5, 19.0, { stage: [-.15, .1, 1.0], ex: [-.1, 0, .6], az: -22, el: 10, zoom: 1.0,
+group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e bassa rumorosità.', 16.5, 19.0, { stage: [-.15, .1, 1.0], ex: [-.1, 0, .6], az: -26, el: 16, zoom: 1.4,
   info: { e: 'Aspira l\'aria attraverso la batteria. Cambia velocità da solo, in base a quanto calore serve.', s: 'Motore brushless DC inverter · alta modulazione, bassa rumorosità · due livelli di silenziamento impostabili · pressione sonora 48 dB(A) a 1 m (HP_QOR 70)' } }).home = qHome;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x), F = QFAN;
@@ -263,7 +264,8 @@ group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e
 }
 
 // 5 ─ Circuito del gas R32 ed elettronica: i componenti sono quelli dell'allegato A (p.63) e delle schede di p.21-25; la loro posizione nel vano è ricostruita
-group('qref', 'Circuito R32 ed elettronica', 'Il gas R32 gira in un circuito chiuso tra compressore, scambiatore a piastre e batteria. La scheda inverter decide la velocità.', 19.0, 22.0, { stage: [.3, .5, .8], ex: [.2, .5, .45], az: 28, el: 18, zoom: .9,
+group('qref', 'Circuito R32 ed elettronica', 'Il gas R32 gira in un circuito chiuso tra compressore, scambiatore a piastre e batteria. La scheda inverter decide la velocità.', 19.0, 22.0, { stage: [0, 0, 0], ex: [.2, .5, .45],     // al suo posto: arrivando in blocco i tubi passavano dentro compressore e vaso
+   az: 28, el: 18, zoom: .9,
   info: { e: 'Il percorso chiuso del gas: gira sempre lo stesso, senza consumarsi. D\'estate il giro si inverte e la casa si raffresca.', s: 'R32, 1,25 kg · ciclo dal manuale 00339595, allegato A: valvola a 4 vie, valvola di espansione elettronica, capillare, due filtri, pressostati di alta e di bassa, sensore di pressione · tre schede: modulo inverter, controllo principale, modulo idraulico · porta Modbus · ingresso per il fotovoltaico' } }).home = qHome;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x);

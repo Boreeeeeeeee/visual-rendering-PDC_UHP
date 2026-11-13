@@ -71,14 +71,14 @@ def sito(out_rel: str) -> dict:
         if p.name in MOTORE_COMUNE and (p / "meta.json").exists():
             com, uhp = SRC / "comune", SRC / "prodotti" / "uhp"
             meta = json.loads(leggi(p / "meta.json"))
-            html = pagina(com / "prodotto.html", [logo, uhp / "a_core.js", uhp / "b_engine.js", com / "p1_base.js"] + sorted(p.glob("?_*.js")) + [com / "p2_show.js", com / "p3_ui.js"], base + p.name + "/").decode("utf-8")
+            html = pagina(com / "prodotto.html", [logo, uhp / "a_core.js", uhp / "b_engine.js", com / "tubi.js", com / "p1_base.js"] + sorted(p.glob("?_*.js")) + [com / "p2_show.js", com / "p3_ui.js"], base + p.name + "/").decode("utf-8")
             for k in ("TITOLO", "DESCRIZIONE", "OG", "ARIA"):
                 html = html.replace("<!--%s-->" % k, meta[k.lower()].replace('"', "&quot;"))
             files["%s/index.html" % p.name] = html.encode("utf-8")
         elif (p / "shell.html").exists():
             # la UHP ha il suo motore (a_core.js e b_engine.js); i prodotti in MOTORE_UHP lo riusano tale e quale, gli altri usano kit.js
             if p.name in MOTORE_UHP:
-                kit = [SRC / "prodotti" / "uhp" / "a_core.js", SRC / "prodotti" / "uhp" / "b_engine.js"]
+                kit = [SRC / "prodotti" / "uhp" / "a_core.js", SRC / "prodotti" / "uhp" / "b_engine.js", SRC / "comune" / "tubi.js"]     # tubi dritti con curve vere, che crescono
             else:
                 kit = [] if (p / "b_engine.js").exists() else [SRC / "comune" / "kit.js"]
             files["%s/index.html" % p.name] = pagina(p / "shell.html", [logo] + kit + sorted(p.glob("?_*.js")), base + p.name + "/")

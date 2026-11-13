@@ -519,6 +519,87 @@ function apply(t, E = 0, shr = 1, emit = false) {
   dirty.forEach(im => { im.instanceMatrix.needsUpdate = true; }); lastE = E; lastShr = shr; placed = n;
 }
 
+// ───────── Tubi a tratti dritti con curve vere, che nel film crescono lungo il loro percorso ─────────
+// Va dopo il motore della UHP (a_core.js, b_engine.js) e prima dei pezzi del prodotto. Lo usano le pagine comuni e l'ibrido; la UHP no.
+
+// ───────── tubi: tratti dritti e curve vere ─────────
+// Un tubo è la spezzata dei suoi punti con, in ogni angolo, una curva ad arco come quella di un tubo di rame piegato (raggio 35 mm, uguale per
+// il tubo e la sua coibentazione così restano uno dentro l'altra; più largo solo per i tubi grossi, più stretto solo se i tratti sono corti). I campioni sono fitti nelle curve e radi nei tratti dritti, così gli angoli non si schiacciano.
+// Sostituisce tubeGeo e curveOf del motore della UHP: i pezzi e i flussi delle pagine comuni seguono lo stesso percorso.
+class Arco extends THREE.Curve {
+  constructor(o, e1, e2, rc, th) { super(); this.o = o; this.e1 = e1; this.e2 = e2; this.rc = rc; this.th = th; }
+  getPoint(t, out = V()) { const a = this.th * t; return out.copy(this.o).addScaledVector(this.e1, this.rc * Math.cos(a)).addScaledVector(this.e2, this.rc * Math.sin(a)); }
+  getPointAt(u, out) { return this.getPoint(u, out); }
+  getTangent(t, out = V()) { const a = this.th * t; return out.copy(this.e1).multiplyScalar(-Math.sin(a)).addScaledVector(this.e2, Math.cos(a)).normalize(); }
+  getTangentAt(u, out) { return this.getTangent(u, out); }
+  getLength() { return this.rc * this.th; }
+}
+function percorso(pts, rc0 = .035) {
+  const Q = []; for (const p of pts) { const v = V(p[0], p[1], p[2]); if (!Q.length || v.distanceTo(Q[Q.length - 1]) > 1e-5) Q.push(v); }
+  if (Q.length < 2) Q.push((Q[0] || V()).clone().add(V(0, 1e-4, 0)));
+  const path = new THREE.CurvePath(); let cur = Q[0].clone();
+  for (let i = 1; i < Q.length - 1; i++) {
+    const a = Q[i - 1], c = Q[i], b = Q[i + 1], d1 = c.clone().sub(a), d2 = b.clone().sub(c), l1 = d1.length(), l2 = d2.length(); d1.divideScalar(l1); d2.divideScalar(l2);
+    const cs = clamp(d1.dot(d2), -1, 1), th = Math.acos(cs);
+    if (th < .004) continue;                                                              // dritto: nessuna curva
+    if (th > PI - .03) { if (c.distanceTo(cur) > 1e-6) path.add(new THREE.LineCurve3(cur.clone(), c.clone())); cur = c.clone(); continue; }   // inversione: spigolo
+    let rc = rc0, t = rc * Math.tan(th / 2); const lim = Math.min(i === 1 ? l1 : l1 / 2, i === Q.length - 2 ? l2 : l2 / 2) * .98;
+    if (t > lim) { t = lim; rc = t / Math.tan(th / 2); }
+    const T1 = c.clone().addScaledVector(d1, -t), T2 = c.clone().addScaledVector(d2, t), n = d2.clone().addScaledVector(d1, -cs).normalize();
+    if (T1.distanceTo(cur) > 1e-6) path.add(new THREE.LineCurve3(cur.clone(), T1));
+    path.add(new Arco(T1.clone().addScaledVector(n, rc), n.clone().negate(), d1.clone(), rc, th)); cur = T2;
+  }
+  const end = Q[Q.length - 1]; if (end.distanceTo(cur) > 1e-6 || !path.curves.length) path.add(new THREE.LineCurve3(cur, end.clone()));
+  return path;
+}
+function tuboGeo(pts, r, _seg, radial = 10) {
+  const path = percorso(pts, Math.max(r * 2.5, .035)), S = [], Tg = [], L = [0]; let acc = 0;
+  for (const c of path.curves) {
+    const len = c.getLength(), n = c.isLineCurve3 ? Math.max(1, Math.ceil(len / .03)) : Math.max(3, Math.ceil(c.th / (PI / 14)));
+    for (let k = S.length ? 1 : 0; k <= n; k++) { const p = c.getPoint(k / n, V()); if (S.length) { acc += p.distanceTo(S[S.length - 1]); L.push(acc); } S.push(p); Tg.push(c.getTangent(k / n, V()).normalize()); }
+  }
+  // riferimento che scorre lungo il tubo senza girare su sé stesso
+  const N = [], B = [], q = new THREE.Quaternion(), t0 = Tg[0], ax = Math.abs(t0.x) < .9 ? V(1, 0, 0) : V(0, 1, 0);
+  N.push(ax.sub(t0.clone().multiplyScalar(ax.dot(t0))).normalize());
+  for (let i = 1; i < S.length; i++) { const v = N[i - 1].clone().applyQuaternion(q.setFromUnitVectors(Tg[i - 1], Tg[i])); N.push(v.addScaledVector(Tg[i], -v.dot(Tg[i])).normalize()); }
+  for (let i = 0; i < S.length; i++) B.push(V().crossVectors(Tg[i], N[i]));
+  const pos = [], nor = [], uv = [], idx = [], nm = V();
+  for (let i = 0; i < S.length; i++) for (let j = 0; j <= radial; j++) {
+    const v = j / radial * PI * 2, sn = Math.sin(v), cs = -Math.cos(v);
+    nm.set(cs * N[i].x + sn * B[i].x, cs * N[i].y + sn * B[i].y, cs * N[i].z + sn * B[i].z).normalize();
+    nor.push(nm.x, nm.y, nm.z); pos.push(S[i].x + r * nm.x, S[i].y + r * nm.y, S[i].z + r * nm.z); uv.push(acc ? L[i] / acc : 0, j / radial);
+  }
+  for (let i = 1; i < S.length; i++) for (let j = 1; j <= radial; j++) {
+    const a = (radial + 1) * (i - 1) + (j - 1), b = (radial + 1) * i + (j - 1), c = (radial + 1) * i + j, d = (radial + 1) * (i - 1) + j; idx.push(a, b, d, b, c, d);
+  }
+  const g = new THREE.BufferGeometry(); g.setIndex(idx); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.userData = { tubo: true, len: Float32Array.from(L), tot: acc, n: S.length - 1, rad: radial, testa: S[0].clone(), punta: S[S.length - 1].clone() };
+  return g;
+}
+tubeGeo = tuboGeo; curveOf = pts => percorso(pts);
+
+// ───────── tubi e cavi che crescono lungo il loro percorso ─────────
+// Un tubo non arriva volando attraverso la macchina: compare dal suo primo punto e si allunga fino all'ultimo, già al suo posto.
+// Vale per ogni pezzo fatto con tubeGeo; un prodotto che vuole un tubo in volo mette m.userData.vola = true.
+const CRESCE = [];
+const _finalize = finalize;
+finalize = function () {
+  for (const p of PIECES) { const g = p.m && p.m.geometry; if (g && g.userData.tubo && !p.m.userData.vola) { p.cresce = true; p.dur = Math.max(p.dur, .8); CRESCE.push(p); } }
+  _finalize();
+  for (const p of CRESCE) { p.from.set(0, 0, 0); p.spin.set(0, 0, 0); p.punta = p.m.geometry.userData.punta.clone().applyMatrix4(p.m.matrixWorld); }
+};
+const _apply = apply;
+apply = function (t, E = 0, shr = 1, emit = false) {
+  _apply(t, E, shr, emit);
+  for (const p of CRESCE) {
+    if (p.st === 0) continue;
+    const g = p.m.geometry, u = g.userData, a = clamp((t - p.ts) / (p.te - p.ts));
+    p.m.scale.copy(p.fs).multiplyScalar(shr); p.m.visible = shr > .001;
+    let s = u.n; if (a < 1) { const d = eio(a) * u.tot; let lo = 0, hi = u.n; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (u.len[m] <= d) lo = m; else hi = m - 1; } s = lo; }
+    if (g.drawRange.count !== s * u.rad * 6) g.setDrawRange(0, s * u.rad * 6);
+  }
+};
+
 
 // ───────── Ibrido HYBREER 3 · costruzione, parte 1: texture, materiali e pompa di calore HP_QOR 70 ─────────
 // Stesso motore della UHP (uhp/a_core.js e uhp/b_engine.js): ogni pezzo ha nome, istante di arrivo e posto finale.
@@ -581,14 +662,15 @@ Object.assign(M, {
   sIn: xr(std({ color: 0xc8c8c8, roughness: .55, map: T.io('IN'), envMapIntensity: .4 })), sOut: xr(std({ color: 0xc8c8c8, roughness: .55, map: T.io('OUT'), envMapIntensity: .4 })),
   sKPanel: xr(std({ color: 0xd9d9d9, roughness: .84, map: T.kpanel, envMapIntensity: .45 })), sCof: xr(std({ color: 0xffffff, roughness: .84, map: T.cof, envMapIntensity: .45 })),
   sAlsi: xr(std({ color: 0x4d5155, roughness: .68, metalness: .55, bumpMap: T.noise, bumpScale: 1.2 })),
-  sBugne: xr(std({ color: 0x9da3a7, roughness: .4, metalness: .85, envMapIntensity: .6 })),
+  sBugne: xr(std({ color: 0x9da3a7, roughness: .58, metalness: .85, envMapIntensity: .6 })),
   sFoam: xr(std({ color: 0x17181a, roughness: 1, metalness: 0, bumpMap: T.noise, bumpScale: 2.2 })),
   sClear: xr(std({ color: 0x8f9aa2, roughness: .35, metalness: 0, transparent: true, opacity: .3 })),
   sPP: xr(std({ color: 0xc4c5c0, roughness: .4, metalness: 0, envMapIntensity: .5 })),
   fin: std({ color: 0x8f969b, roughness: .45, metalness: .8, envMapIntensity: .55 }),
   alsi: std({ color: 0x4d5155, roughness: .68, metalness: .55, bumpMap: T.noise, bumpScale: 1.2 }),
   zinc: std({ color: 0xa3a9ad, roughness: .4, metalness: .85, map: T.spangle, envMapIntensity: .6 }),
-  backK: std({ color: 0xb4bbc0, roughness: .42, metalness: .85, map: T.spangle, bumpMap: T.emb, bumpScale: 3 }),
+  backK: std({ color: 0xb4bbc0, roughness: .6, metalness: .85, map: rep(T.spangle.clone(), 5, 8),     // cristalli della zincatura piccoli, non a macchie
+    bumpMap: T.emb, bumpScale: 3 }),
   fibra: std({ color: 0xffffff, roughness: .8, metalness: .3, map: T.fibra, emissive: 0xff5a1c, emissiveIntensity: 0 }),
   white: std({ color: C_BIANCO, roughness: .84, metalness: 0, envMapIntensity: .45 }),
   grey: std({ color: 0x8f969b, roughness: .55, metalness: .1 }),
@@ -762,7 +844,7 @@ const qcw = p => [QX + CMX + p[0] * .86, QB + p[1] * .86, QZ + CMZ + p[2] * .86]
 
 // 4 ─ Ventilatore
 const fanRot = new THREE.Group();
-group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e bassa rumorosità.', 16.5, 19.0, { stage: [-.15, .1, 1.0], ex: [-.1, 0, .6], az: -22, el: 10, zoom: 1.0,
+group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e bassa rumorosità.', 16.5, 19.0, { stage: [-.15, .1, 1.0], ex: [-.1, 0, .6], az: -26, el: 16, zoom: 1.4,
   info: { e: 'Aspira l\'aria attraverso la batteria. Cambia velocità da solo, in base a quanto calore serve.', s: 'Motore brushless DC inverter · alta modulazione, bassa rumorosità · due livelli di silenziamento impostabili · pressione sonora 48 dB(A) a 1 m (HP_QOR 70)' } }).home = qHome;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x), F = QFAN;
@@ -784,7 +866,8 @@ group('qfan', 'Ventilatore', 'Motore brushless DC inverter ad alta modulazione e
 }
 
 // 5 ─ Circuito del gas R32 ed elettronica: i componenti sono quelli dell'allegato A (p.63) e delle schede di p.21-25; la loro posizione nel vano è ricostruita
-group('qref', 'Circuito R32 ed elettronica', 'Il gas R32 gira in un circuito chiuso tra compressore, scambiatore a piastre e batteria. La scheda inverter decide la velocità.', 19.0, 22.0, { stage: [.3, .5, .8], ex: [.2, .5, .45], az: 28, el: 18, zoom: .9,
+group('qref', 'Circuito R32 ed elettronica', 'Il gas R32 gira in un circuito chiuso tra compressore, scambiatore a piastre e batteria. La scheda inverter decide la velocità.', 19.0, 22.0, { stage: [0, 0, 0], ex: [.2, .5, .45],     // al suo posto: arrivando in blocco i tubi passavano dentro compressore e vaso
+   az: 28, el: 18, zoom: .9,
   info: { e: 'Il percorso chiuso del gas: gira sempre lo stesso, senza consumarsi. D\'estate il giro si inverte e la casa si raffresca.', s: 'R32, 1,25 kg · ciclo dal manuale 00339595, allegato A: valvola a 4 vie, valvola di espansione elettronica, capillare, due filtri, pressostati di alta e di bassa, sensore di pressione · tre schede: modulo inverter, controllo principale, modulo idraulico · porta Modbus · ingresso per il fotovoltaico' } }).home = qHome;
 {
   const q = node(QX, 0, QZ), o = x => Object.assign({ parent: q }, x);
@@ -911,7 +994,7 @@ gK.home = kHome;
   P(mesh(G.box(.166, .012, .088), M.alsi, -.055, .296, .136), o({ d: .17, from: [0, -.3, .2], spin: [0, 0, 0] }));
   PIN(G.box(.006, .004, .08), M.alsi, [-.151, .041].flatMap(x => Array.from({ length: 7 }, (_, i) => ({ p: [x, .32 + i * .038, .136] }))), o({ d0: .17, d1: .19, from: [0, 0, .3], spin: [0, 0, 0], snd: 'fin' }));
   const pin = []; for (let r = 0; r < 9; r++) for (let c = 0; c < 8; c++) pin.push({ p: [-.122 + c * .019 + (r % 2 ? .0095 : 0), .322 + r * .0225, .132] });
-  PIN(G.cylZ(.0042, .078, 8), M.alu, pin, o({ d0: .19, d1: .31, dur: .3, from: [0, .02, .4], spin: [0, 0, 0], ease: eoc, n: 'Alettatura a piolini', snd: 'fin' }));
+  PIN(G.cylZ(.0042, .078, 8), M.alsi, pin, o({ d0: .19, d1: .31, dur: .3, from: [0, .02, .4], spin: [0, 0, 0], ease: eoc, n: 'Alettatura a piolini', snd: 'fin' }));
   // raccolta condensa e collettore fumi sotto lo scambiatore
   { const s = new THREE.Shape(); [[-.15, .292], [.04, .292], [.04, .272], [.0, .232], [-.03, .222], [-.13, .248], [-.15, .268]].forEach((p, i) => i ? s.lineTo(p[0], p[1]) : s.moveTo(p[0], p[1])); s.closePath();
     P(mesh(new THREE.ExtrudeGeometry(s, { depth: .105, bevelEnabled: false }), M.plastic, 0, 0, .082), o({ d: .32, from: [0, -.3, .2], spin: [0, 0, 0], n: 'Raccolta condensa e collettore fumi' })); }
@@ -961,7 +1044,8 @@ gK.home = kHome;
 }
 
 // 8 ─ Caldaia: gruppo idraulico
-group('khyd', 'Caldaia: gruppo idraulico', 'Circolatore modulante con disaeratore, valvola deviatrice, scambiatore sanitario a 12 piastre e sifone della condensa. Qui la caldaia fa solo riscaldamento.', 31.5, 35.0, { stage: [.15, -.25, 1.0], ex: [.2, -.4, .5], az: 14, el: 2, zoom: 1.0,
+group('khyd', 'Caldaia: gruppo idraulico', 'Circolatore modulante con disaeratore, valvola deviatrice, scambiatore sanitario a 12 piastre e sifone della condensa. Qui la caldaia fa solo riscaldamento.', 31.5, 35.0, { stage: [0, 0, 0], ex: [.2, -.4, .5],     // al suo posto: arrivando in blocco da davanti attraversava condotto fumi e tubo del gas
+   az: 14, el: 2, zoom: 1.0,
   info: { e: 'La parte bassa: la pompa che spinge l\'acqua nello scambiatore, le valvole e lo scarico della condensa.', s: 'Circolatore modulante ad alta efficienza con disaeratore, by-pass e valvola di sicurezza · valvola deviatrice · scambiatore sanitario a 12 piastre inox AISI 316L · sifone · attacchi a 207 mm dalla parete: C e F G½, G, R e M G¾ · con il kit HYBREER C e F restano chiusi' } }).home = kHome;
 {
   const b = node(KX, KY, ZW), o = x => Object.assign({ parent: b }, x);
@@ -1020,7 +1104,7 @@ group('kshell', 'Caldaia: quadro e mantello', 'Pannello comandi con due manopole
   screws([-1, 1].flatMap(s => [.05, .25, .45, .65].map(y => ({ p: [s * .197, y, .331], r: [PI / 2, 0, 0] }))), o({ d0: .1, d1: .18, mat: M.sScrew, k: (i, it) => [it.p[0] * 2.8, 0, .16], n: 'Viti del telaio' }));
   P(mesh(G.plane(.1, .058), M.sKLabel, .2105, .3, .2, 0, PI / 2, 0), o(Object.assign({ d: .2, from: [.5, 0, 0], k: [.55, 0, 0], n: 'Targhetta' }, F0)));
   // scheda e morsettiera dietro il pannello
-  P(mesh(G.box(.2, .07, .003), M.pcb, 0, .07, .262), o({ d: .22, from: [0, -.2, .3], spin: [0, 0, 0], k: [0, -.25, .25], n: 'Scheda elettronica' }));
+  P(mesh(G.box(.2, .07, .003), M.pcb, 0, .07, .262), o({ d: .22, from: [0, 0, .35], spin: [0, 0, 0], k: [0, -.25, .25], n: 'Scheda elettronica' }));
   PIN(G.box(.011, .016, .014), M.term, Array.from({ length: 6 }, (_, i) => ({ p: [.09 + i * .012, .11, .268] })), o({ d0: .25, d1: .28, from: [0, 0, .25], spin: [0, 0, 0], k: [0, -.2, .3], n: 'Morsettiera SE · TA1/OT · TA2', snd: 'fin' }));
   // pannello comandi (manuale utente §6.1)
   { const s = new THREE.Shape(); s.moveTo(-.172, 0); s.lineTo(.172, 0); s.lineTo(.172, .084); s.quadraticCurveTo(0, .122, -.172, .084); s.closePath();
@@ -1037,7 +1121,7 @@ group('kshell', 'Caldaia: quadro e mantello', 'Pannello comandi con due manopole
   P(mesh(G.rbox(.42, .012, .34, .004), M.sWhite, 0, .694, .175), o(Object.assign({ d: .56, from: [0, .5, 0], k: [0, .55, 0], dur: .6, n: 'Coperchio' }, F0)));
   P(mesh(annulus(.052, .031, .034), M.white, 0, .716, .225), o({ d: .6, from: [0, .3, 0], spin: [0, 3, 0], k: [0, .65, 0], n: 'Scarico fumi coassiale Ø 60/100' }));
   P(mesh(annulus(.031, .0285, .05), M.sPP, 0, .722, .225), o({ d: .61, from: [0, .3, 0], spin: [0, 3, 0], k: [0, .7, 0] }));
-  PIN(G.cyl(.04, .006, 28), M.grey, [-.125, .125].map(x => ({ p: [x, .703, .205] })), o({ d0: .63, d1: .65, from: [0, .3, 0], spin: [0, 2, 0], k: [0, .6, 0], n: 'Prese laterali chiuse' }));
+  PIN(G.cyl(.04, .006, 28), M.grey, [-.125, .125].map(x => ({ p: [x, .703, .205] })), o({ d0: .63, d1: .65, from: [0, .3, .25], spin: [0, 2, 0], ease: eoc, k: [0, .6, 0], n: 'Prese laterali chiuse' }));
   P(mesh(G.box(.396, .004, .262), M.sGrid, 0, .004, .2), o(Object.assign({ d: .68, from: [0, -.3, 0], k: [0, -.6, 0] }, F0)));
   // mantello
   P(mesh(G.rbox(.42, .585, .012, .005), M.sWhite, 0, .4075, .339), o(Object.assign({ d: .74, from: [0, .1, .7], k: [0, .12, .75], dur: .7, n: 'Mantello' }, F0)));
@@ -1103,19 +1187,22 @@ const qIn = [QX + QPX, .533, QZ - QD / 2 - .037], qOut = [QX + QPX, .368, QZ - Q
 const LP = {
   Mp: [qOut, [qOut[0], .368, -.2], [qOut[0], .368, ZT], [.25, .368, ZT], [.25, 1.13, ZT], [KX + HK.Mpdc, 1.13, ZT], [KX + HK.Mpdc, HY + .315, ZT]],
   Rp: [qIn, [qIn[0], .533, -.14], [qIn[0], .533, ZT + .06], [.19, .533, ZT + .06], [.19, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT + .06], [KX + HK.Rpdc, 1.2, ZT], [KX + HK.Rpdc, HY + .29, ZT]],
-  Mc: [kwp(KA.M, -.045, KZ), kwp(KA.M, -.11, KZ), kwp(HK.MCal + .012, -.2, .14), [KX + HK.MCal, 1.07, ZT], [KX + HK.MCal, HY + .315, ZT]],
-  Rc: [kwp(KA.R, -.045, KZ), kwp(KA.R, -.09, KZ), kwp(HK.RCal + .015, -.17, .15), [KX + HK.RCal, 1.1, ZT], [KX + HK.RCal, HY + .29, ZT]],
-  Mi: [hw(.1182, .1, HZ), hw(.1182, -.35, HZ), [KX + .1182, .16, ZT], [KX + .14, .075, ZT + .03], [KX + .3, .05, ZT + .08], [1.17, .05, -.25]],
-  Ri: [hw(-.1182, .1, HZ), hw(-.1182, -.4, HZ), [KX - .1182, .16, ZT], [KX - .1, .09, ZT + .02], [KX + .2, .05, ZT + .03], [1.15, .05, ZT + .03], [1.23, .05, -.3]],
-  gas: [[.32, .05, ZW + .03], [.32, 1.23, ZW + .03], [.36, 1.262, ZW + .09], [.5, 1.262, ZW + KZ], [KX + KA.G, 1.262, ZW + KZ], kwp(KA.G, -.045, KZ)],
-  cond: [kwp(.012, -.035, .2), kwp(.03, -.1, .1), [KX + .2, 1.1, ZW + .03], [.87, .9, ZW + .03], [.87, .06, ZW + .03]],
+  // tratti dritti e curve vere: giù dagli attacchi della caldaia, indietro fino al piano degli attacchi del kit, di lato e giù nel kit
+  Mc: [kwp(KA.M, -.045, KZ), [KX + KA.M, 1.15, ZW + KZ], [KX + KA.M, 1.15, ZT], [KX + HK.MCal, 1.15, ZT], [KX + HK.MCal, HY + .315, ZT]],
+  Rc: [kwp(KA.R, -.045, KZ), [KX + KA.R, 1.185, ZW + KZ], [KX + KA.R, 1.185, ZT], [KX + HK.RCal, 1.185, ZT], [KX + HK.RCal, HY + .29, ZT]],
+  // impianto: giù lungo il muro, di lato a due quote diverse (mandata sotto, ritorno 6 cm più avanti), poi nel pavimento all'inizio e alla fine della serpentina
+  Mi: [hw(.1182, .1, HZ), [KX + .1182, .12, ZT], [1.17, .12, ZT], [1.17, .05, ZT], [1.17, .05, -.25]],
+  Ri: [hw(-.1182, .1, HZ), [KX - .1182, .2, ZT], [KX - .1182, .2, ZT + .06], [1.23, .2, ZT + .06], [1.23, .05, ZT + .06]],
+  gas: [[.32, .05, ZW + .03], [.32, 1.235, ZW + .03], [.32, 1.235, ZW + KZ], [KX + KA.G, 1.235, ZW + KZ], kwp(KA.G, -.045, KZ)],
+  cond: [kwp(.012, -.035, .2), [KX + .012, 1.1, ZW + .2], [KX + .012, 1.1, ZW + .04], [1.13, 1.1, ZW + .04], [1.13, .06, ZW + .04]],     // indietro fino al muro, poi lungo il muro a destra del kit relè
 };
 // pavimento radiante: dodici file, andata e ritorno
 const FL = { x0: .22, x1: 1.17, z0: -.25, dz: .083, n: 12, y: .05 };
 LP.floor = (() => { const a = []; for (let i = 0; i < FL.n; i++) { const z = FL.z0 + i * FL.dz, L = i % 2 === 0; a.push([L ? FL.x1 : FL.x0, FL.y, z], [L ? FL.x0 : FL.x1, FL.y, z]); } a.push([1.23, FL.y, FL.z0 + (FL.n - 1) * FL.dz], [1.23, FL.y, -.3]); return a; })();
 for (const k in LP) PIPE['l' + k] = LP[k];
 PIPE.fumiExt = [kwp(0, .72, .225), kwp(0, .93, .225), kwp(0, .98, .19), kwp(0, 1.0, .1), kwp(0, 1.0, -.06)];
-group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, kit e caldaia, sonda T1 sulla mandata, gas, scarico fumi e pavimento radiante.', 42.0, 45.5, { stage: [0, 0, .9], ex: [0, -.1, .7], az: 4, el: 16, zoom: .82,
+group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, kit e caldaia, sonda T1 sulla mandata, gas, scarico fumi e pavimento radiante.', 42.0, 45.5, { stage: [0, 0, 0], ex: [0, -.1, .7],     // al loro posto: arrivando in blocco da davanti i tubi passavano dentro la HP_QOR
+   az: 4, el: 16, zoom: .82,
   info: { e: 'Quello che unisce tutto: l\'acqua va e torna tra i due generatori, il kit e il pavimento di casa.', s: 'Pompa di calore su R pdc / M pdc, caldaia su R Cal / M Cal, impianto su R imp / M imp · sonda di mandata globale T1 00470021 sull\'attacco della pompa di calore · tubi coibentati per il raffrescamento · gas, fumi e pavimento: percorso indicativo' } }).home = { off: [-.03, 1.02, 0], w: 3.15, h: 2.5 };
 {
   const o = x => x, tubo = (k, r, m, opt) => P(mesh(tubeGeo(LP[k], r, LP[k].length * 14), m), opt);
@@ -1128,7 +1215,7 @@ group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, k
   P(mesh(G.cylZ(.02, .05, 18), M.brass, qOut[0], qOut[1], qOut[2] - .012), o({ d: .3, from: [0, 0, -.3], spin: [0, 0, 4], n: 'Raccordo con pozzetto della sonda' }));
   P(mesh(G.cyl(.008, .04, 12), M.brass, qOut[0], qOut[1] - .03, qOut[2] - .012), o({ d: .32, from: [0, -.2, 0] }));
   P(mesh(G.cyl(.004, .03, 10), M.copper, qOut[0], qOut[1] - .055, qOut[2] - .012), o({ d: .33, from: [0, -.2, 0], n: 'Sonda di mandata globale T1' }));
-  P(mesh(tubeGeo([[qOut[0], qOut[1] - .07, qOut[2] - .012], [qOut[0] + .05, .2, qOut[2] + .02], [qOut[0] + .12, .12, QZ - .1], [QX + .56, .4, QZ - .03]], .003, 24), M.wBlue), o({ d: .34 }));
+  P(mesh(tubeGeo([[qOut[0], qOut[1] - .07, qOut[2] - .012], [qOut[0], .16, qOut[2] - .012], [QX + .56, .16, qOut[2] - .012], [QX + .56, .16, QZ - .03], [QX + .56, .4, QZ - .03]], .003, 24), M.wBlue), o({ d: .34 }));
   tubo('Mp', .0135, M.copper, { d: .36, dur: .6, n: 'Mandata della pompa di calore → M pdc' });
   tubo('Rp', .0135, M.copper, { d: .4, dur: .6, n: 'R pdc → ritorno alla pompa di calore' });
   [[LP.Mp[2], LP.Mp[3]], [LP.Mp[3], LP.Mp[4]], [LP.Rp[3], LP.Rp[4]], [LP.Rp[2], LP.Rp[3]]].forEach(([a, b2], i) => { const A = V(...a), B = V(...b2), m = mesh(new THREE.CylinderGeometry(.024, .024, A.distanceTo(B) * .76, 14), M.sFoam);
@@ -1146,7 +1233,9 @@ group('link', 'Collegamenti e impianto', 'Tubi coibentati tra pompa di calore, k
   P(mesh(annulus(.075, .05, .008), M.white, KX, KY + 1.0, ZW + .004, PI / 2, 0, 0), o({ d: .86, from: [0, 0, .3] }));
   // scarico della condensa e cavi del kit relè
   tubo('cond', .009, M.grey, { d: .88, dur: .5, n: 'Scarico della condensa' });
-  [[[KX + .28, HY + .13, ZW + .03], [KX + .26, 1.05, ZW + .04], [KX + .16, 1.2, ZW + .2], [KX + .13, KY + .02, ZW + .26]], [[KX + .39, HY + .13, ZW + .03], [KX + .4, .3, ZW + .03], [.9, .08, ZW + .03]], [[KX + .35, HY + .13, ZW + .03], [KX + .34, .2, ZW + .04], [.3, .1, ZW + .05], [QX + .59, .2, QZ - .12], [QX + .553, .39, QZ + .03]]].forEach((p, i) => P(mesh(tubeGeo(p, .0035, 36), M.plastic), o({ d: .92 + i * .025, dur: .5, n: i ? null : 'Cavi: caldaia, pompa di calore, termostato' })));
+  [[[KX + .28, HY + .13, ZW + .015], [KX + .28, HY + .08, ZW + .015], [KX + .23, HY + .08, ZW + .015], [KX + .23, 1.27, ZW + .015], [KX + .18, 1.27, ZW + .015], [KX + .18, 1.27, ZW + .15], [KX + .18, KY + .005, ZW + .15]],     // alla caldaia, tra il cofano del kit e il kit relè
+   [[KX + .39, HY + .13, ZW + .035], [KX + .39, .04, ZW + .035]],     // al termostato, nel pavimento
+   [[KX + .35, HY + .13, ZW + .035], [KX + .35, .1, ZW + .035], [KX + .35, .1, ZW + .06], [-.25, .1, ZW + .06], [-.25, .1, QZ + .03], [QX + .553, .1, QZ + .03], [QX + .553, .39, QZ + .03]]].forEach((p, i) => P(mesh(tubeGeo(p, .0035, 36), M.plastic), o({ d: .92 + i * .025, dur: .5, n: i ? null : 'Cavi: caldaia, pompa di calore, termostato' })));
 }
 finalize();
 
@@ -1173,9 +1262,9 @@ const shadow = mesh(G.plane(2.1, 1.2), new THREE.MeshBasicMaterial({ map: T.shad
 // dentro la parete della lavanderia con caldaia e kit. Ogni faccia è un piano con un lato solo: da dietro non si vede, così la camera può girare intorno alle macchine.
 const WX0 = -.06, WX1 = .14, WZ1 = .25, WH = 2.62;
 const mMuro = std({ color: 0x9aa0a4, roughness: .95, map: T.muro, bumpMap: T.noise, bumpScale: 1.5 }), mFuori = std({ color: 0xa8a297, roughness: .97, bumpMap: T.noise, bumpScale: 2.2 });
-T.sezione = cv(128, 128, (g, w, h) => { g.fillStyle = '#b9b39a'; g.fillRect(0, 0, w * .3, h); g.fillStyle = '#8a5f4c'; g.fillRect(w * .3, 0, w * .62, h); g.fillStyle = '#c9c9c4'; g.fillRect(w * .92, 0, w * .08, h); g.strokeStyle = 'rgba(40,24,18,.5)'; g.lineWidth = 2; for (let i = -h; i < w; i += 14) { g.beginPath(); g.moveTo(w * .3 + Math.max(0, i), Math.max(0, -i)); g.lineTo(Math.min(w * .92, w * .3 + i + h), Math.min(h, h - Math.max(0, i + h - w * .62))); g.stroke(); } g.fillStyle = 'rgba(60,56,40,.35)'; for (let i = 0; i < 70; i++) g.fillRect((i * 37 % 100) / 100 * w * .28, (i * 53 % 100) / 100 * h, 2, 2); });
+T.sezione = cv(128, 128, (g, w, h) => { g.fillStyle = '#a5a297'; g.fillRect(0, 0, w * .3, h); g.fillStyle = '#6f6660'; g.fillRect(w * .3, 0, w * .62, h); g.fillStyle = '#b3b3ae'; g.fillRect(w * .92, 0, w * .08, h); g.strokeStyle = 'rgba(30,24,20,.32)'; g.lineWidth = 2; for (let i = -h; i < w; i += 14) { g.beginPath(); g.moveTo(w * .3 + Math.max(0, i), Math.max(0, -i)); g.lineTo(Math.min(w * .92, w * .3 + i + h), Math.min(h, h - Math.max(0, i + h - w * .62))); g.stroke(); } g.fillStyle = 'rgba(60,56,40,.35)'; for (let i = 0; i < 70; i++) g.fillRect((i * 37 % 100) / 100 * w * .28, (i * 53 % 100) / 100 * h, 2, 2); });
 T.sezione.wrapT = THREE.RepeatWrapping; T.sezione.repeat.set(1, 9);
-const mSez = std({ color: 0xb0b0b0, roughness: .95, map: T.sezione });
+const mSez = std({ color: 0x9c9c9c, roughness: .95, map: T.sezione });     // sezione del muro più quieta: era una striscia rosso mattone in ogni inquadratura
 const muro = mesh(G.plane(1.28, WH), mMuro, WX1 + .64, WH / 2, ZW); scene.add(muro);
 scene.add(mesh(G.plane(WZ1 - ZW, WH), mMuro, WX1, WH / 2, (WZ1 + ZW) / 2, 0, PI / 2, 0), mesh(G.plane(WZ1 - ZW, WH), mFuori, WX0, WH / 2, (WZ1 + ZW) / 2, 0, -PI / 2, 0), mesh(G.plane(WX1 - WX0, WH), mSez, (WX0 + WX1) / 2, WH / 2, WZ1));
 { const cap = mesh(G.plane(WX1 - WX0, WZ1 - ZW), std({ color: 0x8c8c88, roughness: .95 }), (WX0 + WX1) / 2, WH, (WZ1 + ZW) / 2, -PI / 2); scene.add(cap);
@@ -1186,12 +1275,14 @@ scene.add(mesh(G.plane(WZ1 - ZW, WH), mMuro, WX1, WH / 2, (WZ1 + ZW) / 2, 0, PI 
 function points(n, size, add = true) {
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
   const p = new THREE.Points(g, new THREE.PointsMaterial({ size, map: T.glow, vertexColors: true, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending }));
+  p.material.onBeforeCompile = sh => { sh.uniforms.uPtMax = PT_MAX; sh.vertexShader = 'uniform float uPtMax;\n' + sh.vertexShader.replace('#include <fog_vertex>', 'gl_PointSize = min( gl_PointSize, uPtMax );\n#include <fog_vertex>'); };
   p.frustumCulled = false; p.userData.size = size; PTS.push(p); return p;
 }
-const PTS = [];
-function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; }
+// una particella vicinissima alla camera non deve diventare una macchia: grandezza massima in pixel, il 3,5 % dell'altezza dell'immagine
+const PTS = [], PT_MAX = { value: 40 }, V2 = new THREE.Vector2();
+function ptSizes() { const k = 1 / Math.tan(rad(camera.fov / 2)); for (const p of PTS) p.material.size = p.userData.size * k; PT_MAX.value = Math.max(8, renderer.getDrawingBufferSize(V2).y * .035); }
 // i flussi corrono dentro i tubi: li disegno un po' più vicini alla camera, così non restano nascosti dalla parete del tubo
-function pushed(p, d = .022) { p.material.onBeforeCompile = s => { s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
+function pushed(p, d = .022) { const prima = p.material.onBeforeCompile; p.material.onBeforeCompile = s => { prima(s); s.vertexShader = s.vertexShader.replace('#include <project_vertex>', `vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );\n\tmvPosition.xyz -= normalize( mvPosition.xyz ) * ${d.toFixed(3)};\n\tgl_Position = projectionMatrix * mvPosition;`); }; return p; }
 const R0 = rng(99);
 // neve
 const NS = 1500, snow = points(NS, .015), snowB = new Float32Array(NS * 4); scene.add(snow);
@@ -1258,9 +1349,9 @@ const PATH = {
     seg([hK(HK.MCal, .3), hK(HK.MCal, .19), hK(.1182, .19), hK(.1182, .1)], WB, W1), seg('lMi', W1, W1), seg([[1.17, .05, -.25], [.22, .05, -.25]], W1, W0)], 900);
   r.curve = new THREE.CatmullRomCurve3(Array.from({ length: 300 }, (_, i) => { const q = Math.round(i / 299 * (r.S - 1)); return V(r.P[q * 3], r.P[q * 3 + 1], r.P[q * 3 + 2]); }), false, 'centripetal'); PATH.ride = r; }
 // scintille all'arrivo dei pezzi
-const NK = 240, spark = points(NK, .011), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
+const NK = 240, spark = points(NK, .009), spV = new Float32Array(NK * 4); scene.add(spark); let spI = 0;
 function emitSpark(pos, n) { const p = spark.geometry.attributes.position; for (let k = 0; k < n; k++) { const i = spI = (spI + 1) % NK; p.setXYZ(i, pos.x, pos.y, pos.z); spV[i * 4] = (Math.random() - .5) * 1.1; spV[i * 4 + 1] = Math.random() * 1.0 + .2; spV[i * 4 + 2] = (Math.random() - .5) * 1.1; spV[i * 4 + 3] = 1; } }
-function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 3.2 * k, 1.5 * k * k, .4 * k * k); } p.needsUpdate = c.needsUpdate = true; }
+function updSparks(dt) { const p = spark.geometry.attributes.position, c = spark.geometry.attributes.color; for (let i = 0; i < NK; i++) { let l = spV[i * 4 + 3]; if (l <= 0) { c.setXYZ(i, 0, 0, 0); continue; } l -= dt * 2.2; spV[i * 4 + 3] = l; spV[i * 4 + 1] -= dt * 3; p.setXYZ(i, p.getX(i) + spV[i * 4] * dt, Math.max(.005, p.getY(i) + spV[i * 4 + 1] * dt), p.getZ(i) + spV[i * 4 + 2] * dt); const k = Math.max(0, l); c.setXYZ(i, 2.1 * k, 1.0 * k * k, .28 * k * k); } p.needsUpdate = c.needsUpdate = true; }
 const ring = mesh(new THREE.RingGeometry(.93, 1, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(.7, 1.4, 1.1), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 0, .01, 0, -PI / 2); scene.add(ring); let ringT = 9;
 
 // ───────── stato dell'impianto in funzione ─────────
@@ -1282,7 +1373,7 @@ function applyLook(now, dt) {
   fG.upd(now, S.watB, .2, PATH.gas); fF.upd(now, S.watB * .8, .16, PATH.fumi);
   shadow.material.opacity = .9 * (1 - clamp(S.E * 1.5)) * S.shr;
   updSparks(dt);
-  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar(.3 + k * 1.5); ring.material.opacity = (1 - k) * .8; } else ring.material.opacity = 0;
+  if (ringT < 1) { ringT += dt * 1.6; const k = eoc(clamp(ringT)); ring.scale.setScalar((.3 + k * 1.5) * (ring.userData.k || 1)); ring.material.opacity = (1 - k) * .5; } else ring.material.opacity = 0;
 }
 
 // ───────── camera ─────────
@@ -1346,7 +1437,7 @@ function readout() { el.read.classList.toggle('on', S.read > .5); const o = fmtT
 onStart = p => { el.tick.textContent = p.n; el.tick.classList.remove('in'); void el.tick.offsetWidth; el.tick.classList.add('in'); };
 let sfx = null;                       // riempito dal modulo dei comandi quando l'audio è attivo
 const _w = V();
-onLand = p => { _w.copy(p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
+onLand = p => { _w.copy(p.cresce ? p.punta : p.wc).add(p.g.node.position); if (p.im) { if (Math.random() < .22) emitSpark(_w, 1); } else emitSpark(_w, 4); if (sfx) sfx(p.snd); };
 
 // ───────── linea del tempo del filmato ─────────
 const gCmp = GROUPS.find(g => g.key === 'qcomp'), gBru = GROUPS.find(g => g.key === 'kcomb');
@@ -1360,7 +1451,7 @@ function filmState(t, emit) {
     Object.assign(S, { cold: c, snow: c, xray: 0, fan: 0, comp: 2.2 * sm(a + 1.9, a + 2.7, t) * (1 - sm(a + 4.0, a + 4.7, t)), air: 0, ref: 0, watP: 0, watB: 0, watI: 0, boil: sm(b + 2.4, b + 2.8, t) * (1 - sm(b + 3.5, b + 3.85, t)), E: 0, shr: 1, read: 0, outT: 10, watT: 35,
       demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 3.7, a + 4.0, t)), who: 1, cool: false });
     apply(t, 0, 1, emit);
-    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, Math.max(g.c.z, -.2)); if (sfx) sfx('dock'); }
+    if (emit) for (const g of GROUPS) if (g.stage.lengthSq() > 0 && t >= g.tb && t - g.tb < .05 && ringT > .5) { ringT = 0; ring.position.set(g.c.x, .012, Math.max(g.c.z, -.2)); ring.userData.k = clamp(g.size * 1.4, .2, 1); if (sfx) sfx('dock'); }
   } else {
     const r = t - T_RUN, x = sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r)), cold = sm(6.2, 7.6, r), outT = r < 8.8 ? lerp(10, -3, sm(6.0, 7.4, r)) : lerp(-3, -18, sm(8.9, 10.0, r)), who = chi(Math.round(outT), false), pdc = 1 - sm(9.8, 10.6, r), cal = sm(6.8, 7.6, r);
     Object.assign(S, { cold, snow: cold, xray: x, fan: 6 * sm(.2, 2, r) * pdc, comp: 3 * sm(.6, 2.2, r) * pdc, air: sm(.8, 2, r) * pdc, ref: sm(1.6, 2.6, r) * x * pdc, watP: sm(1.6, 2.6, r) * pdc, watB: cal, watI: sm(2, 3, r), boil: cal, E: 0, shr: 1, read: r > 1 ? 1 : 0,
@@ -1401,11 +1492,11 @@ function startFilm(t = 0) { const wasFree = mode === 'free'; mode = 'film'; star
 $('bPlay').onclick = () => { playing = !playing; $('bPlay').textContent = playing ? 'Pausa' : 'Riprendi'; };
 $('bSkip').onclick = () => enterFree(); $('bGo').onclick = () => startFilm(0); $('bExplore').onclick = () => enterFree();
 
-resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .38; resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
+resize(); mkComposer(); bloom.threshold = 1.4; bloom.strength = .5; M.inox.roughness = .55; M.steel.roughness = .58; M.galv.roughness = .62; M.zinc.roughness = .62; M.alu.roughness = .68; M.black.roughness = .42; M.copper.roughness = .36;     // metalli satinati: niente aloni di bagliore resize(); ptSizes(); new ResizeObserver(() => { resize(); ptSizes(); }).observe(stage);
 queueMicrotask(() => { if (typeof initUI === 'function') initUI(); });   // dopo che il modulo dei comandi ha inizializzato le sue variabili
 // per le prove: tempo, esplosione e vista comandabili da fuori
 window.__ibrido = { GROUPS, PIECES, M, PATH, PIPE, vista(v) { vistaProva = v; }, seek(t) { if (t >= T_END) { if (mode !== 'free') enterFree(); if (freeTick) freeTick(0); } else { if (mode !== 'film' || !started) startFilm(t); playing = false; Tm = t; now = t; filmState(t, false); camFilm(t); hud(t); placeCam(rig); } applyLook(now, 0); draw(); },
-  setHQ(v) { HQ = v; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
+  setHQ(v) { HQ = v; }, get bloom() { return bloom; }, step(n = 30, dt = .1) { for (let i = 0; i < n; i++) { now += dt; if (mode === 'free' && freeTick) freeTick(dt); applyLook(now, dt); } draw(); }, S, rig, free, placeCam, draw, applyLook, apply, get mode() { return mode; }, pieces: PIECES.length,
   groups: GROUPS.map(g => [g.key, g.pieces.length, +g.size.toFixed(2)]), T_END, T_RUN,
   stato: () => ({ mode: started ? mode : 'start', t: +Tm.toFixed(2), pezzi: PIECES.length, gruppi: GROUPS.length, posati: placed, who: S.who, outT: Math.round(S.outT), watT: S.watT, cool: S.cool, fan: +S.fan.toFixed(2), boil: +S.boil.toFixed(2), xray: +S.xray.toFixed(2), E: +S.E.toFixed(3), calls: renderer.info.render.calls }) };
 requestAnimationFrame(frame);

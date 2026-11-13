@@ -47,7 +47,7 @@ gK.home = kHome;
   P(mesh(G.box(.166, .012, .088), M.alsi, -.055, .296, .136), o({ d: .17, from: [0, -.3, .2], spin: [0, 0, 0] }));
   PIN(G.box(.006, .004, .08), M.alsi, [-.151, .041].flatMap(x => Array.from({ length: 7 }, (_, i) => ({ p: [x, .32 + i * .038, .136] }))), o({ d0: .17, d1: .19, from: [0, 0, .3], spin: [0, 0, 0], snd: 'fin' }));
   const pin = []; for (let r = 0; r < 9; r++) for (let c = 0; c < 8; c++) pin.push({ p: [-.122 + c * .019 + (r % 2 ? .0095 : 0), .322 + r * .0225, .132] });
-  PIN(G.cylZ(.0042, .078, 8), M.alu, pin, o({ d0: .19, d1: .31, dur: .3, from: [0, .02, .4], spin: [0, 0, 0], ease: eoc, n: 'Alettatura a piolini', snd: 'fin' }));
+  PIN(G.cylZ(.0042, .078, 8), M.alsi, pin, o({ d0: .19, d1: .31, dur: .3, from: [0, .02, .4], spin: [0, 0, 0], ease: eoc, n: 'Alettatura a piolini', snd: 'fin' }));
   // raccolta condensa e collettore fumi sotto lo scambiatore
   { const s = new THREE.Shape(); [[-.15, .292], [.04, .292], [.04, .272], [.0, .232], [-.03, .222], [-.13, .248], [-.15, .268]].forEach((p, i) => i ? s.lineTo(p[0], p[1]) : s.moveTo(p[0], p[1])); s.closePath();
     P(mesh(new THREE.ExtrudeGeometry(s, { depth: .105, bevelEnabled: false }), M.plastic, 0, 0, .082), o({ d: .32, from: [0, -.3, .2], spin: [0, 0, 0], n: 'Raccolta condensa e collettore fumi' })); }
@@ -97,7 +97,8 @@ gK.home = kHome;
 }
 
 // 8 ─ Caldaia: gruppo idraulico
-group('khyd', 'Caldaia: gruppo idraulico', 'Circolatore modulante con disaeratore, valvola deviatrice, scambiatore sanitario a 12 piastre e sifone della condensa. Qui la caldaia fa solo riscaldamento.', 31.5, 35.0, { stage: [.15, -.25, 1.0], ex: [.2, -.4, .5], az: 14, el: 2, zoom: 1.0,
+group('khyd', 'Caldaia: gruppo idraulico', 'Circolatore modulante con disaeratore, valvola deviatrice, scambiatore sanitario a 12 piastre e sifone della condensa. Qui la caldaia fa solo riscaldamento.', 31.5, 35.0, { stage: [0, 0, 0], ex: [.2, -.4, .5],     // al suo posto: arrivando in blocco da davanti attraversava condotto fumi e tubo del gas
+   az: 14, el: 2, zoom: 1.0,
   info: { e: 'La parte bassa: la pompa che spinge l\'acqua nello scambiatore, le valvole e lo scarico della condensa.', s: 'Circolatore modulante ad alta efficienza con disaeratore, by-pass e valvola di sicurezza · valvola deviatrice · scambiatore sanitario a 12 piastre inox AISI 316L · sifone · attacchi a 207 mm dalla parete: C e F G½, G, R e M G¾ · con il kit HYBREER C e F restano chiusi' } }).home = kHome;
 {
   const b = node(KX, KY, ZW), o = x => Object.assign({ parent: b }, x);
@@ -156,7 +157,7 @@ group('kshell', 'Caldaia: quadro e mantello', 'Pannello comandi con due manopole
   screws([-1, 1].flatMap(s => [.05, .25, .45, .65].map(y => ({ p: [s * .197, y, .331], r: [PI / 2, 0, 0] }))), o({ d0: .1, d1: .18, mat: M.sScrew, k: (i, it) => [it.p[0] * 2.8, 0, .16], n: 'Viti del telaio' }));
   P(mesh(G.plane(.1, .058), M.sKLabel, .2105, .3, .2, 0, PI / 2, 0), o(Object.assign({ d: .2, from: [.5, 0, 0], k: [.55, 0, 0], n: 'Targhetta' }, F0)));
   // scheda e morsettiera dietro il pannello
-  P(mesh(G.box(.2, .07, .003), M.pcb, 0, .07, .262), o({ d: .22, from: [0, -.2, .3], spin: [0, 0, 0], k: [0, -.25, .25], n: 'Scheda elettronica' }));
+  P(mesh(G.box(.2, .07, .003), M.pcb, 0, .07, .262), o({ d: .22, from: [0, 0, .35], spin: [0, 0, 0], k: [0, -.25, .25], n: 'Scheda elettronica' }));
   PIN(G.box(.011, .016, .014), M.term, Array.from({ length: 6 }, (_, i) => ({ p: [.09 + i * .012, .11, .268] })), o({ d0: .25, d1: .28, from: [0, 0, .25], spin: [0, 0, 0], k: [0, -.2, .3], n: 'Morsettiera SE · TA1/OT · TA2', snd: 'fin' }));
   // pannello comandi (manuale utente §6.1)
   { const s = new THREE.Shape(); s.moveTo(-.172, 0); s.lineTo(.172, 0); s.lineTo(.172, .084); s.quadraticCurveTo(0, .122, -.172, .084); s.closePath();
@@ -173,7 +174,7 @@ group('kshell', 'Caldaia: quadro e mantello', 'Pannello comandi con due manopole
   P(mesh(G.rbox(.42, .012, .34, .004), M.sWhite, 0, .694, .175), o(Object.assign({ d: .56, from: [0, .5, 0], k: [0, .55, 0], dur: .6, n: 'Coperchio' }, F0)));
   P(mesh(annulus(.052, .031, .034), M.white, 0, .716, .225), o({ d: .6, from: [0, .3, 0], spin: [0, 3, 0], k: [0, .65, 0], n: 'Scarico fumi coassiale Ø 60/100' }));
   P(mesh(annulus(.031, .0285, .05), M.sPP, 0, .722, .225), o({ d: .61, from: [0, .3, 0], spin: [0, 3, 0], k: [0, .7, 0] }));
-  PIN(G.cyl(.04, .006, 28), M.grey, [-.125, .125].map(x => ({ p: [x, .703, .205] })), o({ d0: .63, d1: .65, from: [0, .3, 0], spin: [0, 2, 0], k: [0, .6, 0], n: 'Prese laterali chiuse' }));
+  PIN(G.cyl(.04, .006, 28), M.grey, [-.125, .125].map(x => ({ p: [x, .703, .205] })), o({ d0: .63, d1: .65, from: [0, .3, .25], spin: [0, 2, 0], ease: eoc, k: [0, .6, 0], n: 'Prese laterali chiuse' }));
   P(mesh(G.box(.396, .004, .262), M.sGrid, 0, .004, .2), o(Object.assign({ d: .68, from: [0, -.3, 0], k: [0, -.6, 0] }, F0)));
   // mantello
   P(mesh(G.rbox(.42, .585, .012, .005), M.sWhite, 0, .4075, .339), o(Object.assign({ d: .74, from: [0, .1, .7], k: [0, .12, .75], dur: .7, n: 'Mantello' }, F0)));

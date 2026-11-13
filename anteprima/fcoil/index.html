@@ -498,15 +498,9 @@ function apply(t, E = 0, shr = 1, emit = false) {
   dirty.forEach(im => { im.instanceMatrix.needsUpdate = true; }); lastE = E; lastShr = shr; placed = n;
 }
 
-// ───────── Pagine prodotto · base comune (dopo uhp/a_core.js e uhp/b_engine.js, prima dei pezzi del prodotto) ─────────
-// Tutto quello che la pagina dell'ibrido si era scritta da sé e che serve uguale agli altri prodotti: aiuti per i pezzi, bianchi che non sfondano,
-// particelle, flussi lungo i tubi, scintille. Il film e gli strumenti stanno in p2_show.js e p3_ui.js, dopo i pezzi.
-const PIPE = {};
-const qBasis = (x, y) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, V().crossVectors(x, y)));
-const node = (x, y, z, s = 1) => { const n = new THREE.Group(); n.position.set(x, y, z); n.scale.setScalar(s); CUR.node.add(n); return n; };
-const sposta = (pts, dx, dy, dz) => pts.map(p => [p[0] + dx, p[1] + dy, p[2] + dz]);
-// Rilievi (bumpMap) su facce viste di taglio: lo shader normalizza un vettore nullo e il bagliore allarga il pixel non valido a mezza schermata. Corretto una volta per tutti.
-THREE.ShaderChunk.bumpmap_pars_fragment = THREE.ShaderChunk.bumpmap_pars_fragment.replace('return normalize( abs( fDet ) * surf_norm - vGrad );', 'vec3 nb = abs( fDet ) * surf_norm - vGrad; return dot( nb, nb ) > 1e-14 ? normalize( nb ) : surf_norm;');
+// ───────── Tubi a tratti dritti con curve vere, che nel film crescono lungo il loro percorso ─────────
+// Va dopo il motore della UHP (a_core.js, b_engine.js) e prima dei pezzi del prodotto. Lo usano le pagine comuni e l'ibrido; la UHP no.
+
 // ───────── tubi: tratti dritti e curve vere ─────────
 // Un tubo è la spezzata dei suoi punti con, in ogni angolo, una curva ad arco come quella di un tubo di rame piegato (raggio 35 mm, uguale per
 // il tubo e la sua coibentazione così restano uno dentro l'altra; più largo solo per i tubi grossi, più stretto solo se i tratti sono corti). I campioni sono fitti nelle curve e radi nei tratti dritti, così gli angoli non si schiacciano.
@@ -562,6 +556,38 @@ function tuboGeo(pts, r, _seg, radial = 10) {
   return g;
 }
 tubeGeo = tuboGeo; curveOf = pts => percorso(pts);
+
+// ───────── tubi e cavi che crescono lungo il loro percorso ─────────
+// Un tubo non arriva volando attraverso la macchina: compare dal suo primo punto e si allunga fino all'ultimo, già al suo posto.
+// Vale per ogni pezzo fatto con tubeGeo; un prodotto che vuole un tubo in volo mette m.userData.vola = true.
+const CRESCE = [];
+const _finalize = finalize;
+finalize = function () {
+  for (const p of PIECES) { const g = p.m && p.m.geometry; if (g && g.userData.tubo && !p.m.userData.vola) { p.cresce = true; p.dur = Math.max(p.dur, .8); CRESCE.push(p); } }
+  _finalize();
+  for (const p of CRESCE) { p.from.set(0, 0, 0); p.spin.set(0, 0, 0); p.punta = p.m.geometry.userData.punta.clone().applyMatrix4(p.m.matrixWorld); }
+};
+const _apply = apply;
+apply = function (t, E = 0, shr = 1, emit = false) {
+  _apply(t, E, shr, emit);
+  for (const p of CRESCE) {
+    if (p.st === 0) continue;
+    const g = p.m.geometry, u = g.userData, a = clamp((t - p.ts) / (p.te - p.ts));
+    p.m.scale.copy(p.fs).multiplyScalar(shr); p.m.visible = shr > .001;
+    let s = u.n; if (a < 1) { const d = eio(a) * u.tot; let lo = 0, hi = u.n; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (u.len[m] <= d) lo = m; else hi = m - 1; } s = lo; }
+    if (g.drawRange.count !== s * u.rad * 6) g.setDrawRange(0, s * u.rad * 6);
+  }
+};
+
+// ───────── Pagine prodotto · base comune (dopo uhp/a_core.js e uhp/b_engine.js, prima dei pezzi del prodotto) ─────────
+// Tutto quello che la pagina dell'ibrido si era scritta da sé e che serve uguale agli altri prodotti: aiuti per i pezzi, bianchi che non sfondano,
+// particelle, flussi lungo i tubi, scintille. Il film e gli strumenti stanno in p2_show.js e p3_ui.js, dopo i pezzi.
+const PIPE = {};
+const qBasis = (x, y) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, V().crossVectors(x, y)));
+const node = (x, y, z, s = 1) => { const n = new THREE.Group(); n.position.set(x, y, z); n.scale.setScalar(s); CUR.node.add(n); return n; };
+const sposta = (pts, dx, dy, dz) => pts.map(p => [p[0] + dx, p[1] + dy, p[2] + dz]);
+// Rilievi (bumpMap) su facce viste di taglio: lo shader normalizza un vettore nullo e il bagliore allarga il pixel non valido a mezza schermata. Corretto una volta per tutti.
+THREE.ShaderChunk.bumpmap_pars_fragment = THREE.ShaderChunk.bumpmap_pars_fragment.replace('return normalize( abs( fDet ) * surf_norm - vGrad );', 'vec3 nb = abs( fDet ) * surf_norm - vGrad; return dot( nb, nb ) > 1e-14 ? normalize( nb ) : surf_norm;');
 const BIANCO = '#c9cccf', C_BIANCO = 0xc9cccf;     // bianco tenuto basso: con le luci della scena arriva al bianco senza sfondare nel bagliore
 Object.assign(M, {
   sWhite: xr(std({ color: C_BIANCO, roughness: .8, metalness: 0, bumpMap: T.noise, bumpScale: .25 })),
@@ -631,28 +657,6 @@ function soloAcqua(x) { if (x === soloNow) return; soloNow = x; for (const [m, o
 const ground = mesh(new THREE.CircleGeometry(11, 64), new THREE.MeshBasicMaterial({ map: T.ground }), 0, 0, 0, -PI / 2); scene.add(ground);
 // il terreno sta poco sotto lo zero: i pavimenti delle scene hanno la faccia di sopra a quota zero e alla stessa quota sfarfallavano a scalini
 ground.position.y = -.012;
-
-// ───────── tubi e cavi che crescono lungo il loro percorso ─────────
-// Un tubo non arriva volando attraverso la macchina: compare dal suo primo punto e si allunga fino all'ultimo, già al suo posto.
-// Vale per ogni pezzo fatto con tubeGeo; un prodotto che vuole un tubo in volo mette m.userData.vola = true.
-const CRESCE = [];
-const _finalize = finalize;
-finalize = function () {
-  for (const p of PIECES) { const g = p.m && p.m.geometry; if (g && g.userData.tubo && !p.m.userData.vola) { p.cresce = true; p.dur = Math.max(p.dur, .8); CRESCE.push(p); } }
-  _finalize();
-  for (const p of CRESCE) { p.from.set(0, 0, 0); p.spin.set(0, 0, 0); p.punta = p.m.geometry.userData.punta.clone().applyMatrix4(p.m.matrixWorld); }
-};
-const _apply = apply;
-apply = function (t, E = 0, shr = 1, emit = false) {
-  _apply(t, E, shr, emit);
-  for (const p of CRESCE) {
-    if (p.st === 0) continue;
-    const g = p.m.geometry, u = g.userData, a = clamp((t - p.ts) / (p.te - p.ts));
-    p.m.scale.copy(p.fs).multiplyScalar(shr); p.m.visible = shr > .001;
-    let s = u.n; if (a < 1) { const d = eio(a) * u.tot; let lo = 0, hi = u.n; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (u.len[m] <= d) lo = m; else hi = m - 1; } s = lo; }
-    if (g.drawRange.count !== s * u.rad * 6) g.setDrawRange(0, s * u.rad * 6);
-  }
-};
 
 // ───────── Ventilconvettore F-COIL AGR 400 · pezzi e scena (motore della UHP, pagina comune) ─────────
 // Dal manuale 00340791 (istruzioni F-COIL AGR 200-400-600-800): p.4 componenti A-M (coperchio dei collettori, batteria rame-alluminio con raccordi Eurokonus 3/4
