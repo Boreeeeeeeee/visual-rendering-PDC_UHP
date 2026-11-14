@@ -17,6 +17,11 @@ T.pannelloC = cv(256, 96, g => { g.fillStyle = '#e9ecee'; g.fillRect(0, 0, 256, 
 T.alveare = rep(cv(64, 64, g => { g.fillStyle = '#d7dadc'; g.fillRect(0, 0, 64, 64); g.strokeStyle = '#a9aeb2'; g.lineWidth = 2; for (let y = 0; y < 72; y += 14) for (let x = 0; x < 72; x += 16) { const ox = (y / 14) % 2 ? 8 : 0; g.beginPath(); for (let k = 0; k < 6; k++) { const a = k * PI / 3; g.lineTo(x + ox + Math.cos(a) * 7, y + Math.sin(a) * 7); } g.closePath(); g.stroke(); } }), 12, 2);
 T.muroF = rep(cv(256, 256, g => { const r = rng(17); g.fillStyle = '#4a4e52'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 4000; i++) { const v = 62 + r() * 34 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 2, 1 + r() * 2); } }), 3, 3);
 T.parquet = rep(cv(256, 256, g => { const r = rng(4); for (let i = 0; i < 8; i++) { const v = 120 + r() * 30 | 0; g.fillStyle = `rgb(${v},${v * .72 | 0},${v * .48 | 0})`; g.fillRect(0, i * 32, 256, 32); g.fillStyle = 'rgba(40,24,12,.4)'; g.fillRect(0, i * 32, 256, 1); g.fillRect((r() * 256) | 0, i * 32, 1, 32); } }), 4, 3);
+// K3: la struttura è in lamiera ELETTROzincata (manuale p.4): grigio uniforme a grana fine. I cristalli grandi della zincatura a caldo (T.spangle)
+// su piastre larghe facevano la lamiera "mimetica".
+T.elettro = rep(cv(128, 128, g => { const r = rng(23); g.fillStyle = '#bfc4c7'; g.fillRect(0, 0, 128, 128); for (let i = 0; i < 2600; i++) { const v = 170 + r() * 50 | 0; g.fillStyle = `rgba(${v},${v + 2},${v + 4},.35)`; g.fillRect(r() * 128, r() * 128, 1, 1 + r() * 2); } }), 6, 6);
+M.zinc = std({ color: 0xa9afb3, roughness: .55, metalness: .7, map: T.elettro });
+M.copper.roughness = .38;     // i tubi della batteria, visti da vicino, facevano righe di bagliore
 Object.assign(M, {
   fcPan: new THREE.MeshBasicMaterial({ map: T.pannelloC }),
   filtro: xr(std({ color: 0xffffff, roughness: .8, map: T.alveare, transparent: true, opacity: .9, side: THREE.DoubleSide })),
@@ -25,7 +30,7 @@ Object.assign(M, {
   abs: std({ color: 0x3a3e42, roughness: .6 }),
   rotore: std({ color: 0x2b2f33, roughness: .55, metalness: .1 }),
   radiante: xr(std({ color: C_BIANCO, roughness: .8, metalness: .1, emissive: 0xff6a2a, emissiveIntensity: 0 })),
-  alettaF: std({ color: 0x9aa3a8, roughness: .4, metalness: .8, emissive: 0x2a8cff, emissiveIntensity: 0 }),
+  alettaF: std({ color: 0x9aa3a8, roughness: .55, metalness: .7, emissive: 0x2a8cff, emissiveIntensity: 0 }),
   muroF: std({ color: 0x9aa0a4, roughness: .95, map: T.muroF, bumpMap: T.noise, bumpScale: 1.5 }), parquet: std({ color: 0x6e6a66, roughness: .75, map: T.parquet }),
 });
 ambienteBase(); ambiente(['alettaF', 'epdm', 'abs', 'rotore'], AMB_M); ambiente(['radiante', 'filtro'], AMB_B);
@@ -74,10 +79,10 @@ const FCP = {};
 group('batt', 'Batteria e collettori', 'Tubi di rame e alette d\'alluminio trattate contro muffe e odori: l\'acqua calda o fredda della casa cede o prende il calore dell\'aria.', 13.0, 18.5, { stage: [0, .25, .6], ex: [0, .3, .4], az: 22, el: 22, zoom: .95,
   info: { e: 'Qui l\'acqua che arriva dalla pompa di calore scalda o raffresca l\'aria che il ventilatore ci spinge attraverso.', s: 'Tubi di rame, alettatura a pacco d\'alluminio con turbolenziatura, trattata idrofilicamente · raccordi Eurokonus 3/4, reversibili · sensore della temperatura dell\'acqua · 0,8 l · 10 bar · ingresso acqua da 4 a 80 °C · manuale 00340791 p.4-5' } });
 {
-  const x0 = XC + .006, x1 = XR - .03, L = x1 - x0, NF = 150, rows = [.012, -.012], TB = 4;
+  const x0 = XC + .006, x1 = XR - .03, L = x1 - x0, NF = 76, rows = [.012, -.012], TB = 4;     // alette: numero ricostruito, meno fitte del vero perché a schermo non facciano l'effetto a sega
   const fin = []; for (let i = 0; i < NF; i++) { const [y, z] = bat(.5); fin.push({ p: [x0 + .004 + i * (L - .008) / (NF - 1), y, z], r: [BT, 0, 0] }); }
   const Lb = Math.hypot(BB[0] - BA[0], BB[1] - BA[1]);
-  PIN(G.box(.0007, Lb, .045), M.alettaF, fin, { d0: .04, d1: .4, dur: .3, from: [0, .45, .2], spin: [0, 0, 0], ease: eoc, n: 'Alette d\'alluminio', snd: 'fin' });
+  PIN(G.box(.0013, Lb, .045), M.alettaF, fin, { d0: .04, d1: .4, dur: .3, from: [0, .45, .2], spin: [0, 0, 0], ease: eoc, n: 'Alette d\'alluminio', snd: 'fin' });
   const nrm = [Math.cos(BT) * 0, -Math.cos(BT), -Math.sin(BT)];     // fuori dal piano della batteria (y, z)
   const tubi = []; for (let k = 0; k < TB; k++) for (const r of rows) { const [y, z] = bat((k + .5) / TB); tubi.push({ p: [(x0 + x1) / 2, y + Math.sin(BT) * r, z - Math.cos(BT) * r] }); }
   PIN(G.cylX(.0048, L + .02, 12), M.copper, tubi, { d0: .42, d1: .55, from: [.6, 0, 0], spin: [0, 0, 0], ease: eoc, n: 'Tubi in rame' });
@@ -96,14 +101,16 @@ group('batt', 'Batteria e collettori', 'Tubi di rame e alette d\'alluminio tratt
 }
 
 // 4 ─ Bacinella della condensa
-group('cond', 'Bacinella della condensa', 'D\'estate la batteria fredda fa condensare l\'umidità dell\'aria: le gocce scendono nella bacinella e escono dallo scarico.', 18.5, 21.0, { stage: [0, -.1, .4], ex: [-.3, -.2, .2], az: 34, el: 22, zoom: .9,
+group('cond', 'Bacinella della condensa', 'D\'estate la batteria fredda fa condensare l\'umidità dell\'aria: le gocce scendono nella bacinella e escono dallo scarico.', 18.5, 21.0, { stage: [0, 0, 0], ex: [-.3, -.2, .2], zoom: 1, keys: [[.03, 28, 16, 1.5, .08], [.4, 30, 26, .55, .05, -.21], [.72, 24, 16, .9, .02, -.1]],
   info: { e: 'Raffrescando, il ventilconvettore toglie anche l\'umidità: l\'acqua che si forma sulla batteria finisce qui e va allo scarico.', s: 'Bacinella in ABS, smontabile per la pulizia · prolunga rompigoccia · scarico con pendenza, tubo Ø interno minimo 16 mm · manuale 00340791 p.4, 9' } });
 {
-  P(mesh(G.box(W - .03, .008, .05), M.abs, .0, Y0 + .175, .11), { d: 0, from: [0, -.2, .2], spin: [0, 0, 0], n: 'Gocciolatoio sotto la batteria' });
-  P(mesh(G.box(.1, .03, .1), M.abs, XL + .065, Y0 + .115, .06), { d: .3, from: [-.3, 0, .2], spin: [0, 0, 0], n: 'Bacinella in ABS' });
-  P(mesh(G.cyl(.009, .04, 14), M.abs, XL + .05, Y0 + .085, .06), { d: .55, from: [0, -.2, 0], n: 'Prolunga rompigoccia' });
-  P(mesh(tubeGeo([[XL + .05, Y0 + .065, .06], [XL + .05, Y0 + .02, .06], [XL + .03, Y0 - .03, .02], [XL - .05, Y0 - .05, .012], [XL - .2, Y0 - .07, .012]], .009, 30), M.grey), { d: .7, n: 'Scarico della condensa' });
-  FCP.gocce = [[0, Y0 + .21, .1], [0, Y0 + .18, .11], [-.2, Y0 + .178, .11], [XL + .07, Y0 + .14, .07], [XL + .05, Y0 + .08, .06], [XL + .03, Y0 - .03, .02], [XL - .2, Y0 - .07, .012]];
+  P(mesh(G.box(XR - XC - .02, .008, .05), M.abs, (XC + XR) / 2, Y0 + .175, .11), { d: 0, from: [0, 0, .3], spin: [0, 0, 0], ease: eoc, n: 'Gocciolatoio sotto la batteria' });
+  P(mesh(G.box(.1, .03, .1), M.abs, XL + .065, Y0 + .115, .06), { d: .3, from: [0, 0, .3], spin: [0, 0, 0], ease: eoc, n: 'Bacinella in ABS' });
+  P(mesh(G.cyl(.009, .04, 14), M.abs, XL + .05, Y0 + .085, .06), { d: .55, from: [0, -.2, 0], spin: [0, 0, 0], ease: eoc, n: 'Prolunga rompigoccia' });
+  const SC = [[XL + .05, Y0 + .065, .06], [XL + .05, Y0 - .05, .06], [XL + .05, Y0 - .05, -.12]];
+  P(mesh(tubeGeo(SC, .009, 30), M.grey), { d: .7, n: 'Scarico della condensa, nel muro' });
+  P(mesh(G.cylZ(.02, .006, 20), M.white, XL + .05, Y0 - .05, .003), { d: .85, from: [0, 0, .25], spin: [0, 0, 0], ease: eoc, n: 'Rosone a muro' });
+  FCP.gocce = [[0, Y0 + .21, .1], [0, Y0 + .18, .11], [-.2, Y0 + .178, .11], [XL + .07, Y0 + .14, .07], ...SC.slice(0, 2), [XL + .05, Y0 - .05, -.01]];
 }
 
 // 5 ─ Pannello radiante, elettronica e pannello touch
@@ -124,7 +131,7 @@ group('rad', 'Pannello radiante ed elettronica', 'Dietro il frontale scorre l\'a
 group('mant', 'Mantello e griglie', 'Lamiera bianca RAL 9003, spessa in tutto 12,9 cm. Sotto la griglia che aspira con il filtro a nido d\'ape, sopra quella che soffia.', 25.0, 28.5, { stage: [0, 0, 0], ex: [0, 0, .5], az: 22, el: 10, zoom: 1.0,
   info: { e: 'La faccia che si vede in casa: si smonta per la pulizia, e il filtro si lava sotto l\'acqua o si soffia.', s: 'Mantello frontale e fianchi in lamiera elettrozincata, RAL 9003 · griglia di mandata reversibile · griglia di aspirazione in alluminio con sgancio rapido e microinterruttore · filtro a nido d\'ape in polipropilene · 897 × 579 × 129 mm · 15 kg · manuale p.4-5' } });
 {
-  P(mesh(G.box(W - .08, .13, .004), M.filtro, .02, Y0 + .09, D - .012), { d: 0, from: [0, -.2, .4], spin: [0, 0, 0], n: 'Filtro a nido d\'ape' });
+  P(mesh(G.box(W - .08, .13, .004), M.filtro, .02, Y0 + .09, D - .012), { d: 0, from: [0, 0, .4], spin: [0, 0, 0], ease: eoc, n: 'Filtro a nido d\'ape' });
   PIN(G.box(W - .1, .004, .016), M.sGrid, Array.from({ length: 9 }, (_, i) => ({ p: [.02, Y0 + .03 + i * .015, D - .004], r: [-.5, 0, 0] })), { d0: .12, d1: .3, from: [0, 0, .4], spin: [0, 0, 0], ease: eoc, n: 'Griglia di aspirazione', snd: 'tick' });
   P(mesh(G.box(.008, .004, .006), M.black, XR - .06, Y0 + .17, D - .006), { d: .32, n: 'Microinterruttore di sicurezza' });
   P(mesh(G.rbox(W, HF - .17, .012, .004), M.radiante, 0, Y0 + .17 + (HF - .17) / 2, D - .006), { d: .4, from: [0, .1, .6], spin: [0, 0, 0], ease: eoc, dur: .6, n: 'Mantello frontale, pannello radiante' });
@@ -136,13 +143,15 @@ group('mant', 'Mantello e griglie', 'Lamiera bianca RAL 9003, spessa in tutto 12
 }
 
 // 7 ─ Collegamenti
-group('link', 'Collegamenti', 'Mandata e ritorno dall\'impianto, coibentati fino all\'imbocco; lo scarico della condensa in pendenza; il cavo di alimentazione.', 28.5, 30.5, { stage: [0, 0, 0], ex: [-.2, 0, .2], az: 40, el: 14, zoom: .9,
+group('link', 'Collegamenti', 'Mandata e ritorno dall\'impianto, coibentati fino all\'imbocco; lo scarico della condensa in pendenza; il cavo di alimentazione.', 28.5, 30.5, { stage: [0, 0, 0], ex: [-.2, 0, .2], zoom: 1, keys: [[.05, -28, 6, .9, -.12, -.25], [.6, -40, 4, .85, -.12, -.28]],
   info: { e: 'Il ventilconvettore si collega all\'impianto come un radiatore: due tubi d\'acqua, uno scarico e una presa elettrica.', s: 'Tubi Ø 14 mm per la taglia 400 · coibentati fino all\'imbocco della macchina · alimentazione 230 V · manuale 00340791 p.8-9, 13 · percorso nel muro: indicativo' } });
 {
   const cx = XL + .06;
-  [.05, .085].forEach((z, i) => { const p = [[cx, Y0 + .15, z], [cx, Y0 + .05, z], [cx, .02, z], [cx - .25, .02, z * .2], [cx - .5, .02, .004]];
+  // dal muro, dietro il vano attacchi (manuale p.8, attacchi a parete): un gomito sotto ogni raccordo e dritti indietro nel muro, sopra la bacinella;
+  // il secondo scarta di lato per non incrociare il primo. Percorso ricostruito.
+  [[.05, 0], [.085, .035]].forEach(([z, dx], i) => { const yw = Y0 + .145, p = [[cx, Y0 + .153, z], [cx, yw, z]].concat(dx ? [[cx + dx, yw, z]] : [], [[cx + dx, yw, -.12]]);
     P(mesh(tubeGeo(p, .007, 40), M.copper), { d: i * .1, dur: .5, n: i ? 'Ritorno all\'impianto' : 'Mandata dall\'impianto' });
-    P(mesh(tubeGeo(p.slice(1), .014, 40), M.sFoam), { d: .3 + i * .1, n: i ? null : 'Coibentazione' }); FCP['l' + i] = p; });
+    P(mesh(tubeGeo(p.slice(1, -1).concat([[cx + dx, yw, .02]]), .014, 40), M.sFoam), { d: .3 + i * .1, n: i ? null : 'Coibentazione' }); FCP['l' + i] = p; });
   P(mesh(tubeGeo([[XR - .03, Y0 + .3, .02], [XR + .06, Y0 + .25, .01], [XR + .12, Y0 + .1, .004], [XR + .12, .3, .004]], .004, 24), M.plastic), { d: .7, n: 'Cavo di alimentazione' });
   P(mesh(G.rbox(.07, .07, .012, .004), M.white, XR + .12, .3, .006), { d: .8, n: 'Presa' });
 }

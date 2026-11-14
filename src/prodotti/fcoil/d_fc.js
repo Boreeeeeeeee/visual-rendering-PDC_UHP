@@ -7,7 +7,8 @@ const MODI = ['Ventilazione', 'Caldo', 'Freddo', 'Notte'], VEL = ['Minima', 'Mod
 const FC = { modo: 1, vel: 1 };
 const PATH = {};
 {
-  const fw = new Flow(machine, 140, .02), fr = new Flow(machine, 90, .018), fg = new Flow(machine, 40, .02, .01), fa = [-.24, -.05, .14, .32].map(() => new Flow(machine, 70, .017, .01));
+  // K2: particelle in scala con la macchina (tubi da 4-7 mm): prima erano grandi come le alette
+  const fw = new Flow(machine, 140, .009), fr = new Flow(machine, 90, .008), fg = new Flow(machine, 40, .012, .01), fa = [-.24, -.05, .14, .32].map(() => new Flow(machine, 70, .011, .01));
   const aria = x => [[x, Y0 + .04, .5], [x, Y0 + .06, .25], [x, Y0 + .08, .135], [x, FY - .03, FZ + .03], [x, FY + .03, FZ - .03], [x, Y0 + .26, .07], [x, Y0 + .42, .05], [x, Y0 + HF - .02, .06], [x, Y0 + HF + .2, .1], [x, Y0 + HF + .55, .3]];
   PATH.w = fw.path([seg('wIn', W0, W0), seg('wBat', W0, W1), seg('wOut', W1, W1)]); PATH.wc = fw.path([seg('wIn', [.3, .7, 1.8], [.3, .7, 1.8]), seg('wBat', [.3, .7, 1.8], [.5, .85, 1.5]), seg('wOut', [.5, .85, 1.5], [.5, .85, 1.5])]);
   PATH.rad = fr.path([seg('rad', W1, [1.4, .55, .2])]); PATH.g = fg.path([seg('gocce', [.5, .8, 1.6], [.4, .7, 1.4])]);
@@ -32,7 +33,7 @@ const CFG = {
   camRun(H, TUTTO) { H(TR + .9, TUTTO, 18, 12); H(TR + 4.5, { off: [-.1, .4, .2], w: .95, h: .75 }, 34, 16); H(TR + 8.5, TUTTO, -8, 8, .9); H(TR + 12, TUTTO, 14, 10); },
   film(t, fase) {
     if (fase === 0) Object.assign(ST, statoModo(1, 1), { modo: 1, vel: 1, xray: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0 });
-    else if (fase === 1) { const a = 7.5; Object.assign(ST, { fan: 3 * sm(a + 2.2, a + 2.8, t) * (1 - sm(a + 4.6, a + 5.2, t)), aria: 0, acqua: 0, gocce: 0, rad: 0, caldo: 1, modo: 1, vel: 1, xray: 0, E: 0, shr: 1, read: 0 }); }
+    else if (fase === 1) { const a = 7.5; Object.assign(ST, { fan: 3 * sm(a + 2.2, a + 2.8, t) * (1 - sm(a + 4.6, a + 5.2, t)), aria: 0, acqua: 0, gocce: 0, rad: 0, caldo: 1, modo: 1, vel: 1, xray: .85 * sm(28.6, 29.0, t) * (1 - sm(30.0, 30.4, t)), E: 0, shr: 1, read: 0 }); }   // ai collegamenti il mantello si fa trasparente: i tubi entrano nel muro dietro la macchina
     else { const r = t - TR, m = r < 4.5 ? 1 : r < 8.5 ? 2 : 3; Object.assign(ST, statoModo(m, 1), { modo: m, vel: 1, xray: sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r)), E: 0, shr: 1, read: r > 1 ? 1 : 0 }); if (m === 3) ST.acqua = 1; }
   },
   look(now, dt) {
