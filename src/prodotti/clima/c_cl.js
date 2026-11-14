@@ -8,7 +8,7 @@
 // esterne dalle foto del depliant "clima la gamma" 09-2026 p.10 e 16; frontale forato della XMPS dalla figura del libretto 00339716 p.9.
 // RICOSTRUITO: tutta la disposizione interna (i documenti nominano le parti ma non dicono dove stanno), interno del compressore, numero di alette e pale,
 // profilo esatto del pannello e del fondo, disegno delle griglie, percorso delle linee e della canalina, posto delle unità esterne.
-// Scelta delle macchine (mono 13H, dual con due console): da confermare con Bore.
+// Scelta delle macchine (mono 13H, dual XMX2 18HE con due console XMPS 12HI): decisa con Bore.
 const WX0 = -.25, WX1 = -.05, ZB = -.5, YUI = 2.3;                                     // muro esterno in sezione; parete di fondo interna; quota dell'unità a parete
 const UI = { x: .75, W: .802, H: .297, D: .189 }, UE = { x: -1.05, z: .35, W: .765, H: .555, D: .303 }, UX = { x: -2.1, z: .35, W: .805, H: .554, D: .33 }, CO = [{ x: 1.75 }, { x: 2.75 }], CW = .794, CH = .621, CD = .206;
 T.disp = cv(128, 64, () => {});

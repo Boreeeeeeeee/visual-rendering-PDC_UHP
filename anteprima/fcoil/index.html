@@ -912,9 +912,12 @@ const TUTTO = { off: MC.toArray(), w: BW, h: BH };
 K(0, -1, 10, 6, BW * .92, BH * .9); K(T_ASM - 1.2, -1, 16, 8, BW * .84, BH * .82); K(T_ASM - .25, -1, 22, 13, BW * 1.55, BH * 1.45);
 for (const g of GROUPS) {
   const W = g.t1 - g.t0, z = g.size * 2.3 * g.zoom, dx = CFG.dx ? CFG.dx(g) * z : 0, hm = g.home || TUTTO;
-  if (g.keys) for (const [f, az, el, zm, oy, ox = 0] of g.keys) K(g.t0 + f * W, g.i, az, el, z * zm, z * zm, [dx * zm + ox, oy, 0]);     // chiave: [frazione, az, el, zoom, dy, dx facoltativo]
+  // chiave: [frazione, az, el, zoom, dy, dx facoltativo]. Nel primo gruppo la camera ha almeno 0,45 s per arrivare dall'apertura, come nella UHP
+  const kt = f => Math.max(g.t0 + f * W, g.i === 0 ? g.t0 + .45 : 0);
+  if (g.keys) for (const [f, az, el, zm, oy, ox = 0] of g.keys) K(kt(f), g.i, az, el, z * zm, z * zm, [dx * zm + ox, oy, 0]);
   else { K(g.t0 + .45, g.i, g.az, g.el, z, z, [dx, 0, 0]); K(g.t0 + .58 * W, g.i, g.az + 14, g.el, z * 1.05, z * 1.05, [dx, 0, 0]); }
-  H(g.t1 - .6, hm, (g.keys ? g.keys[g.keys.length - 1][1] : g.az + 14) + 8, 12);
+  // ritorno all'insieme a fine gruppo, ma solo se c'è tempo: con l'ultima chiave a meno di 1,4 s la camera scattava, e allora si va dritti al gruppo dopo
+  if (!g.keys || kt(g.keys[g.keys.length - 1][0]) < g.t1 - 2) H(g.t1 - .6, hm, (g.keys ? g.keys[g.keys.length - 1][1] : g.az + 14) + 8, 12);
 }
 if (CFG.camRun) CFG.camRun(H, TUTTO); else { H(T_RUN + .9, TUTTO, 8, 10); H((T_RUN + T_END) / 2, TUTTO, -6, 10, .9); }
 H(T_END + .5, TUTTO, 10, 9);

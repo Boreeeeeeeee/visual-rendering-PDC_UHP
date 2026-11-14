@@ -146,7 +146,8 @@ for (const g of GROUPS) {
   const dx = g.key[0] === 'k' ? .13 * z : 0;      // caldaia e kit un po' a destra: a sinistra restano le didascalie e la pompa di calore esce dal quadro
   if (g.keys) for (const [f, az, el, zm, oy] of g.keys) K(g.t0 + f * W, g.i, az, el, z * zm, z * zm, [dx * zm, oy, 0]);
   else { K(g.t0 + .45, g.i, g.az, g.el, z, z, [dx, 0, 0]); K(g.t0 + .58 * W, g.i, g.az + 14, g.el, z * 1.05, z * 1.05, [dx, 0, 0]); }
-  H(g.t1 - .6, g.home, (g.keys ? g.keys[g.keys.length - 1][1] : g.az + 14) + 8, 12);
+  // ritorno alla vista di casa a fine gruppo, ma solo se c'è tempo: con l'ultima chiave a meno di 1,4 s la camera scattava, e allora si va dritti al gruppo dopo
+  if (!g.keys || g.t0 + g.keys[g.keys.length - 1][0] * W < g.t1 - 2) H(g.t1 - .6, g.home, (g.keys ? g.keys[g.keys.length - 1][1] : g.az + 14) + 8, 12);
 }
 H(T_RUN + .9, TUTTO, 8, 10); H(T_RUN + 2.9, qHome, -18, 9, .8); H(T_RUN + 5.0, hHome, 12, 10, .95); H(T_RUN + 7.6, kHome, 16, 6, .8); H(T_RUN + 10.3, TUTTO, -4, 10, .92); H(T_RUN + 12.4, TUTTO, 6, 9); H(T_END + .5, TUTTO, 10, 9);
 function keyTarget(k, out) { if (k.g < 0) out.copy(MC); else { const g = GROUPS[k.g]; out.copy(g.node.position).add(g.c); } return out.add(_o.set(k.off[0], k.off[1], k.off[2])); }
