@@ -1,6 +1,6 @@
 // ───────── Climatizzatori · modi, flussi, film e strumenti ─────────
 // Modi qualitativi: freddo e caldo (pompa di calore), unità accese una per una. Nessun numero a schermo oltre ai dati delle schede.
-const TA = 3.5, TR = 33.5, TE = 47.5;
+const TA = 3.5, TR = 35.5, TE = 49.5;
 const ST = { ghost: 0, xray: 0, E: 0, shr: 1, read: 0, mono: 0, c1: 0, c2: 0, ref: 0, caldo: 0, demo: 0 };
 const CL = { caldo: false, mono: true, c1: true, c2: false };
 const COLD_A = [.3, .7, 1.6], WARM_A = [1.6, .6, .2], ROOM = [.8, .8, .8];
@@ -39,7 +39,8 @@ const CFG = {
     [4.5, 'Due stanze', 'Si accendono le due console: una sola unità esterna, il dual, divide la potenza tra le due stanze.'],
     [8.5, 'Inverno', 'Il giro del gas si inverte: fuori si prende il calore dell\'aria, dentro esce aria calda.'],
     [12, 'Unical: YA3 e MULTI', 'YA3 13H a parete · XMX2 18HE con due XMPS 12HI · R32 · caldo e freddo in pompa di calore.']],
-  camRun(H, TUTTO) { H(TR + .9, TUTTO, 8, 10); H(TR + 4.5, { off: [.6, 1.0, -.1], w: 4.2, h: 2.4 }, 14, 10); H(TR + 8.5, TUTTO, -10, 10, .95); H(TR + 12, TUTTO, 6, 10); },
+  // d'estate prima solo il mono (unità esterna e YA3, più grandi anche sul telefono), poi le due stanze, poi tutto
+  camRun(H, TUTTO) { H(TR + .9, { off: [-.2, 1.25, 0], w: 3.1, h: 2.9 }, 10, 8); H(TR + 4.5, { off: [.6, 1.0, -.1], w: 4.2, h: 2.4 }, 14, 10); H(TR + 8.5, TUTTO, -10, 10, .95); H(TR + 12, TUTTO, 6, 10); },
   film(t, fase) {
     if (fase === 0) Object.assign(ST, { mono: 1, c1: 1, c2: 1, ref: 0, caldo: 0, demo: 0, xray: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0 });
     else if (fase === 1) { const a = 10.0; Object.assign(ST, { mono: 0, c1: 0, c2: 0, ref: 0, caldo: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 4.3, a + 4.8, t)), xray: 0, E: 0, shr: 1, read: 0 }); ST.comp = 2.2 * sm(a + 2.2, a + 2.9, t) * (1 - sm(a + 4.6, a + 5.2, t)); }
