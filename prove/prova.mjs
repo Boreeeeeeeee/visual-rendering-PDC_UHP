@@ -16,6 +16,7 @@ const ok = (c, msg) => { fatti++; if (!c) { falliti++; console.log('   NON PASSA
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, false]]) {
   const ctx = await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1, hasTouch: touch }); let errs = [];
+  ctx.setDefaultTimeout(90000);       // i passi lunghi (Giro: 100 fotogrammi a 1280×720 senza scheda grafica) possono superare i 30 s predefiniti
   await ctx.route('https://cdn.jsdelivr.net/npm/three@0.186.1/**', rt => fs.readFile(THREE + rt.request().url().split('three@0.186.1/')[1], (e, d) => e ? rt.fulfill({ status: 404, body: '' }) : rt.fulfill({ status: 200, contentType: 'text/javascript', body: d })));
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, rt => rt.abort());
   const page = await ctx.newPage();
