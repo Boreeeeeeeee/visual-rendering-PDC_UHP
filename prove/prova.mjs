@@ -14,7 +14,8 @@ const b = await chromium.launch({ executablePath: process.env.CHROME || '/usr/bi
 let falliti = 0, fatti = 0;
 const ok = (c, msg) => { fatti++; if (!c) { falliti++; console.log('   NON PASSA:', msg); } };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, false]]) {
+// VISTE=1280 (o 390,844) per rifare solo alcune misure; senza, tutte e tre
+for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, false]].filter(v => !process.env.VISTE || process.env.VISTE.split(',').includes(String(v[0])))) {
   const ctx = await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1, hasTouch: touch }); let errs = [];
   ctx.setDefaultTimeout(90000);       // i passi lunghi (Giro: 100 fotogrammi a 1280×720 senza scheda grafica) possono superare i 30 s predefiniti
   await ctx.route('https://cdn.jsdelivr.net/npm/three@0.186.1/**', rt => fs.readFile(THREE + rt.request().url().split('three@0.186.1/')[1], (e, d) => e ? rt.fulfill({ status: 404, body: '' }) : rt.fulfill({ status: 200, contentType: 'text/javascript', body: d })));
@@ -24,7 +25,7 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   page.on('pageerror', e => errs.push(String(e).slice(0, 300)));
   const st = () => page.evaluate(() => window.__casa.stato());
   const fino = async (f, ms = 9000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await f()) return true; await sleep(150); } return false; };
-  const scena = s => fino(async () => (await st()).scena === s);
+  const scena = s => fino(async () => (await st()).scena === s, 20000);     // senza scheda grafica, a 1280×720, un cambio di scena può superare i 9 s
   const foto = n => OUT ? page.screenshot({ path: path.join(OUT, `${W}x${H}_${n}.jpg`), type: 'jpeg', quality: 82 }) : null;
   console.log(`— ${W}×${H}`);
   await page.goto(base, { waitUntil: 'load' }); ok(await fino(() => page.evaluate(() => !!window.__casa && document.body.classList.contains('pronto')), 20000), 'la pagina parte');
