@@ -112,7 +112,7 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   f = await fv("window.__ui.setTool('touch'); window.__ui.openCard(3); window.__fv.step(20, .05); document.getElementById('cT').textContent"); ok(f.includes('ZOE1'), "la scheda dell'inverter si apre");
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
   // ventilconvettore (tappa 5) e climatizzatori (tappa 6): dalla Casa alla pagina completa, film e strumenti
-  for (const [k, id, nome, n0, ng, card, chiave] of [[3, 'fcoil', 'ventilconvettore', 400, 7, 1, 'Ventilatore'], [4, 'clima', 'climatizzatori', 800, 6, 1, 'YA3']]) {
+  for (const [k, id, nome, n0, ng, card, chiave] of [[3, 'fcoil', 'ventilconvettore', 400, 7, 1, 'Ventilatore'], [4, 'clima', 'climatizzatori', 650, 6, 1, 'YA3']]) {
     await page.locator('.tag').nth(k).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === id, `l'etichetta del ${nome} apre il prodotto`); ok(page.url().endsWith('#' + id), `indirizzo #${id}`);
     ok(await fino(async () => await fr.locator('#bGo').count() > 0, 20000), `la pagina del ${nome} si carica`);
     const q = f => fr.locator('body').evaluate((_, f) => (0, eval)(f), f), api = `window.__${id}`; await fino(async () => !!(await q(`!!${api}`)), 20000); await sleep(800); await foto(id + '_inizio');
