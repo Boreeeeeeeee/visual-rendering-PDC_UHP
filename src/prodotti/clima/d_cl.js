@@ -10,9 +10,13 @@ const PATH = {};
   const coil = (() => { const a = []; for (let i = 0; i < 5; i++) { const y = .1 + i * (UE.H - .2) / 4, r = i % 2 === 0; a.push([UE.x + (r ? ue.XP - .02 : -UE.W / 2 + .03), y, ZC], [UE.x + (r ? -UE.W / 2 + .03 : ue.XP - .02), y, ZC]); } return a; })();
   const uiC = (() => { const a = [], L = UI.W - .12; for (let i = 0; i < 3; i++) { const y = YUI + UI.H * (.25 + i * .22), r = i % 2 === 0; a.push([UI.x + (r ? -L / 2 : L / 2), y, ZB + .07], [UI.x + (r ? L / 2 : -L / 2), y, ZB + .07]); } return a; })();
   const compW = PIPE.compC.map(cw), top = compW[compW.length - 1], acc = compW[0];
-  const dis = [top, [top[0], top[1] + .08, top[2]], [UE.x + ue.CXl, UE.H * .62, UE.z + .02], [UE.x + ue.XP - .02, UE.H * .7, ZC + .02], coil[0]];
+  // dal compressore alla valvola a 4 vie e da lì nei tubi di rame che ci sono davvero (verso la batteria e verso la valvola del gas)
+  const w = (x, y, z) => [UE.x + x, y, UE.z + z], Y4 = UE.H * .62, V4 = w(ue.CXl, Y4, .02);
+  const t0 = [w(ue.XP + .02, Y4, .02), w((ue.XP + .02 + ue.CXl - .012) / 2, Y4 + .05, .02), w(ue.CXl - .012, Y4, .02)];
+  const t1 = [w(ue.CXl + .036, Y4, .02), w((ue.CXl + .036 + UE.W / 2 - .03) / 2, (Y4 + .153) / 2 + .05, .04), w(UE.W / 2 - .03, .153, .06)];
+  const dis = [top, V4].concat(t0.slice().reverse(), [w(ue.XP - .02, Y4, ZC - UE.z + .02), coil[0]]);
   const toLiq = [coil[coil.length - 1], [UE.x + ue.CXl + .06, UE.H * .3, UE.z + .07], LM.liq[0]];
-  const back = [LM.gas[0], [UE.x + ue.CXl - .02, .4, UE.z], acc];
+  const back = [LM.gas[0]].concat(t1.slice().reverse(), [V4, acc]);
   const fR = new Flow(machine, 420, .02), fC = new Flow(cmp, 60, .012);
   const ciclo = c => c ? [seg(compW, PALE, HOT), seg(dis.slice().reverse().concat([]).reverse(), HOT, HOT), seg(LM.gas, HOT, HOT), seg(uiC, HOT, WARM, 1), seg(LM.liq, WARM, WARM, 1), seg(toLiq, WARM, COLD, 1), seg(coil, COLD, COOL, 1), seg(back, PALE, PALE)]
     : [seg(compW, PALE, HOT), seg(dis, HOT, HOT), seg(coil, HOT, WARM), seg(toLiq, WARM, WARM), seg(LM.liq, WARM, COLD), seg(uiC, COLD, COOL), seg(LM.gas, PALE, PALE, 1), seg(back, PALE, PALE)];
@@ -43,7 +47,8 @@ const CFG = {
   camRun(H, TUTTO) { H(TR + .9, { off: [-.2, 1.25, 0], w: 3.1, h: 2.9 }, 10, 8); H(TR + 4.5, { off: [.6, 1.0, -.1], w: 4.2, h: 2.4 }, 14, 10); H(TR + 8.5, TUTTO, -10, 10, .95); H(TR + 12, TUTTO, 6, 10); },
   film(t, fase) {
     if (fase === 0) Object.assign(ST, { mono: 1, c1: 1, c2: 1, ref: 0, caldo: 0, demo: 0, xray: 0, E: t < 2.35 ? 0 : 1.25 * eoc(clamp((t - 2.35) / 1.05)), shr: 1 - sm(TA - .32, TA - .03, t), read: 0 });
-    else if (fase === 1) { const a = 10.0; Object.assign(ST, { mono: 0, c1: 0, c2: 0, ref: 0, caldo: 0, demo: sm(a + 2.7, a + 3.1, t) * (1 - sm(a + 4.3, a + 4.8, t)), xray: 0, E: 0, shr: 1, read: 0 }); ST.comp = 2.2 * sm(a + 2.2, a + 2.9, t) * (1 - sm(a + 4.6, a + 5.2, t)); }
+    // montaggio: il compressore gira e mostra il gas solo quando è montato con i suoi tubi (dalle 15,3) e prima che si chiuda il mantello (dalle 16,1)
+    else if (fase === 1) { const a = 10.0; Object.assign(ST, { mono: 0, c1: 0, c2: 0, ref: 0, caldo: 0, demo: sm(a + 5.3, a + 5.55, t) * (1 - sm(a + 6.0, a + 6.25, t)), xray: 0, E: 0, shr: 1, read: 0 }); ST.comp = 2.2 * sm(a + 5.2, a + 5.5, t) * (1 - sm(a + 6.05, a + 6.45, t)); }
     else { const r = t - TR, x = sm(.3, 1.5, r) * (1 - sm(11.4, 12.6, r)); Object.assign(ST, { mono: sm(.2, 1, r), c1: sm(4.5, 5.3, r), c2: sm(4.7, 5.5, r), caldo: r > 8.5 ? 1 : 0, ref: sm(1.4, 2.4, r) * x, demo: 0, xray: x, E: 0, shr: 1, read: r > 1 ? 1 : 0 }); }
     if (fase !== 1) ST.comp = ST.mono * 3;
   },

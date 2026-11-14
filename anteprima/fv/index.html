@@ -680,7 +680,6 @@ const ZP = [-.481, .481], YM = .11, XA = [-.577, .577];
 // texture e materiali
 // celle quasi nere con i fili sottili della tecnologia MBB appena visibili, come nella foto della scheda 00341524 (prima i fili chiari facevano il modulo bianco)
 T.cella = cv(64, 64, g => { g.fillStyle = '#0a0e14'; g.fillRect(0, 0, 64, 64); g.fillStyle = 'rgba(120,132,145,.07)'; for (let x = 2; x < 64; x += 4) g.fillRect(x, 0, 1, 64); g.fillStyle = 'rgba(150,160,172,.13)'; [16, 32, 48].forEach(x => g.fillRect(x, 0, 1, 64)); });
-T.celle = cv(256, 512, g => { g.fillStyle = '#211e1d'; g.fillRect(0, 0, 256, 512); const cw = 244 / 6, ch = 488 / 16; for (let i = 0; i < 6; i++) for (let j = 0; j < 16; j++) { const x0 = 6 + i * cw + 1, y0 = 6 + j * ch + (j > 7 ? 6 : 0) + 1; g.fillStyle = '#0a0e14'; g.fillRect(x0, y0, cw - 2, ch - 2); g.fillStyle = 'rgba(150,160,172,.13)'; [.25, .5, .75].forEach(f => g.fillRect(x0 + cw * f, y0, 1, ch - 2)); } });
 T.tegole = rep(cv(64, 64, g => { g.fillStyle = '#7a4a38'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#5e3628'; for (let x = 0; x < 64; x += 16) g.fillRect(x, 0, 2, 64); g.fillRect(0, 0, 64, 4); }), 9, 7);
 T.logoW = cv(256, 80, g => { g.clearRect(0, 0, 256, 80); drawUnicalLogo(g, 8, 6, 230); });
 T.lcdI = cv(212, 236, () => {}); T.ledB = cv(32, 128, () => {});
@@ -689,7 +688,6 @@ T.targaCR = s => cv(128, 64, g => { g.fillStyle = '#2a2f34'; g.fillRect(0, 0, 12
 T.parete = rep(cv(256, 256, g => { const r = rng(31); g.fillStyle = '#e4e0d8'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 200 + r() * 40 | 0; g.fillStyle = `rgba(${v},${v - 3},${v - 9},.45)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 4, 4);
 Object.assign(M, {
   cella: std({ color: 0xffffff, roughness: .32, metalness: .3, map: T.cella, emissive: 0x1a3c70, emissiveIntensity: 0 }),
-  celle: std({ color: 0xffffff, roughness: .32, metalness: .3, map: T.celle, emissive: 0x1a3c70, emissiveIntensity: 0 }),
   // vetro chiaro e quasi invisibile; quello posteriore un po' scuro: tra una cella e l'altra si vede il tetto in ombra sotto il modulo, non le tegole al sole
   vetro: std({ color: 0x24313a, roughness: .12, metalness: 0, transparent: true, opacity: .1, depthWrite: false }),
   vetroR: std({ color: 0x15191d, roughness: .3, metalness: 0, transparent: true, opacity: .88, depthWrite: false }),
@@ -705,7 +703,7 @@ Object.assign(M, {
   giallo: std({ color: 0xe2b93b, roughness: .5 }), verde: std({ color: 0x2e8b57, roughness: .5 }), arancio: std({ color: 0xe08a2a, roughness: .6 }),
   parete: std({ color: 0x7a766f, roughness: .95, map: T.parete, bumpMap: T.noise, bumpScale: 1 }),
 });
-ambienteBase(); ambiente(['allu', 'nastro', 'telaio'], AMB_M); ambiente(['vetro', 'vetroR'], .12); ambiente(['cella', 'celle'], .25); ambiente(['sInv', 'sBat', 'sPan'], AMB_B); ambiente(['panI'], .5);
+ambienteBase(); ambiente(['allu', 'nastro', 'telaio'], AMB_M); ambiente(['vetro', 'vetroR'], .12); ambiente(['cella'], .25); ambiente(['sInv', 'sBat', 'sPan'], AMB_B); ambiente(['panI'], .5);
 SOLO.push([M.parete, .3], [M.tegole, .3]);
 // scenografia: falda di tegole, parete con inverter e batteria, pavimento
 { const t = mesh(G.box(2.8, .08, 3.0), M.tegole, 0, -.04, 0); t.applyMatrix4(ROOF); scene.add(t);
@@ -729,40 +727,43 @@ group('tetto', 'Ganci e profili', 'Prima i ganci, avvitati alla struttura del te
   screws(hooks.map(h => ({ p: [h.p[0], .055, h.p[2]] })), o({ d0: .88, d1: .98, n: 'Bulloni gancio-profilo' }));
 }
 
+// un modulo intero, uguale per i due: il primo si compone strato per strato, il secondo arriva già finito, tutto insieme
+function costruisciModulo(X, finito) {
+  const r = falda(), up = k => [NRM[0] * k, NRM[1] * k, NRM[2] * k], F = up(1.4);
+  const o = (x, d, n) => Object.assign({ parent: r }, finito ? { d: .02, from: F, spin: [0, 0, 0], ease: eoc, n: n === 0 ? 'Modulo già assemblato' : null } : x);
+  const oi = (x, n) => Object.assign({ parent: r }, finito ? { d0: .02, d1: .02, from: F, spin: [0, 0, 0], ease: eoc, n: n === 0 ? 'Modulo già assemblato' : null } : x);
+  P(mesh(G.box(1.114, .002, 1.742), M.vetroR, X, YM - .006, 0), o({ d: 0, from: up(1.2), spin: [0, 0, 0], ease: eoc, n: 'Vetro posteriore, 2 mm' }, 0, 0));
+  P(mesh(G.box(1.11, .0008, 1.738), M.eva, X, YM - .0045, 0), o({ d: .06, from: up(1.1), spin: [0, 0, 0], ease: eoc, n: 'Pellicola incapsulante' }));
+  const cells = []; for (let j = 0; j < 16; j++) for (let i = 0; i < 6; i++) cells.push({ p: [X - .4583 + i * .1833, YM - .0035, -.8325 + j * .1037 + (j > 7 ? .012 : 0)] });
+  PIN(G.box(.178, .0012, .1), M.cella, cells, oi({ df: (k, f) => .12 + ((k % 6) * .02 + (k / 6 | 0) * .025), dur: .32, from: up(.7), spin: [0, 0, 0], ease: eoc, n: '96 mezze celle N-Type', snd: 'tick' }));
+  const rib = []; for (let h = 0; h < 2; h++) for (let i = 0; i < 6; i++) for (const dx of [-.06, 0, .06]) rib.push({ p: [X - .4583 + i * .1833 + dx, YM - .0027, (h ? 1 : -1) * .43] });
+  PIN(G.box(.0025, .0005, .83), M.nastro, rib, oi({ d0: .6, d1: .7, from: up(.5), spin: [0, 0, 0], ease: eoc, n: 'Nastri di collegamento', snd: 'fin' }));
+  PIN(G.box(1.08, .0008, .008), M.nastro, [-.865, -.005, .005, .865].map(z => ({ p: [X, YM - .0027, z] })), oi({ d0: .71, d1: .73, from: up(.5), n: 'Barre collettrici' }));
+  P(mesh(G.box(1.11, .0008, 1.738), M.eva, X, YM - .0015, 0), o({ d: .75, from: up(1), spin: [0, 0, 0], ease: eoc }));
+  P(mesh(G.box(1.114, .002, 1.742), M.vetro, X, YM, 0), o({ d: .78, from: up(1.2), spin: [0, 0, 0], ease: eoc, n: 'Vetro anteriore, 2 mm' }));
+  [-1, 1].forEach((q, i) => { P(mesh(G.box(.012, .03, 1.762), M.telaio, X + q * .561, YM - .01, 0), o({ d: .82 + i * .02, from: [q * .4, .1, 0], spin: [0, 0, 0], n: i ? null : 'Telaio in alluminio' }));
+    P(mesh(G.box(1.11, .03, .012), M.telaio, X, YM - .01, q * .875), o({ d: .85 + i * .02, from: [0, .1, q * .4], spin: [0, 0, 0] })); });
+  // tre scatole di giunzione sul retro, in linea al centro, con i diodi e i cavi
+  [-.3, 0, .3].forEach((x, i) => { const bx = X + x, by = YM - .02;
+    P(mesh(G.box(.07, .014, .05), M.black, bx, by, 0), o({ d: .88 + i * .02, from: up(-.5), spin: [0, 0, 0], n: i ? null : 'Scatole di giunzione IP68' }));
+    if (i === 1) PIN(G.box(.008, .004, .012), M.black, [-.02, 0, .02].map(dx => ({ p: [bx + dx, by - .009, 0] })), oi({ d0: .92, d1: .93, from: up(-.3), n: 'Tre diodi di bypass' }));
+    if (i !== 1) { const s = i ? 1 : -1; P(mesh(G.cylX(.003, .1, 6), M.black, bx + s * .085, by, 0), o({ d: .94, from: [s * .2, 0, 0], spin: [0, 0, 0] })); P(mesh(G.cylX(.006, .03, 8), s > 0 ? M.red : M.black, bx + s * .145, by, 0), o({ d: .96, from: [s * .2, 0, 0], spin: [0, 0, 0], n: i === 2 ? 'Connettori' : null })); } });
+}
 // 2 ─ Un modulo, strato per strato (elenco dei componenti del manuale)
 const XM = XA[0];
 group('modulo', 'Modulo MULTIVOLT 460 BF', 'Un modulo è un panino: vetro, pellicola, 96 mezze celle, pellicola, vetro, chiusi in un telaio. È bifacciale: prende luce anche da dietro.', 8.0, 14.5, { stage: [0, 0, 0], ex: [0, .5, .9], az: -18, el: 42, zoom: .62,
   keys: [[.03, -34, 40, 1.05, 0], [.3, -22, 50, 1.0, 0], [.55, -30, 44, .95, 0], [.8, -16, 40, 1.0, 0]],
   info: { e: 'Il sole sulle celle muove gli elettroni: nasce una corrente continua. Il doppio vetro protegge le celle e lascia passare la luce anche da dietro.', s: 'MULTIVOLT 460 BF · 460 W · 96 mezze celle N-Type 6 × 16 · doppio vetro da 2 mm · 1762 × 1134 × 30 mm · 24,5 kg · tre scatole di giunzione IP68 con tre diodi · scheda 00341524' } });
 {
-  const r = falda(), o = x => Object.assign({ parent: r }, x), up = k => [NRM[0] * k, NRM[1] * k, NRM[2] * k];
-  P(mesh(G.box(1.114, .002, 1.742), M.vetroR, XM, YM - .006, 0), o({ d: 0, from: up(1.2), spin: [0, 0, 0], ease: eoc, n: 'Vetro posteriore, 2 mm' }));
-  P(mesh(G.box(1.11, .0008, 1.738), M.eva, XM, YM - .0045, 0), o({ d: .06, from: up(1.1), spin: [0, 0, 0], ease: eoc, n: 'Pellicola incapsulante' }));
-  const cells = []; for (let j = 0; j < 16; j++) for (let i = 0; i < 6; i++) cells.push({ p: [XM - .4583 + i * .1833, YM - .0035, -.8325 + j * .1037 + (j > 7 ? .012 : 0)] });
-  PIN(G.box(.178, .0012, .1, ), M.cella, cells, o({ df: (k, f) => .12 + ((k % 6) * .02 + (k / 6 | 0) * .025), dur: .32, from: up(.7), spin: [0, 0, 0], ease: eoc, n: '96 mezze celle N-Type', snd: 'tick' }));
-  const rib = []; for (let h = 0; h < 2; h++) for (let i = 0; i < 6; i++) for (const dx of [-.06, 0, .06]) rib.push({ p: [XM - .4583 + i * .1833 + dx, YM - .0027, (h ? 1 : -1) * .43] });
-  PIN(G.box(.0025, .0005, .83), M.nastro, rib, o({ d0: .6, d1: .7, from: up(.5), spin: [0, 0, 0], ease: eoc, n: 'Nastri di collegamento', snd: 'fin' }));
-  PIN(G.box(1.08, .0008, .008), M.nastro, [-.865, -.005, .005, .865].map(z => ({ p: [XM, YM - .0027, z] })), o({ d0: .71, d1: .73, from: up(.5), n: 'Barre collettrici' }));
-  P(mesh(G.box(1.11, .0008, 1.738), M.eva, XM, YM - .0015, 0), o({ d: .75, from: up(1), spin: [0, 0, 0], ease: eoc }));
-  P(mesh(G.box(1.114, .002, 1.742), M.vetro, XM, YM, 0), o({ d: .78, from: up(1.2), spin: [0, 0, 0], ease: eoc, n: 'Vetro anteriore, 2 mm' }));
-  [-1, 1].forEach((q, i) => { P(mesh(G.box(.012, .03, 1.762), M.telaio, XM + q * .561, YM - .01, 0), o({ d: .82 + i * .02, from: [q * .4, .1, 0], spin: [0, 0, 0], n: i ? null : 'Telaio in alluminio' })); P(mesh(G.box(1.11, .03, .012), M.telaio, XM, YM - .01, q * .875), o({ d: .85 + i * .02, from: [0, .1, q * .4], spin: [0, 0, 0] })); });
-  // tre scatole di giunzione sul retro, in linea al centro, con i diodi e i cavi
-  [-.3, 0, .3].forEach((x, i) => { const bx = XM + x, by = YM - .02;
-    P(mesh(G.box(.07, .014, .05), M.black, bx, by, 0), o({ d: .88 + i * .02, from: up(-.5), spin: [0, 0, 0], n: i ? null : 'Scatole di giunzione IP68' }));
-    if (i === 1) PIN(G.box(.008, .004, .012), M.black, [-.02, 0, .02].map(dx => ({ p: [bx + dx, by - .009, 0] })), o({ d0: .92, d1: .93, from: up(-.3), n: 'Tre diodi di bypass' }));
-    if (i !== 1) { const s = i ? 1 : -1; P(mesh(G.cylX(.003, .1, 6), M.black, bx + s * .085, by, 0), o({ d: .94, from: [s * .2, 0, 0], spin: [0, 0, 0] })); P(mesh(G.cylX(.006, .03, 8), s > 0 ? M.red : M.black, bx + s * .145, by, 0), o({ d: .96, from: [s * .2, 0, 0], spin: [0, 0, 0], n: i === 2 ? 'Connettori' : null })); } });
+  costruisciModulo(XM, false);
 }
 
 // 3 ─ Secondo modulo e morsetti
 group('modulo2', 'Secondo modulo e morsetti', 'Il secondo modulo arriva finito. Quattro morsetti per modulo lo stringono ai profili: due a fine fila, uno in mezzo che ne tiene due.', 14.5, 17.5, { stage: [0, 0, 0], ex: [.0, .7, 1.2], az: -24, el: 34, zoom: 1,
   info: { e: 'I morsetti stringono il telaio sul lato lungo, proprio sopra i profili: così il modulo regge vento e neve senza piegarsi.', s: 'Almeno quattro morsetti per modulo, sul lato lungo, lunghi almeno 50 mm, a 400 ± 50 mm dai lati corti · manuale 00340211SS p.12-14 · nella casa i moduli sono 14: 6,44 kWp' } });
 {
-  const r = falda(), o = x => Object.assign({ parent: r }, x), X2 = XA[1];
-  P(mesh(G.box(1.114, .002, 1.742), M.vetroR, X2, YM - .006, 0), o({ d: 0, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc, n: 'Modulo già assemblato' }));
-  P(mesh(G.box(1.11, .0012, 1.73), M.celle, X2, YM - .0035, 0), o({ d: .06, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc }));
-  P(mesh(G.box(1.114, .002, 1.742), M.vetro, X2, YM, 0), o({ d: .1, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc }));
-  [-1, 1].forEach((q, i) => { P(mesh(G.box(.012, .03, 1.762), M.telaio, X2 + q * .561, YM - .01, 0), o({ d: .12, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc })); P(mesh(G.box(1.11, .03, .012), M.telaio, X2, YM - .01, q * .875), o({ d: .12, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc })); });
-  PIN(G.box(.07, .014, .05), M.black, [-.3, 0, .3].map(x => ({ p: [X2 + x, YM - .02, 0] })), o({ d0: .14, d1: .14, from: [NRM[0] * 1.4, NRM[1] * 1.4, NRM[2] * 1.4], spin: [0, 0, 0], ease: eoc }));
+  costruisciModulo(XA[1], true);
+  const r = falda(), o = x => Object.assign({ parent: r }, x);
   // morsetti: di fine fila (due per profilo) e centrali (uno per profilo), con il bullone a martello
   const fine = [], mid = [];
   for (const z of ZP) { for (const x of [-1.152, 1.152]) fine.push({ p: [x, YM + .006, z], s: [Math.sign(x), 1, 1] }); mid.push({ p: [0, YM + .006, z] }); }
@@ -842,9 +843,12 @@ group('batteria', 'Batteria SUM BL15P', 'Tre moduli impilati. In ognuno sedici c
 
 // 6 ─ Cavi (percorso indicativo: qui tetto e parete sono affiancati)
 const zc = ZW + .12, cI = dx => [IX + dx, IY - .26, Z0 + .07];
+// stringa: dal connettore rosso della scatola di destra giù sotto il modulo, poi tra il tetto e i moduli (sotto i telai) fino oltre il bordo della falda,
+// e solo lì giù verso l'inverter (prima scendeva dritta attraverso la falda e sfiorava il telaio del modulo di sinistra)
+const stringa = (X, z, xi) => { const e = tw(1.47, .06, z);
+  return [tw(X + .46, YM - .02, 0), tw(X + .53, YM - .02, 0), tw(X + .53, .06, 0), tw(X + .53, .06, z), e, [e[0], .03, e[2]], [xi, .03, e[2]], [xi, .03, zc], [xi, IY - .26, zc]]; };
 const CV = {
-  s1: [tw(XA[0] + .3, YM - .03, .25), tw(1.38, .05, .25), [tw(1.38, .05, .25)[0], .03, tw(1.38, .05, .25)[2]], [IX - .039, .03, tw(1.38, .05, .25)[2]], [IX - .039, .03, zc], [IX - .039, IY - .26, zc]],
-  s2: [tw(XA[1] + .3, YM - .03, .33), tw(1.38, .05, .33), [tw(1.38, .05, .33)[0], .03, tw(1.38, .05, .33)[2]], [IX - .0125, .03, tw(1.38, .05, .33)[2]], [IX - .0125, .03, zc], [IX - .0125, IY - .26, zc]],
+  s1: stringa(XA[0], .25, IX - .039), s2: stringa(XA[1], .33, IX - .0125),
   bat: [cI(-.185), [IX - .185, BY1 + .02, zc], [BX + .34, BY1 + .02, zc]],
   casa: [cI(.19), [IX + .19, .9, zc], [IX + .35, .9, zc]], rete: [cI(.138), [IX + .138, .5, zc], [IX + .35, .5, zc]],
   dentro: [[IX - .04, IY - .2, Z0 + .03], [IX - .1, IY - .05, Z0 + .03], [IX - .15, IY + .16, Z0 + .035], [IX + .05, IY + .15, Z0 + .03], [IX + .1, IY + .06, Z0 + .03], [IX + .18, IY - .02, Z0 + .03], [IX + .19, IY - .17, Z0 + .03], [IX + .19, IY - .23, Z0 + .07]],
@@ -908,7 +912,7 @@ const CFG = {
     const fl = fase === 1 ? 0 : 1; ST.s = ST.sole * fl; ST.b = Math.abs(ST.bat) * 2 * fl; ST.c = fl; ST.g = Math.min(1, Math.abs(ST.rete) * 3) * fl; ST.dentro = ST.xray * fl;
   },
   look(now, dt) {
-    M.cella.emissiveIntensity = M.celle.emissiveIntensity = .12 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
+    M.cella.emissiveIntensity = .12 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
     M.cellaB.emissiveIntensity = ST.bat > .01 ? .35 + .15 * Math.sin(now * 4) : ST.bat < -.01 ? .15 : 0;
     ventA += dt * (ST.s + ST.b > .05 ? 14 : 0); SCENA.ventola.rotation.z = -ventA;
     const l = testoLcd(); if (l !== lastLcd) { lastLcd = l; lcdInv(l); }
@@ -1223,10 +1227,10 @@ function initUI() {
   // orbita, zoom, tocco
   let down = null, pinch = 0;
   const lensTo = e => { const r = stage.getBoundingClientRect(); U.lensAuto = false; U.lx = e.clientX - r.left; U.ly = e.clientY - r.top - (e.pointerType === 'mouse' ? 0 : Math.min(r.width, r.height) * .17); };   // col dito la lente sta sopra, per non coprirla
-  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
+  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop,a,button')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
   stage.addEventListener('pointermove', e => {
     if (mode !== 'free') return;
-    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
+    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop,a,button')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
     const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY; if (down) down.far += Math.abs(dx) + Math.abs(dy);
     if (U.ride) return;
     if (ptr.size === 2) { const a = [...ptr.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (pinch > 0) free.zoom = clamp(free.zoom * pinch / d, .22, 1.7); pinch = d; free.auto = false; }

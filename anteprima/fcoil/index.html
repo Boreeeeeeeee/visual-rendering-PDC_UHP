@@ -672,6 +672,21 @@ const W = .897, HF = .579, D = .129, Y0 = .14, XL = -W / 2, XR = W / 2, XC = XL 
 const FY = Y0 + .095, FZ = .068, FR = .043;                                                        // ventilatore tangenziale
 const BA = [Y0 + .2, .108], BB = [Y0 + .5, .028], BT = Math.atan2(BB[1] - BA[1], BB[0] - BA[0]);   // batteria inclinata: dal basso davanti all'alto dietro
 const bat = f => [lerp(BA[0], BB[0], f), lerp(BA[1], BB[1], f)];
+const CW = .105;                                                                                    // fianchi: larghezza sul fronte (dal disegno quotato, p.5)
+function colonna(sx) {        // guscio a L con lo spigolo davanti arrotondato e il coperchio sopra; u = verso l'interno dal fianco, v = dal muro
+  const t = .008, R = .02, xo = sx < 0 ? XL : XR, X = u => xo - sx * u;
+  const shell = new THREE.Shape(); shell.moveTo(X(CW), -D); shell.lineTo(X(R), -D);
+  for (let k = 1; k <= 8; k++) { const a = PI / 2 + k / 8 * PI / 2; shell.lineTo(X(R + Math.cos(a) * R), -(D - R + Math.sin(a) * R)); }
+  shell.lineTo(X(0), 0); shell.lineTo(X(t), 0); shell.lineTo(X(t), -(D - R));
+  for (let k = 1; k <= 8; k++) { const a = PI - k / 8 * PI / 2; shell.lineTo(X(R + Math.cos(a) * (R - t)), -(D - R + Math.sin(a) * (R - t))); }
+  shell.lineTo(X(CW), -(D - t));
+  const cap = new THREE.Shape(); cap.moveTo(X(CW), -D); cap.lineTo(X(R), -D);
+  for (let k = 1; k <= 8; k++) { const a = PI / 2 + k / 8 * PI / 2; cap.lineTo(X(R + Math.cos(a) * R), -(D - R + Math.sin(a) * R)); }
+  cap.lineTo(X(0), 0); cap.lineTo(X(CW), 0);
+  const g1 = new THREE.ExtrudeGeometry(shell, { depth: HF - .006, bevelEnabled: false }).rotateX(-PI / 2).translate(0, Y0, 0);
+  const g2 = new THREE.ExtrudeGeometry(cap, { depth: .006, bevelEnabled: false }).rotateX(-PI / 2).translate(0, Y0 + HF - .006, 0);
+  return mergeGeometries([g1, g2]);
+}
 T.pannelloC = cv(256, 96, g => { g.fillStyle = '#e9ecee'; g.fillRect(0, 0, 256, 96); g.fillStyle = '#16191b'; g.font = '700 46px Barlow, Arial, sans-serif'; g.textAlign = 'center'; g.fillText('21', 70, 62);
   g.strokeStyle = '#16191b'; g.lineWidth = 3; [[150, 30], [150, 66]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 13, 0, 7); g.stroke(); }); g.fillRect(143, 29, 14, 3); g.fillRect(143, 65, 14, 3); g.fillRect(148, 24, 3, 14);
   g.beginPath(); g.arc(215, 48, 16, 0, 7); g.stroke(); });
@@ -707,12 +722,12 @@ group('strut', 'Struttura e schienale', 'La struttura in lamiera elettrozincata 
   screws([-.25, .25].flatMap(x => [-.04, .04].map(dx => ({ p: [x + dx, Y0 + .53, .012], r: [PI / 2, 0, 0] }))), { d0: .08, d1: .16, n: 'Tasselli' });
   P(mesh(G.box(W - .006, HF - .02, .006), M.zinc, 0, Y0 + HF / 2, .015), { d: .2, from: [0, 0, .6], spin: [0, 0, 0], ease: eoc, n: 'Schienale strutturale' });
   P(mesh(G.box(W - .14, HF - .12, .012), M.isol, .06, Y0 + HF / 2 + .02, .024), { d: .28, from: [0, 0, .5], spin: [0, 0, 0], ease: eoc, n: 'Isolamento insonorizzante' });
-  [[XL + .003, 'Fianco sinistro della struttura'], [XR - .003, null]].forEach(([x, n], i) => P(mesh(G.box(.006, HF - .01, D - .03), M.zinc, x, Y0 + HF / 2, D / 2), { d: .34 + i * .04, from: [Math.sign(x) * .4, 0, 0], spin: [0, 0, 0], n }));
+  [[XL + .0115, 'Fianco sinistro della struttura'], [XR - .0115, null]].forEach(([x, n], i) => P(mesh(G.box(.006, HF - .01, D - .03), M.zinc, x, Y0 + HF / 2, D / 2 + .004), { d: .34 + i * .04, from: [Math.sign(x) * .4, 0, 0], spin: [0, 0, 0], n }));
   P(mesh(G.box(.006, HF - .08, D - .03), M.zinc, XC, Y0 + HF / 2 + .02, D / 2), { d: .42, from: [0, .4, 0], spin: [0, 0, 0], n: 'Paratia del vano attacchi' });
   P(mesh(G.box(W - .01, .006, D - .02), M.zinc, 0, Y0 + .003, D / 2), { d: .48, from: [0, -.3, 0], spin: [0, 0, 0], n: 'Fondo' });
-  P(mesh(G.box(.11, .1, .1), M.zinc, XL + .06, Y0 + .05, .06), { d: .55, from: [-.3, -.2, .2], spin: [0, 0, 0], n: 'Base del vano attacchi' });
+  P(mesh(G.box(.1, .1, .1), M.zinc, XL + .065, Y0 + .05, .06), { d: .55, from: [-.3, -.2, .2], spin: [0, 0, 0], n: 'Base del vano attacchi' });
   PIN(G.box(W - .14, .01, .012), M.zinc, [Y0 + .19, Y0 + .53].map(y => ({ p: [.06, y, .04] })), { d0: .62, d1: .7, n: 'Traverse' });
-  screws([XL + .003, XR - .003].flatMap(x => [Y0 + .05, Y0 + .53].map(y => ({ p: [x, y, .1], r: [0, 0, x < 0 ? PI / 2 : -PI / 2] }))), { d0: .78, d1: .9 });
+  screws([XL + .0115, XR - .0115].flatMap(x => [Y0 + .05, Y0 + .53].map(y => ({ p: [x, y, .1], r: [0, 0, x < 0 ? PI / 2 : -PI / 2] }))), { d0: .78, d1: .9 });
 }
 
 // 2 ─ Gruppo ventilante (tangenziale, in vista mentre gira)
@@ -722,7 +737,7 @@ group('vent', 'Ventilatore tangenziale', 'Un rullo lungo con le alette sfalsate:
   info: { e: 'Il polmone del ventilconvettore: aspira l\'aria della stanza dal basso e la spinge attraverso la batteria. Il motore modula la velocità senza scatti.', s: 'Ventilatore tangenziale in materiale sintetico ad alette sfalsate, bilanciato staticamente e dinamicamente, calettato sull\'albero del motore · motore DC brushless a pacco resinato · supporti antivibranti in EPDM · manuale 00340791 p.4, scheda 05-2025' } });
 {
   const x0 = XC + .015, x1 = XR - .085, L = x1 - x0, NS = 8, NB = 28;
-  P(mesh(new THREE.CylinderGeometry(FR + .022, FR + .022, L + .01, 40, 1, true, rad(150), rad(220)).rotateZ(PI / 2), M.abs, (x0 + x1) / 2, FY, FZ), { d: 0, from: [0, -.3, .3], spin: [0, 0, 0], n: 'Chiocciola' });
+  P(mesh(new THREE.CylinderGeometry(FR + .022, FR + .022, L + .01, 40, 1, true, rad(150), rad(150)).rotateZ(PI / 2), M.abs, (x0 + x1) / 2, FY, FZ), { d: 0, from: [0, -.3, .3], spin: [0, 0, 0], n: 'Chiocciola' });
   P(mesh(G.box(L, .006, .05), M.abs, (x0 + x1) / 2, FY + FR + .025, FZ - .03, rad(-20), 0, 0), { d: .05, from: [0, .3, 0], spin: [0, 0, 0], n: 'Lingua del convogliatore' });
   rotor.position.set((x0 + x1) / 2, FY, FZ); CUR.node.add(rotor);
   PIN(G.cylX(FR, .003, 32), M.rotore, Array.from({ length: NS + 1 }, (_, i) => ({ p: [-L / 2 + i * L / NS, 0, 0] })), { parent: rotor, d0: .1, d1: .22, from: [0, .3, 0], spin: [3, 0, 0], ease: eoc, n: 'Dischi di separazione', snd: 'tick' });
@@ -765,13 +780,13 @@ group('batt', 'Batteria e collettori', 'Tubi di rame e alette d\'alluminio tratt
 group('cond', 'Bacinella della condensa', 'D\'estate la batteria fredda fa condensare l\'umidità dell\'aria: le gocce scendono nella bacinella e escono dallo scarico.', 18.5, 21.0, { stage: [0, 0, 0], ex: [-.3, -.2, .2], zoom: 1, keys: [[.03, 28, 16, 1.5, .08], [.4, 30, 26, .55, .05, -.21], [.72, 24, 16, .9, .02, -.1]],
   info: { e: 'Raffrescando, il ventilconvettore toglie anche l\'umidità: l\'acqua che si forma sulla batteria finisce qui e va allo scarico.', s: 'Bacinella in ABS, smontabile per la pulizia · prolunga rompigoccia · scarico con pendenza, tubo Ø interno minimo 16 mm · manuale 00340791 p.4, 9' } });
 {
-  P(mesh(G.box(XR - XC - .02, .008, .05), M.abs, (XC + XR) / 2, Y0 + .175, .11), { d: 0, from: [0, 0, .3], spin: [0, 0, 0], ease: eoc, n: 'Gocciolatoio sotto la batteria' });
+  P(mesh(G.box(XR - XC - .02, .008, .05), M.abs, (XC + XR) / 2, Y0 + .175, .093), { d: 0, from: [0, 0, .3], spin: [0, 0, 0], ease: eoc, n: 'Gocciolatoio sotto la batteria' });
   P(mesh(G.box(.1, .03, .1), M.abs, XL + .065, Y0 + .115, .06), { d: .3, from: [0, 0, .3], spin: [0, 0, 0], ease: eoc, n: 'Bacinella in ABS' });
   P(mesh(G.cyl(.009, .04, 14), M.abs, XL + .05, Y0 + .085, .06), { d: .55, from: [0, -.2, 0], spin: [0, 0, 0], ease: eoc, n: 'Prolunga rompigoccia' });
   const SC = [[XL + .05, Y0 + .065, .06], [XL + .05, Y0 - .05, .06], [XL + .05, Y0 - .05, -.12]];
   P(mesh(tubeGeo(SC, .009, 30), M.grey), { d: .7, n: 'Scarico della condensa, nel muro' });
   P(mesh(G.cylZ(.02, .006, 20), M.white, XL + .05, Y0 - .05, .003), { d: .85, from: [0, 0, .25], spin: [0, 0, 0], ease: eoc, n: 'Rosone a muro' });
-  FCP.gocce = [[0, Y0 + .21, .1], [0, Y0 + .18, .11], [-.2, Y0 + .178, .11], [XL + .07, Y0 + .14, .07], ...SC.slice(0, 2), [XL + .05, Y0 - .05, -.01]];
+  FCP.gocce = [[0, Y0 + .21, .1], [0, Y0 + .18, .1], [-.2, Y0 + .178, .1], [XL + .07, Y0 + .14, .07], ...SC.slice(0, 2), [XL + .05, Y0 - .05, -.01]];
 }
 
 // 5 ─ Pannello radiante, elettronica e pannello touch
@@ -784,22 +799,23 @@ group('rad', 'Pannello radiante ed elettronica', 'Dietro il frontale scorre l\'a
   P(mesh(G.box(.006, .14, .09), M.pcb, XR - .02, Y0 + .4, .07), { d: .45, from: [.3, 0, 0], spin: [0, 0, 0], n: 'Scheda elettronica' });
   PIN(G.cyl(.006, .014, 10), M.cap, [Y0 + .36, Y0 + .4, Y0 + .44].map(y => ({ p: [XR - .027, y, .07], r: [0, 0, PI / 2] })), { d0: .52, d1: .56 });
   PIN(G.box(.008, .012, .016), M.white, [-.03, 0, .03].map(dz => ({ p: [XR - .027, Y0 + .33, .07 + dz] })), { d0: .58, d1: .6, n: 'Morsetti: alimentazione, contatto presenza, Modbus' });
-  P(mesh(G.box(.11, .004, .045), M.black, XR - .1, Y0 + HF - .004, .085), { d: .7, from: [0, .3, 0], spin: [0, 0, 0], n: 'Pannello di comando touch' });
-  P(mesh(G.plane(.105, .04), M.fcPan, XR - .1, Y0 + HF - .0015, .085, -PI / 2, 0, 0), { d: .78, from: [0, .2, 0], spin: [0, 0, 0] });
+  P(mesh(G.box(.08, .004, .045), M.black, XR - CW / 2 - .002, Y0 + HF + .002, .085), { d: .7, from: [0, .3, 0], spin: [0, 0, 0], n: 'Pannello di comando touch' });
+  P(mesh(G.plane(.076, .04), M.fcPan, XR - CW / 2 - .002, Y0 + HF + .0042, .085, -PI / 2, 0, 0), { d: .78, from: [0, .2, 0], spin: [0, 0, 0] });
 }
 
 // 6 ─ Mantello e griglie
 group('mant', 'Mantello e griglie', 'Lamiera bianca RAL 9003, spessa in tutto 12,9 cm. Sotto la griglia che aspira con il filtro a nido d\'ape, sopra quella che soffia.', 25.0, 28.5, { stage: [0, 0, 0], ex: [0, 0, .5], az: 22, el: 10, zoom: 1.0,
   info: { e: 'La faccia che si vede in casa: si smonta per la pulizia, e il filtro si lava sotto l\'acqua o si soffia.', s: 'Mantello frontale e fianchi in lamiera elettrozincata, RAL 9003 · griglia di mandata reversibile · griglia di aspirazione in alluminio con sgancio rapido e microinterruttore · filtro a nido d\'ape in polipropilene · 897 × 579 × 129 mm · 15 kg · manuale p.4-5' } });
 {
-  P(mesh(G.box(W - .08, .13, .004), M.filtro, .02, Y0 + .09, D - .012), { d: 0, from: [0, 0, .4], spin: [0, 0, 0], ease: eoc, n: 'Filtro a nido d\'ape' });
-  PIN(G.box(W - .1, .004, .016), M.sGrid, Array.from({ length: 9 }, (_, i) => ({ p: [.02, Y0 + .03 + i * .015, D - .004], r: [-.5, 0, 0] })), { d0: .12, d1: .3, from: [0, 0, .4], spin: [0, 0, 0], ease: eoc, n: 'Griglia di aspirazione', snd: 'tick' });
-  P(mesh(G.box(.008, .004, .006), M.black, XR - .06, Y0 + .17, D - .006), { d: .32, n: 'Microinterruttore di sicurezza' });
-  P(mesh(G.rbox(W, HF - .17, .012, .004), M.radiante, 0, Y0 + .17 + (HF - .17) / 2, D - .006), { d: .4, from: [0, .1, .6], spin: [0, 0, 0], ease: eoc, dur: .6, n: 'Mantello frontale, pannello radiante' });
-  [XL + .004, XR - .004].forEach((x, i) => P(mesh(G.rbox(.008, HF, D, .003), M.sWhite, x, Y0 + HF / 2, D / 2), { d: .5 + i * .05, from: [Math.sign(x) * .5, 0, 0], spin: [0, 0, 0], ease: eoc, n: i ? null : 'Fianchi' }));
-  PIN(G.box(W - .14, .003, .09), M.sGrid, Array.from({ length: 10 }, (_, i) => ({ p: [.04, Y0 + HF - .002, .015 + i * .01], r: [.6, 0, 0] })), { d0: .62, d1: .76, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Griglia di mandata reversibile', snd: 'tick' });
-  P(mesh(G.box(.11, .006, D - .01), M.sWhite, XL + .065, Y0 + HF - .003, D / 2), { d: .8, from: [0, .3, 0], spin: [0, 0, 0], n: 'Coperchio dei collettori' });
-  P(mesh(G.box(.12, .004, D - .01), M.sWhite, XR - .1, Y0 + HF - .007, D / 2), { d: .84, from: [0, .3, 0], spin: [0, 0, 0] });
+  // fianchi come nel disegno quotato (manuale p.5, fig. A) e nella foto del depliant: colonne che girano sul fronte per circa 10 cm,
+  // tra le due il frontale radiante e sotto la griglia di aspirazione, alta circa 12,5 cm, da una colonna all'altra
+  P(mesh(G.box(W - 2 * CW - .01, .11, .004), M.filtro, 0, Y0 + .065, D - .02), { d: 0, from: [0, 0, .4], spin: [0, 0, 0], ease: eoc, n: 'Filtro a nido d\'ape' });
+  PIN(G.box(.003, .112, .006), M.sGrid, [-.3, -.15, 0, .15, .3].map(f => ({ p: [f * (W - 2 * CW), Y0 + .064, D - .014] })), { d0: .1, d1: .14, from: [0, 0, .3], spin: [0, 0, 0], ease: eoc });
+  PIN(G.box(W - 2 * CW - .004, .004, .016), M.sGrid, Array.from({ length: 11 }, (_, i) => ({ p: [0, Y0 + .009 + i * .011, D - .008], r: [-.5, 0, 0] })), { d0: .16, d1: .32, from: [0, 0, .4], spin: [0, 0, 0], ease: eoc, n: 'Griglia di aspirazione', snd: 'tick' });
+  P(mesh(G.box(.008, .004, .006), M.black, XR - CW - .012, Y0 + .121, D - .022), { d: .34, n: 'Microinterruttore di sicurezza' });
+  P(mesh(G.rbox(W - 2 * CW - .002, HF - .125, .012, .004), M.radiante, 0, Y0 + .125 + (HF - .125) / 2, D - .006), { d: .4, from: [0, .1, .6], spin: [0, 0, 0], ease: eoc, dur: .6, n: 'Mantello frontale, pannello radiante' });
+  [-1, 1].forEach((sx, i) => P(mesh(colonna(sx), M.sWhite), { d: .5 + i * .05, from: [sx * .5, 0, 0], spin: [0, 0, 0], ease: eoc, n: i ? 'Fianco destro, sotto il pannello touch' : 'Fianco sinistro, chiude il vano attacchi' }));
+  PIN(G.box(W - 2 * CW - .01, .003, .09), M.sGrid, Array.from({ length: 10 }, (_, i) => ({ p: [0, Y0 + HF - .002, .015 + i * .01], r: [.6, 0, 0] })), { d0: .62, d1: .76, from: [0, .3, 0], spin: [0, 0, 0], ease: eoc, n: 'Griglia di mandata reversibile', snd: 'tick' });
   screws([XL + .004, XR - .004].flatMap(x => [Y0 + .2, Y0 + .5].map(y => ({ p: [x, y, D - .03], r: [0, 0, x < 0 ? PI / 2 : -PI / 2] }))), { d0: .88, d1: .96, mat: M.sScrew, n: 'Viti dei fianchi' });
 }
 
@@ -1168,10 +1184,10 @@ function initUI() {
   // orbita, zoom, tocco
   let down = null, pinch = 0;
   const lensTo = e => { const r = stage.getBoundingClientRect(); U.lensAuto = false; U.lx = e.clientX - r.left; U.ly = e.clientY - r.top - (e.pointerType === 'mouse' ? 0 : Math.min(r.width, r.height) * .17); };   // col dito la lente sta sopra, per non coprirla
-  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
+  stage.addEventListener('pointerdown', e => { if (mode !== 'free' || e.target.closest('#dock,#freetop,a,button')) return; ptr.set(e.pointerId, [e.clientX, e.clientY]); down = { t: performance.now(), far: 0 }; if (ptr.size === 2) { const a = [...ptr.values()]; pinch = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); } if (U.lens && ptr.size === 1) lensTo(e); try { stage.setPointerCapture(e.pointerId); } catch (err) {} });
   stage.addEventListener('pointermove', e => {
     if (mode !== 'free') return;
-    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
+    if (U.lens && ptr.size < 2 && (ptr.has(e.pointerId) || (e.pointerType === 'mouse' && !e.target.closest('#dock,#freetop,a,button')))) { lensTo(e); if (down) down.far = 99; const p0 = ptr.get(e.pointerId); if (p0) { p0[0] = e.clientX; p0[1] = e.clientY; } return; }
     const p = ptr.get(e.pointerId); if (!p) return; const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY; if (down) down.far += Math.abs(dx) + Math.abs(dy);
     if (U.ride) return;
     if (ptr.size === 2) { const a = [...ptr.values()], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); if (pinch > 0) free.zoom = clamp(free.zoom * pinch / d, .22, 1.7); pinch = d; free.auto = false; }

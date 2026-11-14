@@ -136,8 +136,11 @@ function esterna(U, sezione, valvole) {
     cp(mesh(G.open(.066, .26, PI / 2, rad(250)), M.shellC, 0, .195, 0), { d: .68, from: [-.2, .35, -.25], spin: [0, 2.5, 0], n: 'Mantello' });
     cp(mesh(G.cyl(.03, .19, 28), M.shellC, AXc, .215, AZc), { d: .69, n: 'Separatore di liquido' });
     cp(mesh(G.dome(.066, .45), M.shellC, 0, .325, 0), { d: .7, from: [0, .4, 0], spin: [0, 2, 0], n: 'Calotta' });
-    cp(mesh(G.open(.066, .26, rad(-20), rad(110)), M.sDoor, 0, .195, 0), { d: .78, from: [.25, .04, .2], spin: [0, 0, 0], ease: eoc, n: 'Chiusura del mantello' });
-    PIPE.compC = [[AXc, .4, AZc], [AXc, .25, AZc], [AXc, .13, AZc], [-.05, .11, .02], [.01, .11, 0], [0, .15, -.01], [.01, .21, .01], [-.01, .27, 0], [-.02, .36, -.02], [-.02, .42, -.02]];
+    cp(mesh(G.open(.066, .26, rad(-20), rad(110)), M.sDoor, 0, .195, 0), { d: .93, from: [.25, .04, .2], spin: [0, 0, 0], ease: eoc, n: 'Chiusura del mantello' });
+    // aspirazione (dalla valvola a 4 vie al separatore di liquido) e mandata (dalla calotta alla valvola): il gas che si vede girare passa dentro questi tubi
+    const asp = [[-.035, .468, .0645], [-.035, .41, .0645], [-.11, .41, .05], [AXc, .3, AZc]], man = [[0, .345, 0], [0, .43, 0], [0, .43, .0645], [0, .468, .0645]];
+    cp(mesh(tubeGeo(asp, .0075, 40), M.copper), { d: .725, dur: .4, n: 'Tubo di aspirazione' }); cp(mesh(tubeGeo(man, .0075, 40), M.copper), { d: .735, dur: .4, n: 'Tubo di mandata' });
+    PIPE.compC = asp.slice(0, 3).concat([[AXc, .25, AZc], [AXc, .13, AZc], [-.05, .11, .02], [.01, .11, 0], [0, .15, -.01], [.01, .21, .01], [-.01, .27, 0]], man);
   } else {
     P(mesh(G.cyl(.05, .2, 28), M.shellC, CXl, .14, CZl), o({ d: .6, n: 'Compressore rotativo DC inverter' }));
     P(mesh(G.cyl(.025, .14, 20), M.shellC, CXl - .08, .14, CZl + .03), o({ d: .63, n: 'Separatore di liquido' }));
@@ -176,7 +179,7 @@ unitaParete(UI.x);
 
 // 2 ─ Unità esterna YA3 13HE (compressore in sezione)
 const gUe = group('ue', 'Unità esterna YA3 13HE', 'Fuori casa: compressore rotativo DC inverter, batteria a L, ventilatore a velocità variabile e le due valvole per le linee.', 10.0, 17.5, { stage: [0, .1, .7], ex: [-.3, 0, .4], az: 28, el: 14, zoom: 1.0,
-  keys: [[.03, 34, 18, 1.1, 0], [.35, 30, 10, .55, -.08], [.55, 42, 12, .62, -.05], [.75, 26, 10, .9, 0]],
+  keys: [[.03, 34, 18, 1.1, 0], [.35, 30, 10, .55, -.08], [.6, 40, 12, .5, -.1, .2], [.74, 34, 10, .5, -.1, .2], [.84, 26, 10, .9, 0]],
   info: { e: 'Il motore del climatizzatore: d\'estate butta fuori il calore della casa, d\'inverno lo prende dall\'aria di fuori.', s: 'YA3 13HE · 765 × 555 × 303 mm · 26,7 kg · R32 · valvole a 93 e 153 mm da terra sul fianco destro · manuale 00339164 p.22-A · interno: schema di principio' } });
 const ue = esterna(UE, true, 1);
 

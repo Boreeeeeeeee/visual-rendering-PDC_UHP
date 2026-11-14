@@ -39,7 +39,7 @@ const CFG = {
     const fl = fase === 1 ? 0 : 1; ST.s = ST.sole * fl; ST.b = Math.abs(ST.bat) * 2 * fl; ST.c = fl; ST.g = Math.min(1, Math.abs(ST.rete) * 3) * fl; ST.dentro = ST.xray * fl;
   },
   look(now, dt) {
-    M.cella.emissiveIntensity = M.celle.emissiveIntensity = .12 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
+    M.cella.emissiveIntensity = .12 * ST.sole; SCENA.sole.material.opacity = ST.sole; keyL.intensity = 1.6 + .8 * ST.sole;
     M.cellaB.emissiveIntensity = ST.bat > .01 ? .35 + .15 * Math.sin(now * 4) : ST.bat < -.01 ? .15 : 0;
     ventA += dt * (ST.s + ST.b > .05 ? 14 : 0); SCENA.ventola.rotation.z = -ventA;
     const l = testoLcd(); if (l !== lastLcd) { lastLcd = l; lcdInv(l); }

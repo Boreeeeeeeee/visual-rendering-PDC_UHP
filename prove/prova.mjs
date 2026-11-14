@@ -126,7 +126,7 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
       x = await q(`document.getElementById('kModo').children[3].click(); ${api}.step(60, .05); ${api}.stato()`); ok(x.modo === 'Notte' && x.fan < .1 && x.rad > .8, 'ventilconvettore: Notte, ventilatore fermo e frontale radiante'); await sleep(300); await foto('fcoil_comandi'); }
     else { x = await q(`window.__ui.setTool('comandi'); document.getElementById('k2').click(); document.getElementById('kC').click(); ${api}.step(60, .05); ${api}.stato()`); ok(x.caldo && x.c1 > .8 && x.c2 > .8 && x.mono > .8, 'climatizzatori: in Caldo con tutte e tre le unità accese'); await sleep(300); await foto('clima_comandi'); }
     x = await q(`window.__ui.setTool('touch'); window.__ui.openCard(${card}); ${api}.step(20, .05); document.getElementById('cT').textContent`); ok(x.includes(chiave), `${nome}: la scheda del gruppo si apre`);
-    await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), `il ritorno dal ${nome} riporta alla Casa`);
+    await fr.locator('.back').click(); ok(await scena('casa'), `il ritorno dal ${nome} riporta alla Casa, con un clic vero nella parte libera`);
   }
   // ibrido (tappa 4): scambio del generatore nella Casa, caldaia nelle ore più fredde, pagina completa
   await page.click('#bIbr'); c = await st(); ok(c.gen === 'ibrido' && (await page.textContent('.tag')).startsWith('HYBREER 3'), "il pulsante Ibrido mette l'ibrido al posto della UHP");
