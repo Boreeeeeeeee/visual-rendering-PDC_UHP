@@ -16,17 +16,19 @@ T.logoUe = cv(256, 80, g => { g.clearRect(0, 0, 256, 80); drawUnicalLogo(g, 8, 6
 T.xmpsF = cv(512, 400, g => { g.fillStyle = '#eceeef'; g.fillRect(0, 0, 512, 400); g.strokeStyle = '#c9cdd0'; g.lineWidth = 3; g.beginPath(); g.roundRect(30, 92, 452, 226, 22); g.stroke();
   g.fillStyle = '#9ea4a8'; for (let y = 104; y < 310; y += 7) for (let x = 42 + ((y / 7) % 2) * 3.5; x < 472; x += 7) { g.beginPath(); g.arc(x, y, 1.7, 0, 7); g.fill(); }
   g.fillStyle = '#eceeef'; g.fillRect(392, 128, 66, 30); g.fillStyle = '#3a3f43'; g.beginPath(); g.roundRect(56, 336, 400, 44, 10); g.fill(); g.strokeStyle = '#6b7175'; g.lineWidth = 2; for (let y = 346; y < 378; y += 8) { g.beginPath(); g.moveTo(66, y); g.lineTo(446, y); g.stroke(); } });
+// fuori, intonaco chiaro come nel fotovoltaico: le linee coibentate nere che salgono sul muro si leggono anche nella vista larga (prima il muro era grigio scuro e le linee sparivano)
+T.intonaco = rep(cv(256, 256, g => { const r = rng(37); g.fillStyle = '#e4e0d8'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 200 + r() * 40 | 0; g.fillStyle = `rgba(${v},${v - 3},${v - 9},.45)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 4, 4);
 T.muroC = rep(cv(256, 256, g => { const r = rng(31); g.fillStyle = '#4a4e52'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 62 + r() * 34 | 0; g.fillStyle = `rgba(${v},${v + 3},${v + 6},.5)`; g.fillRect(r() * 256, r() * 256, 1 + r() * 3, 1 + r() * 3); } }), 4, 4);
 Object.assign(M, {
   sUi: xr(std({ color: 0xe9ebec, roughness: .3, metalness: .02 })), sUi2: xr(std({ color: C_BIANCO, roughness: .4, metalness: .02 })), sUe: xr(std({ color: 0xd6d8da, roughness: .55, metalness: .05 })),
   sXm: xr(std({ color: 0xffffff, roughness: .5, map: T.xmpsF })), disp: new THREE.MeshBasicMaterial({ map: T.disp }), logoUe: new THREE.MeshBasicMaterial({ map: T.logoUe, transparent: true }),
   filt: std({ color: 0x9aa1a6, roughness: .8, transparent: true, opacity: .8, side: THREE.DoubleSide }),
   alet: std({ color: 0x9aa3a8, roughness: .4, metalness: .8, emissive: 0x2a8cff, emissiveIntensity: 0 }),
-  muroC: std({ color: 0x9aa0a4, roughness: .95, map: T.muroC, bumpMap: T.noise, bumpScale: 1.5 }), sez: std({ color: 0x8a5f4c, roughness: .95 }),
+  muroC: std({ color: 0x9aa0a4, roughness: .95, map: T.muroC, bumpMap: T.noise, bumpScale: 1.5 }), muroE: std({ color: 0xa29d95, roughness: .95, map: T.intonaco, bumpMap: T.noise, bumpScale: 1 }), sez: std({ color: 0x8a5f4c, roughness: .95 }),
 });
 ambienteBase(); ambiente(['alet'], AMB_M); ambiente(['sUi', 'sUi2', 'sUe', 'sXm', 'filt'], AMB_B);
-SOLO.push([M.muroC, .3], [M.sez, .2]);
-{ const H2 = 2.8; scene.add(mesh(G.plane(3.4, H2), M.muroC, 1.65, H2 / 2, ZB), mesh(G.plane(1.2, H2), M.muroC, WX1, H2 / 2, ZB + .6, 0, PI / 2, 0), mesh(G.plane(1.2, H2), M.muroC, WX0, H2 / 2, ZB + .6, 0, -PI / 2, 0), mesh(G.plane(WX1 - WX0, H2), M.sez, (WX0 + WX1) / 2, H2 / 2, ZB + 1.2));
+SOLO.push([M.muroC, .3], [M.muroE, .3], [M.sez, .2]);
+{ const H2 = 2.8; scene.add(mesh(G.plane(3.4, H2), M.muroC, 1.65, H2 / 2, ZB), mesh(G.plane(1.2, H2), M.muroC, WX1, H2 / 2, ZB + .6, 0, PI / 2, 0), mesh(G.plane(1.2, H2), M.muroE, WX0, H2 / 2, ZB + .6, 0, -PI / 2, 0), mesh(G.plane(WX1 - WX0, H2), M.sez, (WX0 + WX1) / 2, H2 / 2, ZB + 1.2));
   scene.add(mesh(G.plane(WX1 - WX0, 1.2), M.sez, (WX0 + WX1) / 2, H2, ZB + .6, -PI / 2, 0, 0)); }
 const ombraC = mesh(G.plane(5.6, 1.6), new THREE.MeshBasicMaterial({ map: T.shadow, transparent: true, depthWrite: false }), .3, .003, .1, -PI / 2); scene.add(ombraC);
 const ROT = {};                                                                                // parti che girano
@@ -196,7 +198,7 @@ group('linea', 'Linee frigorifere', 'Due tubi di rame coibentati, il cavo di seg
 {
   P(mesh(tubeGeo(LM.liq, .0035, 80), M.copper), { d: 0, dur: 1.0, n: 'Linea del liquido, 1/4"' });
   P(mesh(tubeGeo(LM.gas, .005, 80), M.copper), { d: .1, dur: 1.0, n: 'Linea del gas, 3/8"' });
-  P(mesh(tubeGeo(LM.gas.slice(1, -1), .013, 80), M.sFoam), { d: .3, dur: .8, n: 'Coibentazione' });
+  P(mesh(tubeGeo(LM.gas.slice(1, -1), .016, 80), M.sFoam), { d: .3, dur: .8, n: 'Coibentazione' });
   P(mesh(tubeGeo(LM.liq.slice(1, -1).map(p => [p[0] + .02, p[1] - .015, p[2] + .015]), .003, 60), M.grey), { d: .45, dur: .7, n: 'Cavo di segnale' });
   P(mesh(tubeGeo([[XU + .05, YUI + .02, ZB + .1], [WX1 + .14, YUI - .01, ZB + .1], [WX1 + .14, YUI - .03, ZB + .42], [WX0 - .03, YUI - .05, ZB + .42], [WX0 - .03, .1, ZB + .42], [WX0 - .12, .04, ZB + .42]], .007, 60), M.grey), { d: .6, dur: .7, n: 'Tubo di drenaggio, in pendenza' });
   PIN(annulus(.05, .036, .006), M.grey, [YUI + .115].map(y => ({ p: [WX1 + .004, y, ZB + .315], r: [0, 0, PI / 2] })), { d0: .75, d1: .75, n: 'Passamuro' });
@@ -220,7 +222,7 @@ LD.forEach((l, k) => { PIPE['d' + k] = l.liq; });
 group('linee2', 'Linee del dual', 'Due coppie di linee, una per stanza, dalla stessa unità esterna alle due console.', 32.0, 35.5, { stage: [0, 0, 0], ex: [0, 0, .3], az: 6, el: 14, zoom: .8, keys: [[.15, -14, 16, .59, -.12, -2.79], [.55, 10, 14, .66, .08, .26]],
   info: { e: 'Ogni console ha le sue linee, che partono dalla stessa unità esterna: si accendono e si regolano una per una.', s: 'Linee 1/4" e 3/8" per ogni unità interna · massimo 25 m per unità interna, 40 m in tutto con carica supplementare · dislivello massimo 15 m · depliant clima la gamma 09-2026 p.15 · percorso: indicativo' } });
 {
-  LD.forEach((l, k) => { P(mesh(tubeGeo(l.liq, .0045, 120), M.copper), { d: k * .16, dur: .8, n: k ? null : 'Linee frigorifere delle due stanze' }); P(mesh(tubeGeo(l.liq.slice(1, -1), .012, 120), M.sFoam), { d: .08 + k * .16, dur: .8, n: k ? null : 'Coibentazione' }); });
+  LD.forEach((l, k) => { P(mesh(tubeGeo(l.liq, .0045, 120), M.copper), { d: k * .16, dur: .8, n: k ? null : 'Linee frigorifere delle due stanze' }); P(mesh(tubeGeo(l.liq.slice(1, -1), .014, 120), M.sFoam), { d: .08 + k * .16, dur: .8, n: k ? null : 'Coibentazione' }); });
   // canalina bianca: lungo il muro di lato, il muro di fondo sopra le console, e due discese (percorso ricostruito)
   const yc = (HC[0] + HC[1]) / 2, xc0 = WX1, xc1 = DK[1] + .035;
   P(mesh(G.box(.06, .085, ZR[0] + .035 - ZB), M.sWhite, WX1 + .03, yc, (ZR[0] + .035 + ZB) / 2), { d: .4, from: [.3, 0, 0], spin: [0, 0, 0], ease: eoc, n: 'Canalina' });

@@ -29,7 +29,7 @@
   .big:disabled { background: var(--panel); color: var(--dim); border-color: var(--line); cursor: default }
   .btn:hover, .btn:focus-visible { border-color: var(--green) } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
 
-  #top { position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none }
+  #top { position: absolute; z-index: 2; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none }
   #logo { width: clamp(84px, 13vmin, 124px); line-height: 0; filter: drop-shadow(0 1px 6px rgba(0,0,0,.35)) } #logo svg { width: 100%; height: auto }
   #by { font: 600 clamp(12px, 1.7vmin, 15px)/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; text-align: right; text-shadow: 0 1px 8px rgba(0,0,0,.6) } #by span { color: var(--green) }
 
@@ -47,41 +47,68 @@
   .freccia { position: absolute; top: 44%; width: 46px; height: 46px; padding: 0; font-size: 26px; letter-spacing: 0 } #bPrev { left: var(--pad) } #bNext { right: var(--pad) }
   #hHint { position: absolute; left: 0; right: 0; top: calc(var(--pad) + 62px); text-align: center; font: 500 13px/1.3 var(--body); color: var(--dim); letter-spacing: .04em; text-shadow: 0 1px 8px #000 }
 
-  /* Casa */
-  #cTop { position: absolute; left: var(--pad); right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
-  #cCap { pointer-events: auto; max-width: 560px; padding: 12px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center }
-  #cHour { font: 700 clamp(30px, 6vmin, 44px)/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; grid-row: span 2 }
-  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs, #cFv, #cCal, #cCli { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
-  #cFv[data-m=s] { background: #ffd84a; color: #1b1605 } #cFv[hidden], #cCal[hidden], #cCli[hidden], #cGen[hidden] { display: none } #cCli { background: var(--ice); color: #05121b } #cGen { align-self: flex-start } #cCal[data-m=on] { background: #ff5a2a; color: #1b0805 }
-  #cAcs[data-m=c] { background: #ff6a4a; color: #1b0805 } #cAcs[data-m=r] { background: rgba(255,154,77,.28) }
-  #cStato[data-m=c] { background: var(--heat); color: #1b0f05 } #cStato[data-m=f] { background: var(--ice); color: #05121b }
-  #cText { margin: 0; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; min-height: 2.7em }
-  #cPanel { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 640px); pointer-events: auto; padding: 12px 14px 10px; border-radius: 16px;
-    background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 10px }
-  #cPanel h2 { margin: 0; font: 600 13px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
-  #cRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between }
+  /* Casa: la giornata a momenti */
+  body[data-scena=casa] #by { display: none }
+  #bHome { position: absolute; right: var(--pad); top: max(var(--pad), env(safe-area-inset-top)); pointer-events: auto; min-height: 40px; padding: 0 14px; font-size: 14px }
+  #cSpot { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: radial-gradient(ellipse var(--rx, 40vw) var(--ry, 40vh) at var(--sx, 50%) var(--sy, 50%), rgba(4,7,9,0) 50%, rgba(4,7,9,.5) 100%) }
+  #cCard { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 52px); width: min(calc(100% - 2 * var(--pad)), 440px); pointer-events: auto;
+    padding: 12px 16px 14px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px) }
+  #cHead { display: flex; align-items: center; gap: 12px }
+  #cHour { font: 700 30px/1 var(--display); letter-spacing: .03em; font-variant-numeric: tabular-nums }
+  #cTit { flex: 1; min-width: 0; font: 700 17px/1.1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--green) }
+  #cNum { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); white-space: nowrap }
+  #cText { margin: 8px 0 0; font-size: 15px; line-height: 1.38; min-height: 4.14em }
+  #cCard.nuovo #cTit, #cCard.nuovo #cText { animation: nuovo .6s ease both } @keyframes nuovo { from { opacity: 0; transform: translateY(5px) } }
+  #cBar { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 900px); pointer-events: auto;
+    display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px) }
+  #cOpt { display: flex; gap: 8px; flex: none } #cGen[hidden] { display: none }
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden }
-  .seg button, #bPlay { min-height: 44px; padding: 0 16px; border: 0; background: transparent; font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
+  .seg button { white-space: nowrap; min-height: 40px; padding: 0 14px; border: 0; background: transparent; font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
   .seg button[aria-pressed=true] { background: var(--green); color: #10140f }
-  #bPlay { border: 1px solid var(--line); border-radius: 999px; min-width: 92px }
+  #cRun { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px }
+  .tondo { flex: none; width: 42px; height: 42px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; cursor: pointer; font: 600 24px/1 var(--display) }
+  .tondo:hover, .tondo:focus-visible { border-color: var(--green) }
+  #bPlay { width: 46px; height: 46px; background: var(--green); color: #10140f; border-color: transparent } #bPlay svg { width: 16px; height: 16px; fill: currentColor }
+  #cLine { position: relative; flex: 1; min-width: 0; height: 46px }
+  #cLine input { position: absolute; left: 0; right: 0; top: 0 }
+  #cMarks { position: absolute; left: 13px; right: 13px; top: 0; height: 34px; pointer-events: none }
+  .mk { position: absolute; top: 17px; width: 0; height: 0 }
+  .mk::before { content: ""; position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: #0d1216; border: 2px solid rgba(255,255,255,.65); transition: transform .3s }
+  .mk.fatto::before { background: var(--green); border-color: var(--green) } .mk.ora::before { background: #fff; border-color: #fff; transform: scale(1.7) }
+  .mk span { display: none; position: absolute; left: 0; top: 13px; transform: translateX(-50%); font: 600 11px/1 var(--body); color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums } .mk.ora span { display: block }
   input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer; --f: 30% }
-  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--f), rgba(255,255,255,.2) var(--f)) }
-  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.2) } input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--green) }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
-  input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
-  #ore { display: flex; justify-content: space-between; font: 500 11px/1 var(--body); color: var(--dim); font-variant-numeric: tabular-nums; margin-top: -6px }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, rgba(169,189,143,.55) var(--f), rgba(255,255,255,.2) var(--f)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.2) } input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: rgba(169,189,143,.55) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--green); border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--green); border: 3px solid #fff }
+  #cSheet { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--barH, 70px) + max(var(--pad), env(safe-area-inset-bottom)) + 10px); width: min(calc(100% - 2 * var(--pad)), 420px); pointer-events: auto;
+    padding: 14px 16px 16px; border-radius: 16px; background: rgba(13,18,22,.95); border: 1px solid var(--green); box-shadow: 0 12px 40px rgba(0,0,0,.5); display: grid; gap: 10px }
+  #cSheet[hidden] { display: none }
+  #shHead { display: flex; align-items: center; justify-content: space-between; gap: 12px } #shNome { font: 700 22px/1 var(--display); letter-spacing: .06em; text-transform: uppercase }
+  #shX { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 15px }
+  #shText { margin: 0; font-size: 15px; line-height: 1.4; min-height: 2.8em } #shApri { justify-self: start }
   .tag { position: absolute; left: 0; top: 0; pointer-events: auto; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--green); color: #10140f; font: 700 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
-    box-shadow: 0 6px 22px rgba(0,0,0,.45); white-space: nowrap }
+    box-shadow: 0 6px 22px rgba(0,0,0,.45); white-space: nowrap; transition: opacity .35s }
   .tag::after { content: ""; position: absolute; left: calc(50% + var(--sx, 0px)); top: 100%; width: 2px; height: var(--gambo, 14px); background: var(--green); transform: translateX(-50%) }
+  .tag.su { animation: pulsa 1.8s ease-in-out infinite } @keyframes pulsa { 50% { box-shadow: 0 0 0 7px rgba(169,189,143,.32), 0 6px 22px rgba(0,0,0,.45) } }
+  @media (max-width: 560px) {
+    #cCard { padding: 10px 14px 12px } #cHour { font-size: 26px } #cTit { font-size: 15px } #cText { font-size: 14px; min-height: 5.52em }
+    #cBar { flex-wrap: wrap; gap: 8px; padding: 8px 10px } #cOpt { width: 100%; justify-content: space-between } .seg button { min-height: 36px; padding: 0 9px; font-size: 12px; letter-spacing: .05em } #cRun { flex-basis: 100% }
+    #cLine { height: 34px } .mk span { display: none } .tag { min-height: 34px; padding: 0 12px; font-size: 13px } }
+  @media (max-height: 460px) {
+    #cCard { top: calc(max(var(--pad), env(safe-area-inset-top)) + 38px); width: min(36%, 300px); padding: 8px 12px 9px }
+    #cHead { flex-wrap: wrap; gap: 2px 10px } #cHour { font-size: 22px } #cTit { font-size: 14px } #cNum { display: none } #cText { margin-top: 5px; font-size: 12.5px; line-height: 1.32; min-height: 6.6em }
+    #cBar { width: min(calc(100% - 2 * var(--pad)), 820px); flex-wrap: nowrap; padding: 5px 8px; gap: 8px } #cOpt { width: auto } .seg button { min-height: 34px; padding: 0 9px; font-size: 11.5px }
+    .tondo { width: 36px; height: 36px; font-size: 20px } #bPlay { width: 40px; height: 40px } #cLine { height: 34px } .mk span { display: none } #bHome { min-height: 36px; font-size: 13px; padding: 0 12px }
+    #cSheet { padding: 10px 14px 12px; gap: 6px } #shNome { font-size: 18px } #shText { font-size: 13px; min-height: 0 } .tag { min-height: 32px; font-size: 12px } }
 
   #prod { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg) } #prod[hidden] { display: none }
   body[data-scena=prodotto] #top { display: none }
   body[data-scena=casa] #top { background: linear-gradient(rgba(5,8,10,.72), transparent) }
   #veil { position: absolute; inset: 0; background: var(--bg); opacity: 1; pointer-events: none; transition: opacity .38s ease }
   body.pronto #veil { opacity: 0 } body.pronto #veil.on { opacity: 1; pointer-events: auto }
-  @media (max-height: 460px) { #hName { font-size: 30px } #hInfo { gap: 5px; padding-top: 16px } #hNum, .credit, #hHint, #ore, #cPanel h2 { display: none } .big, .btn { min-height: 42px }
-    #cTop { top: var(--pad); left: calc(var(--pad) + 110px); right: calc(var(--pad) + 130px); flex-direction: row; align-items: center } #cCap { padding: 6px 12px; flex: 1; max-width: 520px } #cHour { font-size: 24px } #cText { min-height: 0; font-size: 12px; line-height: 1.25 }
-    #cPanel { flex-direction: row; align-items: center; padding: 6px 10px; gap: 12px; width: min(calc(100% - 2 * var(--pad)), 760px) } #cRow { flex-wrap: nowrap } .seg button, #bPlay { min-height: 40px; padding: 0 12px } #cGen { position: absolute; left: 0; bottom: calc(100% + 8px); background: var(--panel); backdrop-filter: blur(10px) } }
+  @media (max-height: 460px) { #hName { font-size: 30px } #hInfo { gap: 5px; padding-top: 16px } #hNum, .credit, #hHint { display: none } .big, .btn { min-height: 42px } }
   @media (max-width: 480px) { .freccia { top: 36% } }
   body.solo .freccia, body.solo #hNum { display: none }
   /* fotogramma per l'anteprima del link (og.jpg): si attiva da script con la classe "og" */
@@ -109,16 +136,29 @@
   </section>
 
   <section id="casa" class="scena" aria-label="La casa">
+    <div id="cSpot"></div>
     <div id="tags"></div>
-    <div id="cTop">
-      <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
-      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cCal" hidden></span><span id="cAcs">Acqua calda: pronta</span><span id="cFv" hidden></span><span id="cCli" hidden></span></span><p id="cText"></p></div>
+    <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
+    <div id="cCard">
+      <div id="cHead"><b id="cHour">06:15</b><span id="cTit"></span><span id="cNum"></span></div>
+      <p id="cText" aria-live="polite"></p>
     </div>
-    <div id="cPanel">
-      <div id="cRow"><h2>Una giornata in casa</h2><div class="seg"><button id="bInv" type="button" aria-pressed="true">Inverno</button><button id="bEst" type="button" aria-pressed="false">Estate</button></div><button id="bPlay" type="button" aria-pressed="true">Pausa</button></div>
-      <div class="seg" id="cGen" role="group" aria-label="Generatore" hidden><button id="bUhp" type="button" aria-pressed="true">Pompa di calore</button><button id="bIbr" type="button" aria-pressed="false">Ibrido</button></div>
-      <input type="range" id="sDay" min="0" max="24" step="0.05" value="7" aria-label="Ora del giorno">
-      <div id="ore"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+    <div id="cSheet" role="dialog" aria-labelledby="shNome" hidden>
+      <div id="shHead"><b id="shNome"></b><button id="shX" type="button" aria-label="Chiudi">&#10005;</button></div>
+      <p id="shText"></p>
+      <button class="big" id="shApri" type="button">Apri</button>
+    </div>
+    <div id="cBar">
+      <div id="cOpt">
+        <div class="seg" role="group" aria-label="Stagione"><button id="bInv" type="button" aria-pressed="true">Inverno</button><button id="bEst" type="button" aria-pressed="false">Estate</button></div>
+        <div class="seg" id="cGen" role="group" aria-label="Generatore" hidden><button id="bUhp" type="button" aria-pressed="true">Pompa di calore</button><button id="bIbr" type="button" aria-pressed="false">Ibrido</button></div>
+      </div>
+      <div id="cRun">
+        <button class="tondo" id="bIndietro" type="button" aria-label="Momento prima">&#8249;</button>
+        <button class="tondo" id="bPlay" type="button" aria-label="Pausa"></button>
+        <div id="cLine"><input type="range" id="sDay" min="0" max="24" step="0.05" value="6" aria-label="Ora del giorno"><div id="cMarks"></div></div>
+        <button class="tondo" id="bAvanti" type="button" aria-label="Momento dopo">&#8250;</button>
+      </div>
     </div>
   </section>
 

@@ -33,7 +33,7 @@
   .big:disabled { background: var(--panel); color: var(--dim); border-color: var(--line); cursor: default }
   .btn:hover, .btn:focus-visible { border-color: var(--green) } :focus-visible { outline: 2px solid var(--green); outline-offset: 2px }
 
-  #top { position: absolute; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none }
+  #top { position: absolute; z-index: 2; left: 0; right: 0; top: 0; padding: var(--pad); padding-top: max(var(--pad), env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none }
   #logo { width: clamp(84px, 13vmin, 124px); line-height: 0; filter: drop-shadow(0 1px 6px rgba(0,0,0,.35)) } #logo svg { width: 100%; height: auto }
   #by { font: 600 clamp(12px, 1.7vmin, 15px)/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; text-align: right; text-shadow: 0 1px 8px rgba(0,0,0,.6) } #by span { color: var(--green) }
 
@@ -51,41 +51,68 @@
   .freccia { position: absolute; top: 44%; width: 46px; height: 46px; padding: 0; font-size: 26px; letter-spacing: 0 } #bPrev { left: var(--pad) } #bNext { right: var(--pad) }
   #hHint { position: absolute; left: 0; right: 0; top: calc(var(--pad) + 62px); text-align: center; font: 500 13px/1.3 var(--body); color: var(--dim); letter-spacing: .04em; text-shadow: 0 1px 8px #000 }
 
-  /* Casa */
-  #cTop { position: absolute; left: var(--pad); right: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 54px); display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
-  #cCap { pointer-events: auto; max-width: 560px; padding: 12px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center }
-  #cHour { font: 700 clamp(30px, 6vmin, 44px)/1 var(--display); letter-spacing: .04em; font-variant-numeric: tabular-nums; grid-row: span 2 }
-  #cChip { display: flex; flex-wrap: wrap; gap: 6px } #cStato, #cAcs, #cFv, #cCal, #cCli { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.1) }
-  #cFv[data-m=s] { background: #ffd84a; color: #1b1605 } #cFv[hidden], #cCal[hidden], #cCli[hidden], #cGen[hidden] { display: none } #cCli { background: var(--ice); color: #05121b } #cGen { align-self: flex-start } #cCal[data-m=on] { background: #ff5a2a; color: #1b0805 }
-  #cAcs[data-m=c] { background: #ff6a4a; color: #1b0805 } #cAcs[data-m=r] { background: rgba(255,154,77,.28) }
-  #cStato[data-m=c] { background: var(--heat); color: #1b0f05 } #cStato[data-m=f] { background: var(--ice); color: #05121b }
-  #cText { margin: 0; font-size: clamp(13px, 1.9vmin, 15px); line-height: 1.35; min-height: 2.7em }
-  #cPanel { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 640px); pointer-events: auto; padding: 12px 14px 10px; border-radius: 16px;
-    background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 10px }
-  #cPanel h2 { margin: 0; font: 600 13px/1 var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--dim) }
-  #cRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: space-between }
+  /* Casa: la giornata a momenti */
+  body[data-scena=casa] #by { display: none }
+  #bHome { position: absolute; right: var(--pad); top: max(var(--pad), env(safe-area-inset-top)); pointer-events: auto; min-height: 40px; padding: 0 14px; font-size: 14px }
+  #cSpot { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: radial-gradient(ellipse var(--rx, 40vw) var(--ry, 40vh) at var(--sx, 50%) var(--sy, 50%), rgba(4,7,9,0) 50%, rgba(4,7,9,.5) 100%) }
+  #cCard { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 52px); width: min(calc(100% - 2 * var(--pad)), 440px); pointer-events: auto;
+    padding: 12px 16px 14px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px) }
+  #cHead { display: flex; align-items: center; gap: 12px }
+  #cHour { font: 700 30px/1 var(--display); letter-spacing: .03em; font-variant-numeric: tabular-nums }
+  #cTit { flex: 1; min-width: 0; font: 700 17px/1.1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--green) }
+  #cNum { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); white-space: nowrap }
+  #cText { margin: 8px 0 0; font-size: 15px; line-height: 1.38; min-height: 4.14em }
+  #cCard.nuovo #cTit, #cCard.nuovo #cText { animation: nuovo .6s ease both } @keyframes nuovo { from { opacity: 0; transform: translateY(5px) } }
+  #cBar { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 900px); pointer-events: auto;
+    display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px) }
+  #cOpt { display: flex; gap: 8px; flex: none } #cGen[hidden] { display: none }
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden }
-  .seg button, #bPlay { min-height: 44px; padding: 0 16px; border: 0; background: transparent; font: 600 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
+  .seg button { white-space: nowrap; min-height: 40px; padding: 0 14px; border: 0; background: transparent; font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
   .seg button[aria-pressed=true] { background: var(--green); color: #10140f }
-  #bPlay { border: 1px solid var(--line); border-radius: 999px; min-width: 92px }
+  #cRun { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px }
+  .tondo { flex: none; width: 42px; height: 42px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; cursor: pointer; font: 600 24px/1 var(--display) }
+  .tondo:hover, .tondo:focus-visible { border-color: var(--green) }
+  #bPlay { width: 46px; height: 46px; background: var(--green); color: #10140f; border-color: transparent } #bPlay svg { width: 16px; height: 16px; fill: currentColor }
+  #cLine { position: relative; flex: 1; min-width: 0; height: 46px }
+  #cLine input { position: absolute; left: 0; right: 0; top: 0 }
+  #cMarks { position: absolute; left: 13px; right: 13px; top: 0; height: 34px; pointer-events: none }
+  .mk { position: absolute; top: 17px; width: 0; height: 0 }
+  .mk::before { content: ""; position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: #0d1216; border: 2px solid rgba(255,255,255,.65); transition: transform .3s }
+  .mk.fatto::before { background: var(--green); border-color: var(--green) } .mk.ora::before { background: #fff; border-color: #fff; transform: scale(1.7) }
+  .mk span { display: none; position: absolute; left: 0; top: 13px; transform: translateX(-50%); font: 600 11px/1 var(--body); color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums } .mk.ora span { display: block }
   input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer; --f: 30% }
-  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--green) var(--f), rgba(255,255,255,.2) var(--f)) }
-  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.2) } input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--green) }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
-  input[type=range]::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 0 }
-  #ore { display: flex; justify-content: space-between; font: 500 11px/1 var(--body); color: var(--dim); font-variant-numeric: tabular-nums; margin-top: -6px }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, rgba(169,189,143,.55) var(--f), rgba(255,255,255,.2) var(--f)) }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.2) } input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: rgba(169,189,143,.55) }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--green); border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--green); border: 3px solid #fff }
+  #cSheet { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--barH, 70px) + max(var(--pad), env(safe-area-inset-bottom)) + 10px); width: min(calc(100% - 2 * var(--pad)), 420px); pointer-events: auto;
+    padding: 14px 16px 16px; border-radius: 16px; background: rgba(13,18,22,.95); border: 1px solid var(--green); box-shadow: 0 12px 40px rgba(0,0,0,.5); display: grid; gap: 10px }
+  #cSheet[hidden] { display: none }
+  #shHead { display: flex; align-items: center; justify-content: space-between; gap: 12px } #shNome { font: 700 22px/1 var(--display); letter-spacing: .06em; text-transform: uppercase }
+  #shX { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 15px }
+  #shText { margin: 0; font-size: 15px; line-height: 1.4; min-height: 2.8em } #shApri { justify-self: start }
   .tag { position: absolute; left: 0; top: 0; pointer-events: auto; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--green); color: #10140f; font: 700 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
-    box-shadow: 0 6px 22px rgba(0,0,0,.45); white-space: nowrap }
+    box-shadow: 0 6px 22px rgba(0,0,0,.45); white-space: nowrap; transition: opacity .35s }
   .tag::after { content: ""; position: absolute; left: calc(50% + var(--sx, 0px)); top: 100%; width: 2px; height: var(--gambo, 14px); background: var(--green); transform: translateX(-50%) }
+  .tag.su { animation: pulsa 1.8s ease-in-out infinite } @keyframes pulsa { 50% { box-shadow: 0 0 0 7px rgba(169,189,143,.32), 0 6px 22px rgba(0,0,0,.45) } }
+  @media (max-width: 560px) {
+    #cCard { padding: 10px 14px 12px } #cHour { font-size: 26px } #cTit { font-size: 15px } #cText { font-size: 14px; min-height: 5.52em }
+    #cBar { flex-wrap: wrap; gap: 8px; padding: 8px 10px } #cOpt { width: 100%; justify-content: space-between } .seg button { min-height: 36px; padding: 0 9px; font-size: 12px; letter-spacing: .05em } #cRun { flex-basis: 100% }
+    #cLine { height: 34px } .mk span { display: none } .tag { min-height: 34px; padding: 0 12px; font-size: 13px } }
+  @media (max-height: 460px) {
+    #cCard { top: calc(max(var(--pad), env(safe-area-inset-top)) + 38px); width: min(36%, 300px); padding: 8px 12px 9px }
+    #cHead { flex-wrap: wrap; gap: 2px 10px } #cHour { font-size: 22px } #cTit { font-size: 14px } #cNum { display: none } #cText { margin-top: 5px; font-size: 12.5px; line-height: 1.32; min-height: 6.6em }
+    #cBar { width: min(calc(100% - 2 * var(--pad)), 820px); flex-wrap: nowrap; padding: 5px 8px; gap: 8px } #cOpt { width: auto } .seg button { min-height: 34px; padding: 0 9px; font-size: 11.5px }
+    .tondo { width: 36px; height: 36px; font-size: 20px } #bPlay { width: 40px; height: 40px } #cLine { height: 34px } .mk span { display: none } #bHome { min-height: 36px; font-size: 13px; padding: 0 12px }
+    #cSheet { padding: 10px 14px 12px; gap: 6px } #shNome { font-size: 18px } #shText { font-size: 13px; min-height: 0 } .tag { min-height: 32px; font-size: 12px } }
 
   #prod { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg) } #prod[hidden] { display: none }
   body[data-scena=prodotto] #top { display: none }
   body[data-scena=casa] #top { background: linear-gradient(rgba(5,8,10,.72), transparent) }
   #veil { position: absolute; inset: 0; background: var(--bg); opacity: 1; pointer-events: none; transition: opacity .38s ease }
   body.pronto #veil { opacity: 0 } body.pronto #veil.on { opacity: 1; pointer-events: auto }
-  @media (max-height: 460px) { #hName { font-size: 30px } #hInfo { gap: 5px; padding-top: 16px } #hNum, .credit, #hHint, #ore, #cPanel h2 { display: none } .big, .btn { min-height: 42px }
-    #cTop { top: var(--pad); left: calc(var(--pad) + 110px); right: calc(var(--pad) + 130px); flex-direction: row; align-items: center } #cCap { padding: 6px 12px; flex: 1; max-width: 520px } #cHour { font-size: 24px } #cText { min-height: 0; font-size: 12px; line-height: 1.25 }
-    #cPanel { flex-direction: row; align-items: center; padding: 6px 10px; gap: 12px; width: min(calc(100% - 2 * var(--pad)), 760px) } #cRow { flex-wrap: nowrap } .seg button, #bPlay { min-height: 40px; padding: 0 12px } #cGen { position: absolute; left: 0; bottom: calc(100% + 8px); background: var(--panel); backdrop-filter: blur(10px) } }
+  @media (max-height: 460px) { #hName { font-size: 30px } #hInfo { gap: 5px; padding-top: 16px } #hNum, .credit, #hHint { display: none } .big, .btn { min-height: 42px } }
   @media (max-width: 480px) { .freccia { top: 36% } }
   body.solo .freccia, body.solo #hNum { display: none }
   /* fotogramma per l'anteprima del link (og.jpg): si attiva da script con la classe "og" */
@@ -113,16 +140,29 @@
   </section>
 
   <section id="casa" class="scena" aria-label="La casa">
+    <div id="cSpot"></div>
     <div id="tags"></div>
-    <div id="cTop">
-      <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
-      <div id="cCap"><b id="cHour">07:00</b><span id="cChip"><span id="cStato">A riposo</span><span id="cCal" hidden></span><span id="cAcs">Acqua calda: pronta</span><span id="cFv" hidden></span><span id="cCli" hidden></span></span><p id="cText"></p></div>
+    <button class="btn" id="bHome" type="button">&#8249; Prodotti</button>
+    <div id="cCard">
+      <div id="cHead"><b id="cHour">06:15</b><span id="cTit"></span><span id="cNum"></span></div>
+      <p id="cText" aria-live="polite"></p>
     </div>
-    <div id="cPanel">
-      <div id="cRow"><h2>Una giornata in casa</h2><div class="seg"><button id="bInv" type="button" aria-pressed="true">Inverno</button><button id="bEst" type="button" aria-pressed="false">Estate</button></div><button id="bPlay" type="button" aria-pressed="true">Pausa</button></div>
-      <div class="seg" id="cGen" role="group" aria-label="Generatore" hidden><button id="bUhp" type="button" aria-pressed="true">Pompa di calore</button><button id="bIbr" type="button" aria-pressed="false">Ibrido</button></div>
-      <input type="range" id="sDay" min="0" max="24" step="0.05" value="7" aria-label="Ora del giorno">
-      <div id="ore"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+    <div id="cSheet" role="dialog" aria-labelledby="shNome" hidden>
+      <div id="shHead"><b id="shNome"></b><button id="shX" type="button" aria-label="Chiudi">&#10005;</button></div>
+      <p id="shText"></p>
+      <button class="big" id="shApri" type="button">Apri</button>
+    </div>
+    <div id="cBar">
+      <div id="cOpt">
+        <div class="seg" role="group" aria-label="Stagione"><button id="bInv" type="button" aria-pressed="true">Inverno</button><button id="bEst" type="button" aria-pressed="false">Estate</button></div>
+        <div class="seg" id="cGen" role="group" aria-label="Generatore" hidden><button id="bUhp" type="button" aria-pressed="true">Pompa di calore</button><button id="bIbr" type="button" aria-pressed="false">Ibrido</button></div>
+      </div>
+      <div id="cRun">
+        <button class="tondo" id="bIndietro" type="button" aria-label="Momento prima">&#8249;</button>
+        <button class="tondo" id="bPlay" type="button" aria-label="Pausa"></button>
+        <div id="cLine"><input type="range" id="sDay" min="0" max="24" step="0.05" value="6" aria-label="Ora del giorno"><div id="cMarks"></div></div>
+        <button class="tondo" id="bAvanti" type="button" aria-label="Momento dopo">&#8250;</button>
+      </div>
     </div>
   </section>
 
@@ -568,10 +608,17 @@ const Casa = (() => {
 
   // tubi: dal retro della macchina alla parete, su fino al collettore, poi le serpentine a pavimento
   const tFlow = cv(64, 8, (c, w, h) => { const gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#8c8c8c'); gr.addColorStop(.5, '#ffffff'); gr.addColorStop(.6, '#8c8c8c'); gr.addColorStop(1, '#8c8c8c'); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
+  // scia luminosa attorno al tubo: si accende nei momenti della giornata in cui quel tubo porta qualcosa al prodotto inquadrato (calore, acqua, energia)
+  const tScia = cv(128, 8, (c, w, h) => { const gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.45, 'rgba(255,255,255,0)'); gr.addColorStop(.75, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
   const tubi = [];
   function tubo(pts, r, verso, ramo) {
-    const c = spezzata(pts, .05), len = c.getLength(), tx = tFlow.clone(); tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(Math.max(1, len / .32), 1); tx.needsUpdate = true;
-    const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, Math.max(16, Math.round(len * 40)), r, 6), m, 0, 0, 0, dest); tubi.push({ m, tx, verso, ramo });
+    const c = spezzata(pts, .05), len = c.getLength(), tx = tFlow.clone(), seg = Math.max(16, Math.round(len * 40)), rp = Math.max(1, len / .32), rg = Math.max(1, len / .9);
+    tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(rp, 1); tx.needsUpdate = true;
+    const m = new THREE.MeshBasicMaterial({ map: tx }); add(new THREE.TubeGeometry(c, seg, r, 6), m, 0, 0, 0, dest);
+    const gx = tScia.clone(); gx.wrapS = THREE.RepeatWrapping; gx.repeat.set(rg, 1); gx.needsUpdate = true;
+    const gm = new THREE.MeshBasicMaterial({ map: gx, transparent: true, opacity: 0, depthWrite: false }), scia = add(new THREE.TubeGeometry(c, seg, r * 2.2 + .006, 8), gm, 0, 0, 0, dest);
+    scia.visible = false; scia.renderOrder = 2;
+    tubi.push({ m, tx, verso, ramo, gm, gx, scia, sc: rg / rp });     // sc: la scia va alla stessa velocità del disegno del tubo
   }
   const aM = ist.group.localToWorld(ist.attacchi.mandata.clone()), aR = ist.group.localToWorld(ist.attacchi.ritorno.clone());
   const dietro = V(0, 0, -1).applyAxisAngle(V(0, 1, 0), POSTO.yaw), XI = HW - TW - .05, ZI = -HD + TW + .06, COL = { x: HW - TW - .4, y: FY + .32 };   // collettore in basso a destra: sopra stanno il kit HYBREER e la caldaia (tappa 4)
@@ -705,6 +752,28 @@ const Casa = (() => {
   // sole in cielo
   const sole = add(new THREE.SphereGeometry(1.5, 20, 14), new THREE.MeshBasicMaterial({ color: 0xfff1c9, fog: false }), 0, 0, 0);
 
+  // persone: sagome semplici, solo per far capire i momenti della giornata (chi fa la doccia, chi la sera sta sul divano). Generiche, non a misura.
+  const caps = (r, l) => new THREE.CapsuleGeometry(r, l, 4, 12);
+  function persona(posa, x, y, z) {
+    const p = new THREE.Group(), m = std({ color: 0xc9d2da, roughness: .6, transparent: true, opacity: 0 });
+    const pz = (geo, px, py, pzz, rx = 0, rz = 0) => { const o = mesh(geo, m, px, py, pzz); o.rotation.set(rx, 0, rz); p.add(o); return o; };
+    if (posa === 'seduta') {          // origine sulla seduta: cosce in avanti, gambe giù fino al pavimento (43 cm più in basso)
+      for (const sx of [-1, 1]) { pz(caps(.068, .3), sx * .1, .07, .2, PI / 2); pz(caps(.056, .32), sx * .1, -.19, .43); pz(caps(.045, .34), sx * .21, .36, .08, .45); }
+      pz(caps(.15, .26), 0, .37, -.03, -.1).scale.set(1, 1, .7); pz(cyl(.045, .1, 12), 0, .66, -.05); pz(new THREE.SphereGeometry(.105, 18, 14), 0, .8, -.04);
+    } else {                          // in piedi, origine ai piedi; sotto la doccia con le mani alla testa
+      const d = posa === 'doccia';
+      for (const sx of [-1, 1]) { pz(caps(.066, .72), sx * .095, .43, 0); if (d) pz(caps(.045, .2), sx * .15, 1.55, .03, 0, sx * .43); else pz(caps(.045, .5), sx * .23, 1.1, .02); }
+      pz(caps(.155, .3), 0, 1.13, 0).scale.set(1, 1, .68); pz(cyl(.045, .1, 12), 0, 1.47, 0); pz(new THREE.SphereGeometry(.105, 18, 14), 0, 1.6, 0);
+    }
+    p.position.set(x, y, z); p.visible = false; g.add(p); return { p, m };
+  }
+  const pDoccia = persona('doccia', .56, FY + .06, -1.9);     // accanto al getto: l'acqua che scende si vede
+  const pDivano = [persona('seduta', -1.6, FY + .43, -1.92), persona('seduta', -2.2, FY + .43, -1.92)];
+  // acqua della doccia: gocce che scendono dal soffione quando la doccia è aperta
+  const ND = 110, dPos = new Float32Array(ND * 3), RD = rng(77), dSeed = Array.from({ length: ND }, () => [RD(), RD(), RD()]), SOFF = V(.3, FY + 1.96, -HD + TW + .26);
+  const gocce = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(dPos, 3)), new THREE.PointsMaterial({ size: .055, color: 0x5cb8ff, transparent: true, opacity: 0, depthWrite: false }));
+  gocce.frustumCulled = false; g.add(gocce);
+
   // ───────── la giornata ─────────
   const S = { t: 6.4, estate: false, play: true, gen: 'uhp', caldaia: 0, carico: 0, fcoil: 0, mono: 0, dual: 0, doccia: 0, caldo: 1, ricarica: false, fv: !!fvDef, pv: 0, ld: 0, bat: 0, rete: 0, soc: .5, sole: false };
   const C = (h) => new THREE.Color(h), NOTTE = C(0x070b12), ALBA = C(0x6a5a6e), GI = C(0x86a5bf), GE = C(0x6aa6dc), tmp = C(0), CALDO = C(0xff7a2a), FREDDO = C(0x3fa9ff);
@@ -745,7 +814,7 @@ const Casa = (() => {
       r[i] = { pv, ld, b, rete: av - b, soc }; }
     return r; });
   const fase = (t, estate) => { const f = FASI[(estate ? 'estate' : 'inverno') + (S.gen === 'ibrido' ? '_ibrido' : '')]; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
-  let onStato = () => {}; const VEL = {};
+  let onStato = () => {}; const VEL = {}, BIANCO = C(0xffffff);
   function applica() {
     const { t, estate } = S, alba = estate ? 5.6 : 7.7, tram = estate ? 21 : 16.8, k = clamp((t - alba) / (tram - alba)), su = t > alba && t < tram ? Math.sin(k * PI) : 0;
     const giorno = sm(0, .22, su), crep = sm(0, .1, su) * (1 - sm(.12, .4, su));
@@ -753,7 +822,7 @@ const Casa = (() => {
     sole.position.set(-Math.cos(phi) * 34, 3 + su * hMax * 30, 14 - 30 * (1 - su * .25)); sole.visible = su > 0; sole.material.color.setHSL(.11, 1, .6 + .3 * giorno);
     sun.position.copy(sole.position).setZ(16); sun.intensity = 2.6 * giorno; sun.color.setHSL(.09, .5 + .4 * crep, .92 - .2 * crep);
     scene.background.copy(NOTTE).lerp(ALBA, crep).lerp(estate ? GE : GI, giorno); scene.fog.color.copy(scene.background); hemi.intensity = .22 + .55 * giorno; hemi.color.copy(scene.background).lerp(tmp.set(0xffffff), .5);
-    ground.material.color.set(estate ? 0x5c7a45 : 0x66705a); vetro.color.copy(scene.background).lerp(tmp.set(0xffffff), .25 * giorno);
+    ground.material.color.set(estate ? 0x5c7a45 : 0x66705a).multiplyScalar(.22 + .78 * sm(0, .3, su + crep)); vetro.color.copy(scene.background).lerp(tmp.set(0xffffff), .25 * giorno);
     const sveglia = t > 6 && t < 23.4, luci = (1 - giorno) * (sveglia ? 1 : 0);
     lampade.forEach(l => { l.intensity = l.userData.max * luci; }); lampM.color.setHSL(.1, .8, .12 + .7 * luci);
     S.carico = carico(t, estate); S.fcoil = sm(.02, .3, S.carico); const cl = clima(t, estate); S.dual = cl.dual; S.mono = cl.mono;
@@ -767,18 +836,116 @@ const Casa = (() => {
     const RAMO = { pdcM: 'mandata', pdcR: 'ritorno' };
     for (const tb of tubi) { if (tb.ramo === 'calM' || tb.ramo === 'calR') tb.m.color.copy(COL_T.fermo).lerp(tb.ramo === 'calM' ? COL_T.calC : COL_T.ritornoC, S.caldaia); else if (tb.ramo in RAMO) tb.m.color.copy(COL_T.fermo).lerp(COL_T[RAMO[tb.ramo] + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); else if (tb.ramo in ATT) tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo], ATT[tb.ramo]); else tb.m.color.copy(COL_T.fermo).lerp(COL_T[tb.ramo + (estate ? 'F' : 'C')], sm(0, .15, S.carico)); }
     aria.material.opacity = .55 * sm(.02, .3, S.carico); aria.material.color.set(estate ? 0xffc9a0 : 0xbfe6ff);
-    onStato(S, fase(t, estate));
+    notifica();
   }
-  // camera a orbita limitata: trascina per girare, pizzica o rotella per avvicinarti
-  const cam = { az: rad(-7), el: rad(20), zoom: 1, dist: 20, tgt: V(.75, 1.2, 0) }; let W = 1, H = 1;
-  function resize(w, h) { W = w; H = h; camera.aspect = w / h; camera.fov = w < h ? 40 : 30; camera.updateProjectionMatrix();
-    const vf = rad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect); const stretto = w < h, basso = h < 460; cam.dist = Math.max((stretto ? 4.8 : 5.6) / Math.tan(hf), (basso ? 5.6 : 4.7) / Math.tan(vf)) + 2.6; cam.tgt.set(stretto ? 1.0 : .75, stretto ? 2.9 : basso ? 2.7 : 2.5, 0); if (stretto && !mossaCam) cam.el = rad(27); }
+  // ───────── la giornata a momenti (richiesta di Bore del 15 novembre 2026) ─────────
+  // La giornata si ferma su pochi momenti: la camera va sul prodotto che lavora, intorno si fa ombra, una frase spiega cosa succede.
+  // Tra un momento e l'altro l'orologio corre; finita la giornata si passa all'altra stagione. Con la barra si va a un'ora qualsiasi (giornata libera).
+  // Le frasi dicono solo quello che la giornata qualitativa qui sopra fa davvero a quell'ora; l'unico numero è il 65 °C del contatto fotovoltaico dell'HP 300PSDX.
+  // Inquadrature: centro, raggio da far stare nella parte libera dello schermo, azimut e alzo in gradi. "casa" = tutta la casa.
+  const QUADRI = {
+    calore: { c: V(.9, 1.0, .1), r: 4.2, az: -7, el: 21 },          // pompa di calore, pavimento e ventilconvettore
+    ibrido: { c: V(2.75, 1.25, -.5), r: 2.7, az: -14, el: 15 },     // HP_QOR fuori, caldaia e kit in lavanderia
+    doccia: { c: V(1.25, 1.2, -1.6), r: 1.75, az: -4, el: 12 },     // HP 300PSDX e doccia
+    sole: { c: V(.15, 4.0, -.7), r: 3.4, az: -7, el: 15 },          // moduli sul tetto, inverter e batteria in mansarda (più in alto il tetto copre la mansarda)
+    soleAcqua: { c: V(.8, 3.0, -1.2), r: 4.2, az: -7, el: 21 },     // tetto, mansarda e lavanderia
+    mansarda: { c: V(0, 3.9, -.4), r: 3.5, az: -7, el: 17 },        // le due console del dual
+    soggiorno: { c: V(-2.3, 1.45, .6), r: 2.3, az: 16, el: 10 },   // YA3 sulla parete di sinistra (vista da destra, se no la copre il muro) e il divano
+  };
+  const MO = (t, titolo, testo, chi, quadro) => ({ t, titolo, testo, chi, quadro });
+  const SOLE_I = [MO(12.5, 'Il sole lavora', 'Il fotovoltaico sul tetto alimenta la casa. Quello che avanza carica la batteria in mansarda.', ['fv'], 'sole'),
+    MO(13.5, 'Sole in più', 'Con il sole che avanza l\'HP 300PSDX porta l\'acqua a 65 °C: la mette da parte per la sera.', ['fv', 'acs'], 'soleAcqua')];
+  const ESTATE = gen => [
+    MO(7.2, 'Mattino', 'La casa è ancora fresca e tutto riposa. Per la doccia l\'acqua calda è già pronta nell\'HP 300PSDX.', ['acs'], 'doccia'),
+    MO(10.25, 'Il sole scalda la casa', gen === 'ibrido' ? 'Parte il raffrescamento: la pompa di calore lavora al contrario e porta fuori il calore della casa. D\'estate la caldaia resta spenta.'
+      : 'Parte il raffrescamento: la pompa di calore lavora al contrario e porta fuori il calore della casa. Pavimento e ventilconvettore rinfrescano.', [gen, 'fcoil'], 'calore'),
+    MO(12.25, 'Sotto il tetto', 'La mansarda si scalda per prima: partono le due console del climatizzatore dual.', ['clima'], 'mansarda'),
+    MO(13.5, 'Pieno sole', 'Il fotovoltaico copre quello che serve alla casa e carica la batteria. Con il sole in più l\'acqua calda sale a 65 °C.', ['fv', 'acs'], 'soleAcqua'),
+    MO(15, 'Le ore più calde', 'In soggiorno aiuta anche il climatizzatore a parete. Fuori, la sua unità esterna butta via il calore.', ['clima'], 'soggiorno'),
+    MO(21, 'Sera', 'Il sole è andato: la casa va con la batteria caricata di giorno. Fuori rinfresca e i climatizzatori si spengono.', ['fv'], null)];
+  const MOMENTI = {
+    inverno: [
+      MO(6.25, 'Prima della sveglia', 'Fuori fa freddo. La pompa di calore prende calore dall\'aria e lo passa all\'acqua: pavimento e ventilconvettore scaldano la casa.', ['uhp', 'fcoil'], 'calore'),
+      MO(7.2, 'La doccia', 'L\'acqua calda esce dall\'HP 300PSDX, che la tiene pronta nel suo serbatoio. Finita la doccia si ricarica da solo.', ['acs'], 'doccia'),
+      ...SOLE_I,
+      MO(17.5, 'Tramonto', 'Il sole è andato: la casa va con l\'energia della batteria. Fuori torna il freddo e la pompa di calore lavora di più.', ['fv', 'uhp'], null),
+      MO(23, 'Notte', 'La batteria è scarica: il poco che serve arriva dalla rete. La pompa di calore rallenta e tiene la casa calda fino al mattino.', ['uhp', 'rete'], 'calore')],
+    inverno_ibrido: [
+      MO(2.5, 'Notte fonda', 'Fuori scende sotto la soglia impostata: si accende la caldaia e lavora insieme alla pompa di calore.', ['ibrido'], 'ibrido'),
+      MO(6.25, 'Prima della sveglia', 'Pompa di calore e caldaia insieme: pavimento e ventilconvettore scaldano la casa prima che vi alziate.', ['ibrido', 'fcoil'], 'calore'),
+      MO(7.2, 'La doccia', 'La caldaia scalda solo la casa: l\'acqua calda della doccia la fa l\'HP 300PSDX, con la sua pompa di calore.', ['acs'], 'doccia'),
+      MO(9.25, 'Si spegne la caldaia', 'Fuori si scalda: la caldaia si spegne e resta solo la pompa di calore, che consuma meno.', ['ibrido'], 'ibrido'),
+      ...SOLE_I,
+      MO(17.5, 'Tramonto', 'Il sole è andato: la casa va con l\'energia della batteria. Fuori torna il freddo e la pompa di calore lavora di più.', ['fv', 'ibrido'], null)],
+    estate: ESTATE('uhp'), estate_ibrido: ESTATE('ibrido'),
+  };
+  const chiave = (estate = S.estate) => (estate ? 'estate' : 'inverno') + (S.gen === 'ibrido' ? '_ibrido' : '');
+  const lista = (estate = S.estate) => MOMENTI[chiave(estate)];
+  const SOSTA = 7.5, DERIVA = .3;     // secondi di sosta su ogni momento; ore che intanto l'orologio avanza piano
+  const R = { modo: 'auto', i: 0, m: null, fase: 'sosta', k: 0, da: 0, a: 0, dur: 1, dopo: 0, gira: false, girata: false, largo: false, qDopo: null, foco: 0, ombra: 0 };
+  const RAMI = { rete: ['rete', 'casa'], uhp: ['mandata', 'ritorno'], ibrido: ['pdcM', 'pdcR', 'calM', 'calR', 'mandata', 'ritorno', 'gas'], acs: ['acs', 'fredda'], fv: ['fv', 'bat', 'casa', 'rete'] };
+  const attivo = r => r === 'mandata' || r === 'ritorno' || r === 'pdcM' || r === 'pdcR' ? sm(0, .15, S.carico) : r === 'calM' || r === 'calR' || r === 'gas' ? S.caldaia
+    : r === 'acs' || r === 'fredda' ? S.doccia : r === 'fv' ? sm(0, .08, S.pv) : r === 'bat' ? sm(0, .02, Math.abs(S.bat)) : r === 'rete' ? sm(0, .02, Math.abs(S.rete)) : r === 'casa' ? 1 : 0;
+  let accesi = new Set();
+  function entraIn(i) { const L = lista(); R.i = clamp(i | 0, 0, L.length - 1); R.m = L[R.i]; R.fase = 'sosta'; R.k = 0; R.gira = false; S.t = R.m.t; inquadra(R.m.quadro); applica(); }
+  // verso il momento i (oltre l'ultimo: primo momento dell'altra stagione, passando la mezzanotte)
+  function corri(i, rapido, daLibero) {
+    const L = lista(); let gira = false; if (i >= L.length) { i = 0; gira = true; } if (i < 0) i = L.length - 1;
+    const dopo = (gira ? lista(!S.estate) : L)[i];
+    Object.assign(R, { fase: 'corsa', k: 0, da: S.t, dopo: i, gira, girata: false, a: gira ? dopo.t + 24 : dopo.t, qDopo: dopo.quadro });
+    R.dur = rapido ? 1.1 : clamp(Math.abs(R.a - R.da) * .3, 1.6, 3.2);
+    const qa = daLibero || !R.m ? null : QUADRI[R.m.quadro], qb = QUADRI[dopo.quadro];
+    R.largo = !!(qa && qb && qa.c.distanceTo(qb.c) > 2);      // quadri lontani: a metà corsa la camera si allarga sulla casa
+    inquadra(R.largo ? null : dopo.quadro);
+  }
+  function finisciCorsa() { if (R.gira && !R.girata) S.estate = !S.estate; entraIn(R.dopo); }
+  function regia(dt) {
+    if (R.modo === 'auto') { R.k += dt;
+      if (R.fase === 'sosta') { S.t = R.m.t + DERIVA * Math.min(1, R.k / SOSTA); if (R.k >= SOSTA) corri(R.i + 1); applica(); }
+      else { const u = Math.min(1, R.k / R.dur), t = lerp(R.da, R.a, eio(u));
+        if (R.gira && !R.girata && t >= 24) { R.girata = true; S.estate = !S.estate; }
+        S.t = ((t % 24) + 24) % 24; if (R.largo && u > .45 && quadro !== R.qDopo) inquadra(R.qDopo);
+        if (u >= 1) finisciCorsa(); else applica(); } }
+    const fermo = R.modo !== 'libero' && R.fase === 'sosta', a = Math.min(1, dt * 3);
+    R.foco += ((fermo ? 1 : 0) - R.foco) * a; R.ombra += ((fermo && R.m && QUADRI[R.m.quadro] ? 1 : 0) - R.ombra) * a;
+    accesi = new Set(fermo && R.m ? R.m.chi.flatMap(c => RAMI[c] || []) : []);
+  }
+  function info() { const lib = R.modo === 'libero', L = lista();
+    return { modo: R.modo, fase: R.fase, i: lib || (R.fase === 'corsa' && R.girata) ? -1 : R.i, n: L.length, lista: L, chiave: chiave(), ombra: R.ombra,
+      titolo: lib ? (S.estate ? 'Estate' : 'Inverno') : R.m.titolo, testo: lib ? fase(S.t, S.estate) : R.m.testo, chi: lib || R.fase !== 'sosta' ? [] : R.m.chi }; }
+  function notifica() { S.play = R.modo === 'auto'; onStato(S, info()); }
+  // cosa sta facendo adesso un prodotto (scheda che si apre toccandolo)
+  function descrivi(id) { const est = S.estate, c = S.carico;
+    if (id === 'uhp') return c < .03 ? 'Ferma: la casa è già alla temperatura giusta.' : est ? 'Raffresca' + (c > .6 ? '' : ' piano') + ': lavora al contrario e porta fuori il calore della casa.' : 'Riscalda' + (c > .6 ? ' forte' : ' piano') + ': prende calore dall\'aria di fuori e lo passa all\'acqua dell\'impianto.';
+    if (id === 'ibrido') return S.caldaia > .5 ? 'Fa molto freddo: la caldaia è accesa e lavora insieme alla pompa di calore.' : c < .03 ? 'Ferma: la casa è già alla temperatura giusta.' : est ? 'Raffresca solo la pompa di calore: d\'estate la caldaia resta spenta.' : 'Lavora solo la pompa di calore, che consuma meno. Se fuori fa più freddo si accende anche la caldaia.';
+    if (id === 'acs') return S.doccia ? 'Doccia aperta: dal serbatoio esce l\'acqua calda, entra quella fredda.' : S.sole ? 'C\'è sole in più: porta l\'acqua a 65 °C.' : S.ricarica ? 'Si ricarica: la sua pompa di calore riscalda l\'acqua nel serbatoio.' : 'L\'acqua calda è pronta nel serbatoio.';
+    if (id === 'fv') return S.pv > .05 ? (S.bat > .01 ? 'Il sole alimenta la casa e carica la batteria.' : S.rete > .02 ? 'Batteria piena: il sole alimenta la casa e il resto va in rete.' : S.rete < -.02 ? 'Poco sole: la rete aiuta.' : 'Il sole alimenta la casa.') : S.bat < -.01 ? 'Buio: la batteria alimenta la casa.' : 'Buio e batteria scarica: la casa prende dalla rete.';
+    if (id === 'fcoil') return S.fcoil < .05 ? 'Spento.' : est ? 'Soffia aria fresca in soggiorno.' : 'Soffia aria calda in soggiorno.';
+    if (id === 'clima') return S.mono > .5 && S.dual > .5 ? 'Accesi: il climatizzatore a parete in soggiorno e le due console in mansarda.' : S.dual > .5 ? 'Accese le due console in mansarda, sotto il tetto.' : S.mono > .5 ? 'Acceso il climatizzatore a parete in soggiorno.' : est ? 'Spenti: per ora basta la pompa di calore.' : 'Spenti: d\'inverno scaldano la pompa di calore, il pavimento e il ventilconvettore.';
+    return ''; }
+
+  // camera: segue l'inquadratura del momento; trascinando si gira a mano (e la giornata si ferma). La parte libera dello schermo (fuori da riquadro e barra)
+  // la dà l'interfaccia: il centro della camera finisce al centro di quella parte.
+  const cam = { az: rad(-7), el: rad(19), zoom: 1, dist: 20, tgt: V(.6, 2.6, 0) }; let W = 1, H = 1, tv = .27, th = .27, segui = true, quadro = null, entrata = false;
+  const base = { tgt: V(.6, 2.6, 0), dist: 20, az: rad(-7), el: rad(19) }, meta = { tgt: V(), dist: 20, az: 0, el: 0 };
+  function inquadra(nome) { quadro = nome; const q = QUADRI[nome];
+    if (!q) { meta.tgt.copy(base.tgt); meta.dist = base.dist; meta.az = base.az; meta.el = base.el; return; }
+    const m = Math.min(tv, th); meta.tgt.copy(q.c); meta.az = rad(q.az); meta.el = rad(q.el); meta.dist = Math.min(base.dist, q.r * Math.sqrt(1 + m * m) / m + .3); }
+  function resize(w, h, area) { W = w; H = h; const A = area && area.w > 60 && area.h > 60 ? area : { x: 0, y: 0, w, h };
+    camera.aspect = w / h; camera.fov = A.w < A.h ? 40 : 30;
+    camera.setViewOffset(w, h, w / 2 - (A.x + A.w / 2), h / 2 - (A.y + A.h / 2), w, h); camera.updateProjectionMatrix();
+    const t = Math.tan(rad(camera.fov) / 2); tv = t * A.h / h; th = t * A.w / h;
+    base.dist = Math.max(4.9 / th, 3.5 / tv) + 2.6; base.el = rad(A.w < A.h ? 16 : 19); base.tgt.set(.6, A.w < A.h ? 2.9 : 2.7, 0);
+    inquadra(quadro); }
   function posaCamera() { const d = cam.dist * cam.zoom, ce = Math.cos(cam.el); camera.position.set(cam.tgt.x + Math.sin(cam.az) * ce * d, cam.tgt.y + Math.sin(cam.el) * d, cam.tgt.z + Math.cos(cam.az) * ce * d); camera.lookAt(cam.tgt); }
-  const etich = V(); let onEtichetta = () => {}, mossaCam = false;
+  const etich = V(); let onEtichetta = () => {};
   function tick(dt, now) {
-    if (S.play) { S.t = (S.t + dt * .8) % 24; applica(); }
-    for (const tb of tubi) tb.tx.offset.x -= dt * tb.verso * (tb.ramo in VEL ? VEL[tb.ramo] : S.carico > .02 ? .5 + 1.6 * S.carico : 0);
-    if (S.gen === 'ibrido') IBR.q.tick(dt, S.carico); else ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica ? 1 : 0);
+    regia(dt);
+    if (segui) { const k = 1 - Math.exp(-dt * 2.2); cam.tgt.lerp(meta.tgt, k); cam.az += (meta.az - cam.az) * k; cam.el += (meta.el - cam.el) * k; cam.dist += (meta.dist - cam.dist) * k; cam.zoom += (1 - cam.zoom) * k; }
+    for (const tb of tubi) { const v = tb.ramo in VEL ? VEL[tb.ramo] : S.carico > .02 ? .5 + 1.6 * S.carico : 0; tb.tx.offset.x -= dt * tb.verso * v;
+      const o = accesi.has(tb.ramo) ? R.foco * attivo(tb.ramo) * .85 : 0; tb.gm.opacity = o; tb.scia.visible = o > .01;
+      if (tb.scia.visible) { tb.gx.offset.x -= dt * tb.verso * v * tb.sc; tb.gm.color.copy(tb.m.color).lerp(BIANCO, .3); } }
+    if (S.gen === 'ibrido') IBR.q.tick(dt, S.carico); else ist.tick(dt, S.carico); if (acs) acs.tick(dt, S.ricarica || S.sole ? 1 : 0);
     if (S.carico > .02) { for (let i = 0; i < NA; i++) { const s = aSeed[i], f = (now * (.35 + .5 * S.carico) + s[2]) % 1; aPos[i * 3] = bocca.x + (s[0] - .5) * .5 * (1 + f); aPos[i * 3 + 1] = bocca.y + (s[1] - .5) * .5 * (1 + f); aPos[i * 3 + 2] = bocca.z + .05 + f * 1.1; } aria.geometry.attributes.position.needsUpdate = true; }
     const ATT = { fc: S.fcoil, mono: S.mono, dual: S.dual };
     EMIT.forEach((e, k) => { const a = ATT[e.chi], col = e.colore === 'stagione' ? (S.estate ? COLA.fresco : COLA.caldo) : COLA[e.colore];
@@ -787,25 +954,51 @@ const Casa = (() => {
         tCol[i * 4] = col[0]; tCol[i * 4 + 1] = col[1]; tCol[i * 4 + 2] = col[2]; tCol[i * 4 + 3] = v; } });
     ariaT.geometry.attributes.position.needsUpdate = ariaT.geometry.attributes.color.needsUpdate = true;
     for (const e of ELICHE) e.el.rotation.z -= dt * 16 * ATT[e.chi];
+    // persone: la doccia quando è aperta, il divano la sera (e d'estate nel primo pomeriggio, sotto il climatizzatore)
+    const t = S.t, sera = t > 17.25 && t < 22.75, pomeriggio = S.estate && t > 14.25 && t < 16.75, a4 = Math.min(1, dt * 4);
+    [[pDoccia, S.doccia], [pDivano[0], sera || pomeriggio], [pDivano[1], sera]].forEach(([q, on]) => { q.m.opacity += ((on ? 1 : 0) - q.m.opacity) * a4; q.p.visible = q.m.opacity > .02; });
+    gocce.material.opacity += (.85 * S.doccia - gocce.material.opacity) * a4; gocce.visible = gocce.material.opacity > .02;
+    if (gocce.visible) { const hh = SOFF.y - FY - .08; for (let i = 0; i < ND; i++) { const s = dSeed[i], f = (now * 1.7 + s[1]) % 1;
+      dPos[i * 3] = SOFF.x + (s[0] - .5) * .16 + f * .05; dPos[i * 3 + 1] = SOFF.y - f * hh; dPos[i * 3 + 2] = SOFF.z + (s[2] - .5) * .1 + f * .1; } gocce.geometry.attributes.position.needsUpdate = true; }
     posaCamera();
     viste.forEach((v, i) => { etich.copy(v.pos).project(camera); onEtichetta(i, (etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1); });
   }
+  // gesti: trascinare, pizzicare o usare la rotella ferma la giornata e lascia la camera alla mano
+  function aMano() { segui = false; if (R.modo === 'auto') { R.modo = 'pausa'; notifica(); } }
   const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), dita = new Map(); let mosso = 0, pinch = 0, onApri = () => {};
   function down(e) { dita.set(e.pointerId, [e.clientX, e.clientY]); mosso = 0; pinch = 0; }
   function move(e) { const p = dita.get(e.pointerId); if (!p) return;
-    if (dita.size === 1) { const dx = e.clientX - p[0], dy = e.clientY - p[1]; mosso += Math.abs(dx) + Math.abs(dy); mossaCam = true; cam.az = clamp(cam.az - dx * .005, rad(-32), rad(42)); cam.el = clamp(cam.el + dy * .004, rad(5), rad(42)); }
+    if (dita.size === 1) { const dx = e.clientX - p[0], dy = e.clientY - p[1]; mosso += Math.abs(dx) + Math.abs(dy); if (mosso > 8) { aMano(); cam.az = clamp(cam.az - dx * .005, rad(-40), rad(42)); cam.el = clamp(cam.el + dy * .004, rad(5), rad(42)); } }
     dita.set(e.pointerId, [e.clientX, e.clientY]);
-    if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) cam.zoom = clamp(cam.zoom * pinch / d, .32, 1.25); pinch = d; mosso += 20; } }
+    if (dita.size === 2) { const [a, b] = [...dita.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); aMano(); if (pinch) cam.zoom = clamp(cam.zoom * pinch / d, .32, 1.25); pinch = d; mosso += 20; } }
   function up(e) { const p = dita.get(e.pointerId); dita.delete(e.pointerId); pinch = 0;
-    if (p && mosso < 8) { const r = canvas.getBoundingClientRect(); ptr.set((p[0] - r.left) / r.width * 2 - 1, -(p[1] - r.top) / r.height * 2 + 1); ray.setFromCamera(ptr, camera); const hit = ray.intersectObjects(viste.map(v => v.ist.group), true)[0]; if (hit) onApri(PRODOTTI.find(q => q.id === hit.object.userData.prodotto)); } }
-  function wheel(e) { cam.zoom = clamp(cam.zoom * Math.exp(e.deltaY * .0012), .32, 1.25); }
+    if (p && mosso < 8) { ray.setFromCamera(ptr.set(p[0] / W * 2 - 1, -p[1] / H * 2 + 1), camera); const hit = ray.intersectObjects(viste.map(v => v.ist.group), true)[0]; if (hit) onApri(PRODOTTI.find(q => q.id === hit.object.userData.prodotto)); } }
+  function wheel(e) { aMano(); cam.zoom = clamp(cam.zoom * Math.exp(e.deltaY * .0012), .32, 1.25); }
   // scambio del generatore: UHP da sola oppure ibrido HYBREER 3. La prima etichetta segue il generatore acceso.
   const VUHP = { def: gen, ist, pos: viste[0].pos.clone() };
   function generatore(id) { if (id === 'ibrido' && !IBR) return; S.gen = id === 'ibrido' ? 'ibrido' : 'uhp'; const ib = S.gen === 'ibrido';
     gUhp.visible = !ib; if (IBR) IBR.gIb.visible = ib; Object.assign(viste[0], ib ? { def: IBR.def, ist: IBR.ist, pos: IBR.pos.clone() } : VUHP);
-    (ib ? IBR.q.group : ist.group).add(aria); bocca = ib ? IBR.q.bocca : ist.bocca; applica(); }
-  return { scene, camera, resize, tick, down, move, up, wheel, S, cam, POSTO, viste, generatore, ibrido: !!IBR,
-    entra() { applica(); }, ora(t) { S.t = clamp(t, 0, 24) % 24; applica(); }, stagione(estate) { S.estate = !!estate; applica(); }, play(v) { S.play = !!v; applica(); },
+    (ib ? IBR.q.group : ist.group).add(aria); bocca = ib ? IBR.q.bocca : ist.bocca;
+    if (R.modo === 'libero') return applica();
+    const L = lista(); let j = 0; L.forEach((m, k) => { if (Math.abs(m.t - S.t) < Math.abs(L[j].t - S.t)) j = k; }); entraIn(j); }     // il momento più vicino all'ora di adesso
+  // comandi della giornata
+  function play(v) { segui = true;
+    if (v && R.modo === 'pausa') { R.modo = 'auto'; inquadra(R.fase === 'corsa' && !R.largo ? R.qDopo : R.m.quadro); }
+    else if (v && R.modo === 'libero') { R.modo = 'auto'; const L = lista(), j = L.findIndex(m => m.t > S.t - .01); corri(j < 0 ? L.length : j, false, true); }
+    else if (!v && R.modo === 'auto') R.modo = 'pausa';
+    notifica(); }
+  function avanti() { segui = true; const lib = R.modo === 'libero'; R.modo = 'auto'; const L = lista();
+    if (lib) { const j = L.findIndex(m => m.t > S.t + .01); corri(j < 0 ? L.length : j, true, true); } else if (R.fase === 'corsa') finisciCorsa(); else corri(R.i + 1, true);
+    notifica(); }
+  function indietro() { segui = true; const lib = R.modo === 'libero'; R.modo = 'auto'; const L = lista();
+    if (lib) { let j = L.length - 1; L.forEach((m, k) => { if (m.t < S.t - .01) j = k; }); corri(j, true, true); } else if (R.fase === 'corsa') entraIn(R.i); else corri(R.i - 1, true);
+    notifica(); }
+  function vai(i) { segui = true; const lib = R.modo === 'libero'; R.modo = 'auto'; corri(i, true, lib); notifica(); }
+  function ora(t) { if (R.modo !== 'libero') { R.modo = 'libero'; segui = true; inquadra(null); } S.t = clamp(t, 0, 24) % 24; applica(); }
+  function stagione(estate) { S.estate = !!estate; if (R.modo === 'libero') applica(); else entraIn(0); }
+  entraIn(0);
+  return { scene, camera, resize, tick, down, move, up, wheel, S, R, cam, POSTO, viste, generatore, ibrido: !!IBR, descrivi, info, ora, stagione, play, avanti, indietro, vai,
+    entra() { if (!entrata) { entrata = true; cam.tgt.copy(base.tgt); cam.az = base.az; cam.el = base.el; cam.dist = base.dist; } notifica(); },
     su(apri, stato, etichetta) { onApri = apri; onStato = stato; onEtichetta = etichetta; } };
 })();
 
@@ -818,8 +1011,7 @@ const velo = $('veil'), prod = $('prod');
 const attendi = ms => new Promise(r => setTimeout(r, ms));
 const prodotto = id => PRODOTTI.find(p => p.id === id && p.pagina);
 
-function resize() { const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight); renderer.setSize(w, h, false); Home.resize(w, h); Casa.resize(w, h); }
-addEventListener('resize', resize); new ResizeObserver(resize).observe(stage); resize();
+function resize() { const w = Math.max(2, stage.clientWidth), h = Math.max(2, stage.clientHeight); renderer.setSize(w, h, false); Home.resize(w, h); AREA_C = areaCasa(w, h); Casa.resize(w, h, AREA_C); }
 
 async function vai(dest, subito) {
   if (dest === nome || inCorso) return; inCorso = true;
@@ -832,7 +1024,7 @@ async function vai(dest, subito) {
     document.title = p.nome + ' · Casa Unical';
   } else {
     if (!prod.hidden) { prod.hidden = true; prod.removeAttribute('src'); prod.src = 'about:blank'; }
-    attiva = SCENE[dest]; ultima = dest; attiva.entra(); last = 0; document.title = dest === 'casa' ? 'La casa · Casa Unical' : 'Casa Unical';
+    attiva = SCENE[dest]; ultima = dest; if (dest === 'casa') { resize(); if (riprendiDopo) Casa.play(true); riprendiDopo = false; } else scheda(null); attiva.entra(); last = 0; document.title = dest === 'casa' ? 'La casa · Casa Unical' : 'Casa Unical';
   }
   velo.classList.remove('on'); inCorso = false;
   const h = location.hash.slice(1); if (h !== nome && !(h === '' && nome === 'home')) rotta();   // l'indirizzo è cambiato durante il passaggio
@@ -856,36 +1048,76 @@ $('bOpen').onclick = () => { const v = Home.voci[Home.sel]; if (v.fatto) apri(v.
 $('bCasa').onclick = () => apri('casa'); $('bPrev').onclick = () => Home.gira(-1); $('bNext').onclick = () => Home.gira(1);
 addEventListener('keydown', e => { if (nome !== 'home') return; if (e.key === 'ArrowLeft') Home.gira(-1); if (e.key === 'ArrowRight') Home.gira(1); if (e.key === 'Enter') $('bOpen').click(); });
 
-// Casa
+// Casa: la giornata a momenti. Il riquadro in alto dice ora, momento e cosa succede; la barra in basso ha stagione, generatore, i momenti e i comandi.
 const sDay = $('sDay'), hh = t => { const m = Math.round(t * 60) % 1440; return String(m / 60 | 0).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
-const tags = Casa.viste.map(v => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tag'; b.textContent = v.def.nome + ' ›'; b.onclick = () => apri(v.def.id); $('tags').appendChild(b); return b; });
-Casa.su(p => apri(p.id), (S, testo) => {
-  $('cHour').textContent = hh(S.t); $('cText').textContent = testo; sDay.value = S.t; sDay.style.setProperty('--f', (S.t / 24 * 100) + '%');
-  $('bInv').setAttribute('aria-pressed', !S.estate); $('bEst').setAttribute('aria-pressed', S.estate); $('bPlay').setAttribute('aria-pressed', S.play); $('bPlay').textContent = S.play ? 'Pausa' : 'Avvia';
+const ICONA = { pausa: '<svg viewBox="0 0 16 16"><rect x="3" y="2" width="3.6" height="12" rx="1"/><rect x="9.4" y="2" width="3.6" height="12" rx="1"/></svg>', play: '<svg viewBox="0 0 16 16"><path d="M4 2.2v11.6c0 .6.7 1 1.2.7l9-5.8c.5-.3.5-1 0-1.4l-9-5.8C4.7 1.2 4 1.6 4 2.2z"/></svg>' };
+const tags = Casa.viste.map(v => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tag'; b.textContent = v.def.nome + ' ›'; b.onclick = () => scheda(v.def.id); $('tags').appendChild(b); return b; });
+let INFO = null, chiaveM = '', titoloM = '', icona = '', marks = [];
+// scheda del prodotto toccato: cosa sta facendo adesso, e il pulsante per aprirlo. Mentre è aperta la giornata si ferma.
+let foglio = null, riprendi = false, riprendiDopo = false;
+function scheda(id) {
+  const p = id && PRODOTTI.find(q => q.id === id);
+  if (!p) { if (foglio) { $('cSheet').hidden = true; foglio = null; if (riprendi) Casa.play(true); riprendi = false; } return; }
+  if (!foglio) { riprendi = Casa.R.modo === 'auto'; if (riprendi) Casa.play(false); }
+  foglio = p; $('shNome').textContent = p.nome; $('shText').textContent = Casa.descrivi(p.id); $('shApri').textContent = (p.apri || 'Apri') + ' ›'; $('cSheet').hidden = false; aggiornaTag();
+}
+$('shX').onclick = () => scheda(null);
+$('shApri').onclick = () => { const p = foglio; $('cSheet').hidden = true; foglio = null; riprendiDopo = riprendi; riprendi = false; apri(p.id); };
+function segni(info) {
+  if (info.chiave === chiaveM) return; chiaveM = info.chiave; const box = $('cMarks'); box.innerHTML = '';
+  marks = info.lista.map(m => { const d = document.createElement('i'); d.className = 'mk'; d.style.left = (m.t / 24 * 100) + '%'; d.innerHTML = '<span>' + hh(m.t) + '</span>'; box.appendChild(d); return d; });
+}
+function aggiornaTag() { if (!INFO) return; const auto = INFO.modo === 'auto';
+  tags.forEach((b, i) => { const id = Casa.viste[i].def.id, su = INFO.chi.includes(id); b.dataset.mostra = foglio ? 0 : !auto || su ? 1 : 0; b.classList.toggle('su', su && !foglio); }); }
+Casa.su(p => p && scheda(p.id), (S, info) => {
+  INFO = info; segni(info);
+  $('cHour').textContent = hh(S.t); sDay.value = S.t; sDay.style.setProperty('--f', (S.t / 24 * 100) + '%');
+  if (info.titolo !== titoloM) { titoloM = info.titolo; const c = $('cCard'); c.classList.remove('nuovo'); void c.offsetWidth; c.classList.add('nuovo'); }
+  $('cTit').textContent = info.titolo; $('cText').textContent = info.testo;
+  $('cNum').textContent = info.i >= 0 ? (S.estate ? 'Estate' : 'Inverno') + ' · ' + (info.i + 1) + ' / ' + info.n : 'Ora libera';
+  marks.forEach((d, i) => { d.classList.toggle('ora', i === info.i); d.classList.toggle('fatto', info.i >= 0 && i < info.i); });
+  $('bInv').setAttribute('aria-pressed', !S.estate); $('bEst').setAttribute('aria-pressed', S.estate);
+  const ic = info.modo === 'auto' ? 'pausa' : 'play'; if (ic !== icona) { icona = ic; $('bPlay').innerHTML = ICONA[ic]; $('bPlay').setAttribute('aria-label', ic === 'pausa' ? 'Pausa' : 'Avvia'); }
   $('bUhp').setAttribute('aria-pressed', S.gen !== 'ibrido'); $('bIbr').setAttribute('aria-pressed', S.gen === 'ibrido'); tags[0].textContent = Casa.viste[0].def.nome + ' ›';
-  const k = $('cCal'); k.hidden = !(S.gen === 'ibrido' && S.caldaia > .5); k.textContent = 'Caldaia accesa'; k.dataset.m = 'on';
-  $('cStato').textContent = S.carico < .03 ? 'A riposo' : (S.estate ? 'Raffresca' : 'Riscalda'); $('cStato').dataset.m = S.carico < .03 ? 'off' : (S.estate ? 'f' : 'c');
-  const f = $('cFv'); f.hidden = !S.fv; f.textContent = S.pv > .05 ? (S.bat > .01 ? 'Sole: alimenta la casa e carica la batteria' : S.rete > .02 ? 'Sole: batteria piena, il resto va in rete' : S.rete < -.02 ? 'Poco sole: la rete aiuta' : 'Sole: alimenta la casa') : (S.bat < -.01 ? 'Buio: la batteria alimenta la casa' : 'Buio: la casa prende dalla rete'); f.dataset.m = S.pv > .05 ? 's' : 'off';
-  const cl = $('cCli'); cl.hidden = !(S.dual > .5 || S.mono > .5); cl.textContent = 'Climatizzatori accesi';     // dove, lo dice il testo della fase: sul telefono il riquadro non deve crescere
-  const a = $('cAcs'); a.textContent = S.doccia ? 'Doccia: esce acqua calda' : S.sole ? 'Acqua calda: il sole la porta a 65 °C' : S.ricarica ? 'Acqua calda: si ricarica' : 'Acqua calda: pronta'; a.dataset.m = S.doccia ? 'c' : S.ricarica ? 'r' : 'off';
-}, (i, x, y, vis) => { const q = posTag[i]; q.x = x; q.y = y; q.vis = vis; if (i === tags.length - 1) dispostiTag(); });
+  if (foglio) $('shText').textContent = Casa.descrivi(foglio.id);
+  aggiornaTag();
+}, (i, x, y, vis) => { const q = posTag[i]; q.x = x; q.y = y; q.vis = vis; if (i === tags.length - 1) { dispostiTag(); spot(); } });
 // etichette: se due si sovrappongono, la più in alto sale e il suo gambo si allunga fino al prodotto
 const posTag = tags.map(() => ({ x: 0, y: 0, vis: false }));
 function dispostiTag() {
-  const ord = posTag.map((q, i) => i).filter(i => posTag[i].vis).sort((a, b) => posTag[b].y - posTag[a].y), messe = [], dim = tags.map(t => [t.offsetWidth + 8, t.offsetHeight + 6]);   // prima si legge, poi si scrive
+  const on = i => posTag[i].vis && tags[i].dataset.mostra === '1';
+  const card = $('cCard').getBoundingClientRect();
+  const ord = posTag.map((q, i) => i).filter(on).sort((a, b) => posTag[b].y - posTag[a].y), messe = [], dim = tags.map(t => [t.offsetWidth + 8, t.offsetHeight + 6]);   // prima si legge, poi si scrive
   for (const i of ord) { const q = posTag[i], [w, hh] = dim[i]; let bot = q.y;
     for (let giro = 0; giro < 6; giro++) { const c = messe.find(r => Math.abs(r.x - q.x) < (r.w + w) / 2 && bot - hh < r.bot && bot > r.bot - r.hh); if (!c) break; bot = c.bot - c.hh; }
-    messe.push({ x: q.x, w, bot, hh }); tags[i].style.setProperty('--gambo', (14 + q.y - bot).toFixed(0) + 'px');
+    if (q.x + w / 2 > card.left && q.x - w / 2 < card.right && bot - hh < card.bottom + 4) bot = card.bottom + 4 + hh;
+    messe.push({ x: q.x, w, bot, hh }); tags[i].style.setProperty('--gambo', Math.max(0, 14 + q.y - bot).toFixed(0) + 'px');
     const vw = stage.clientWidth, xc = clamp(q.x, w / 2 + 2, Math.max(w / 2 + 2, vw - w / 2 - 2));     // la pillola resta nello schermo, il gambo continua a puntare al prodotto
     tags[i].style.setProperty('--sx', clamp(q.x - xc, -w / 2 + 16, w / 2 - 16).toFixed(0) + 'px');
     tags[i].style.transform = `translate(${xc.toFixed(1)}px, ${bot.toFixed(1)}px) translate(-50%, -100%)`; }
-  tags.forEach((t, i) => { t.style.visibility = posTag[i].vis ? 'visible' : 'hidden'; });
+  tags.forEach((t, i) => { t.style.visibility = on(i) ? 'visible' : 'hidden'; });
 }
-
-sDay.addEventListener('input', () => { const v = +sDay.value; Casa.play(false); Casa.ora(v); });   // il valore si legge prima: fermare la giornata riscrive il cursore
-$('bPlay').onclick = () => Casa.play(!Casa.S.play); $('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
+// ombra attorno al momento: lascia in luce la parte libera dello schermo, dove la camera mette il prodotto
+function spot() { const s = $('cSpot'), a = AREA_C; if (!INFO || !a) return; s.style.opacity = (Casa.R.ombra * .95).toFixed(3);
+  s.style.setProperty('--sx', (a.x + a.w / 2) + 'px'); s.style.setProperty('--sy', (a.y + a.h / 2) + 'px'); s.style.setProperty('--rx', (a.w * .78) + 'px'); s.style.setProperty('--ry', (a.h * .85) + 'px'); }
+// barra: trascinando il cursore si va a un'ora qualsiasi; lasciandolo vicino a un momento la giornata riparte da lì
+sDay.addEventListener('input', () => { const v = +sDay.value; Casa.ora(v); });   // il valore si legge prima: la giornata libera riscrive il cursore
+sDay.addEventListener('change', () => { const v = +sDay.value, L = INFO ? INFO.lista : []; let j = -1; L.forEach((m, k) => { if (Math.abs(m.t - v) < .45) j = k; }); if (j >= 0) Casa.vai(j); });
+$('bPlay').onclick = () => Casa.play(Casa.R.modo !== 'auto'); $('bAvanti').onclick = () => Casa.avanti(); $('bIndietro').onclick = () => Casa.indietro();
+$('bInv').onclick = () => Casa.stagione(false); $('bEst').onclick = () => Casa.stagione(true);
 $('bHome').onclick = () => apri('home');
 if (Casa.ibrido) { $('cGen').hidden = false; $('bUhp').onclick = () => Casa.generatore('uhp'); $('bIbr').onclick = () => Casa.generatore('ibrido'); }
+addEventListener('keydown', e => { if (nome !== 'casa' || e.target.tagName === 'INPUT') return; if (e.key === 'ArrowRight') Casa.avanti(); if (e.key === 'ArrowLeft') Casa.indietro(); if (e.key === ' ') { e.preventDefault(); $('bPlay').click(); } if (e.key === 'Escape') scheda(null); });
+// parte libera dello schermo per la camera: sotto il riquadro oppure accanto, dove la casa (larga circa 9,6 m e alta 6) viene più grande
+let AREA_C = null;
+function areaCasa(w, h) {
+  if (document.body.dataset.scena !== 'casa') return null;
+  const c = $('cCard').getBoundingClientRect(), b = $('cBar').getBoundingClientRect(), top = $('logo').getBoundingClientRect().bottom + 6, giu = b.top - 8;
+  const A = { x: 0, y: Math.max(top, c.bottom + 8), w }, B = { x: c.right + 8, y: top }; A.h = giu - A.y; B.w = w - B.x; B.h = giu - B.y;
+  const voto = r => r.w > 60 && r.h > 60 ? Math.min(r.w / 9.6, r.h / 6) : 0;
+  stage.style.setProperty('--barH', b.height + 'px');
+  return voto(B) > voto(A) * 1.04 ? B : A;
+}
 
 // gesti sulla scena attiva
 canvas.addEventListener('pointerdown', e => { if (!attiva) return; canvas.setPointerCapture(e.pointerId); attiva.down(e); });
@@ -898,13 +1130,14 @@ let last = 0, lenti = 0, veloci = 0;
 function frame(ts) {
   requestAnimationFrame(frame);
   if (!attiva || document.hidden) { last = 0; return; }
-  const now = ts / 1000, dt = last ? Math.min(.05, now - last) : 0, grezzo = last ? now - last : 0; last = now;
+  const now = ts / 1000, dt = last ? clamp(now - last, 0, .05) : 0, grezzo = last ? now - last : 0; last = now;
   attiva.tick(dt, now); renderer.render(attiva.scene, attiva.camera);
   if (grezzo > .036) { if (++lenti > 45 && PR > .8) { PR = Math.max(.8, PR - .25); renderer.setPixelRatio(PR); resize(); lenti = 0; } } else if (grezzo) lenti = Math.max(0, lenti - 1);
 }
 // per le prove automatiche
-window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3), fcoil: +Casa.S.fcoil.toFixed(3), mono: +Casa.S.mono.toFixed(3), dual: +Casa.S.dual.toFixed(3), gen: Casa.S.gen, caldaia: +Casa.S.caldaia.toFixed(3) }),
+window.__casa = { vai: apri, Home, Casa, info: () => renderer.info.render, stato: () => ({ scena: prodotto(nome) ? 'prodotto' : nome, prodotto: prodotto(nome) ? nome : null, pr: PR, home: Home.stato(), ora: Casa.S.t, estate: Casa.S.estate, pv: +Casa.S.pv.toFixed(3), bat: +Casa.S.bat.toFixed(3), rete: +Casa.S.rete.toFixed(3), soc: +Casa.S.soc.toFixed(3), sole: Casa.S.sole, doccia: Casa.S.doccia, caldo: +Casa.S.caldo.toFixed(3), ricarica: Casa.S.ricarica, carico: +Casa.S.carico.toFixed(3), fcoil: +Casa.S.fcoil.toFixed(3), mono: +Casa.S.mono.toFixed(3), dual: +Casa.S.dual.toFixed(3), gen: Casa.S.gen, caldaia: +Casa.S.caldaia.toFixed(3), modo: Casa.R.modo, fase: Casa.R.fase, momento: Casa.R.modo === 'libero' ? -1 : Casa.R.i, titolo: Casa.R.m && Casa.R.m.titolo, foco: +Casa.R.foco.toFixed(3) }),
   passo(n = 1, dt = 1 / 30) { for (let i = 0; i < n; i++) { last += dt; attiva && attiva.tick(dt, last); } attiva && renderer.render(attiva.scene, attiva.camera); } };
+addEventListener('resize', resize); { const ro = new ResizeObserver(() => resize()); ro.observe(stage); ro.observe($('cCard')); ro.observe($('cBar')); } resize();
 rotta(); document.body.classList.add('pronto'); requestAnimationFrame(frame);
 
 </script>

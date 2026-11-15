@@ -14,7 +14,7 @@ Tre scene, un solo indirizzo:
 | Indirizzo | Scena |
 |---|---|
 | `#home` (o niente) | Home: i prodotti su un piatto girevole |
-| `#casa` | Casa in sezione, con il cursore "Una giornata in casa" e lo scambio del generatore: UHP da sola oppure ibrido HYBREER 3 |
+| `#casa` | Casa in sezione con la giornata a momenti: la giornata si ferma su pochi momenti (sei d'inverno, sei d'estate, sette d'inverno con l'ibrido), la camera va sul prodotto che lavora, una frase spiega cosa succede, le scie sui tubi mostrano calore, acqua ed energia. Finita la giornata si passa all'altra stagione. Barra con i momenti, Avanti, Indietro, Pausa; trascinando la barra si va a un'ora qualsiasi (giornata libera). Toccando un prodotto si apre la sua scheda. Scambio del generatore: UHP da sola oppure ibrido HYBREER 3 |
 | `#uhp`, `#acs`, `#fv`, `#ibrido`, `#fcoil`, `#clima` | Pagina completa del prodotto: film di montaggio e strumenti. `uhp` = pompa di calore UHP 120, `acs` = scaldacqua a pompa di calore HP 300PSDX, `fv` = fotovoltaico con accumulo, `ibrido` = HYBREER 3, `fcoil` = ventilconvettore F-COIL AGR 400, `clima` = climatizzatori mono e dual. |
 
 Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto. La pagina completa di un prodotto è un file a sé (`uhp/index.html`): si carica in un riquadro solo quando si entra nel prodotto e si scarica uscendo, così sul telefono la memoria torna libera.
@@ -34,6 +34,7 @@ Home e Casa sono una pagina sola e usano il **livello leggero** di ogni prodotto
 | `build.py` | Unisce i sorgenti. Solo Python 3, nessuna installazione. |
 | `prove/prova.mjs` | Prova automatica con Chrome senza finestra a 390×780, 844×390 e 1280×720. In fondo controlla, pagina per pagina, che nel montaggio nessun pezzo passi attraverso pezzi già posati più di quanto già noto (`prove/compenetrazioni.js` e l'elenco dei difetti noti `prove/compenetrazioni.json`, che si accorcia man mano che i prodotti vengono corretti). |
 | Tubi e cavi (pagine comuni) | `tubeGeo` e `curveOf` del motore sono sostituiti in `src/comune/tubi.js`: un tubo è la spezzata dei suoi punti con curve ad arco vere negli angoli, e nel film cresce lungo il percorso dal primo all'ultimo punto invece di arrivare in volo. Per un tubo che deve volare: `m.userData.vola = true`. Cresce così ogni geometria con `userData.tubo` e le lunghezze dei suoi tratti (le bande del condensatore dell'HP 300 si avvolgono attorno al serbatoio). I flussi seguono lo stesso percorso. |
+| Giornata a momenti (Casa) | In `src/app/c_casa.js`: `MOMENTI` (ora, titolo, frase, prodotti al lavoro, inquadratura), `QUADRI` (inquadrature: centro, raggio, azimut, alzo), la regia (`regia`, `corri`, `entraIn`) e `descrivi(id)` per la scheda. Le frasi dicono solo quello che la giornata qualitativa fa davvero a quell'ora. L'interfaccia (`src/app/d_app.js`) passa alla Casa la parte libera dello schermo (fuori da riquadro e barra): la camera mette il centro dell'inquadratura al centro di quella parte. |
 | Ordine di montaggio | Un pezzo di un gruppo può arrivare più tardi, durante un altro gruppo, con `P(m, { at: secondi })`: nell'HP 300 la calotta, i pozzetti, l'anodo e la resistenza fanno parte del serbatoio ma arrivano dopo il serpentino, che scende nel serbatoio ancora aperto. |
 
 ## Comandi

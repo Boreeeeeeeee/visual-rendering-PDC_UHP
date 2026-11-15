@@ -46,34 +46,58 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   ok(await fr.locator('.back').evaluate(a => { const r = a.getBoundingClientRect(); return a.ownerDocument.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === a; }), 'il ritorno è toccabile sopra la schermata d\'inizio');
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('home'), 'il ritorno dal prodotto riporta alla Home');
   ok(await page.evaluate(() => document.getElementById('prod').hidden), 'uscendo la pagina del prodotto si scarica');
-  // Casa: la giornata
+  // Casa: la giornata a momenti
   await page.click('#bCasa'); ok(await scena('casa'), 'il pulsante porta nella Casa'); ok(page.url().endsWith('#casa'), 'indirizzo #casa');
-  const t0 = (await st()).ora; await sleep(1500); ok((await st()).ora !== t0, 'la giornata scorre da sola');
-  await page.click('#bPlay'); const t1 = (await st()).ora; await sleep(600); ok((await st()).ora === t1, 'Pausa ferma la giornata');
+  let s = await st(); ok(s.modo === 'auto' && s.momento === 0 && (await page.textContent('#cTit')) === 'Prima della sveglia', 'la Casa parte dal primo momento, da sola');
+  ok(await page.evaluate(() => document.querySelectorAll('#cMarks .mk').length) === 6, 'sei momenti segnati sulla barra');
+  const t0 = s.ora; await sleep(1500); ok((await st()).ora !== t0, "l'orologio avanza da solo");
+  ok(await fino(async () => (await st()).foco > .5, 20000), 'sul momento si accendono le scie dei tubi');
+  const mostrate = () => page.evaluate(() => [...document.querySelectorAll('.tag')].filter(t => t.style.visibility !== 'hidden').map(t => t.textContent));
+  let tg = await mostrate(); ok(tg.length === 2 && tg.some(t => t.startsWith('UHP')) && tg.some(t => t.startsWith('F-COIL')), 'si vedono solo le etichette dei prodotti al lavoro: ' + tg.join(', '));
+  await foto('casa_momento1');
+  await page.click('#bAvanti'); ok(await fino(async () => { const x = await st(); return x.momento === 1 && x.fase === 'sosta'; }, 20000), 'Avanti porta al momento dopo');
+  ok((await page.textContent('#cTit')) === 'La doccia' && (await st()).doccia === 1, 'secondo momento: la doccia, con l\'acqua calda aperta');
+  await sleep(1500); tg = await mostrate(); ok(tg.length === 1 && tg[0].startsWith('HP 300PSDX'), 'nella doccia si vede solo l\'etichetta dell\'HP 300PSDX'); await foto('casa_doccia');
+  await page.click('#bIndietro'); ok(await fino(async () => { const x = await st(); return x.momento === 0 && x.fase === 'sosta'; }, 20000), 'Indietro torna al momento prima');
+  await page.click('#bPlay'); s = await st(); const t1 = s.ora; await sleep(800); ok(s.modo === 'pausa' && (await st()).ora === t1, 'Pausa ferma la giornata');
+  await page.click('#bPlay'); ok((await st()).modo === 'auto', 'Avvia la fa ripartire');
+  await page.click('#bEst'); s = await st(); ok(s.estate && s.momento === 0 && (await page.textContent('#cTit')) === 'Mattino', 'Estate: si riparte dal primo momento d\'estate'); await page.click('#bInv');
+  // la barra: lasciata vicino a un momento, si riparte da lì; trascinata altrove, la giornata è libera
+  await page.evaluate(() => { const r = document.getElementById('sDay'); r.value = 12.6; r.dispatchEvent(new Event('input', { bubbles: true })); r.dispatchEvent(new Event('change', { bubbles: true })); });
+  ok(await fino(async () => { const x = await st(); return x.modo === 'auto' && x.momento === 2 && x.fase === 'sosta'; }, 20000), 'lasciando la barra vicino a un momento, la giornata riparte da quel momento');
+  ok((await page.textContent('#cTit')) === 'Il sole lavora', 'terzo momento: il sole lavora'); await sleep(1200); await foto('casa_sole');
   const ora = v => page.evaluate(v => { const s = document.getElementById('sDay'); s.value = v; s.dispatchEvent(new Event('input', { bubbles: true })); }, v);
-  await ora(6.5); let s = await st(); ok(Math.abs(s.ora - 6.5) < .01 && s.carico > .7 && (await page.textContent('#cStato')) === 'Riscalda', 'inverno, mattino: riscalda forte'); await sleep(500); await foto('casa_inverno_mattino');
-  ok(s.fcoil > .5 && s.mono === 0 && s.dual === 0 && !(await page.isVisible('#cCli')), 'inverno: lavora il ventilconvettore, i climatizzatori restano spenti');
+  const fa = id => page.evaluate(id => window.__casa.Casa.descrivi(id), id);
+  await ora(6.5); s = await st(); ok(s.modo === 'libero' && (await page.textContent('#cNum')) === 'Ora libera', 'trascinando la barra la giornata diventa libera');
+  ok(Math.abs(s.ora - 6.5) < .01 && s.carico > .7 && (await fa('uhp')).startsWith('Riscalda forte'), 'inverno, mattino: riscalda forte'); await sleep(500); await foto('casa_inverno_mattino');
+  ok(s.fcoil > .5 && s.mono === 0 && s.dual === 0 && (await fa('clima')).startsWith('Spenti'), 'inverno: lavora il ventilconvettore, i climatizzatori restano spenti');
+  tg = await mostrate(); ok(tg.length === (await page.evaluate(() => document.querySelectorAll('.tag').length)), 'nella giornata libera si vedono tutte le etichette');
   await ora(12.5); ok((await st()).carico < s.carico, 'inverno, mezzogiorno: rallenta');
   await ora(20); await sleep(500); await foto('casa_inverno_sera');
-  await page.click('#bEst'); await ora(15); s = await st(); ok(s.estate && s.carico > .6 && (await page.textContent('#cStato')) === 'Raffresca', 'estate, pomeriggio: raffresca'); await sleep(500); await foto('casa_estate_pomeriggio');
-  ok(s.fcoil > .5 && s.mono > .9 && s.dual > .9 && (await page.isVisible('#cCli')), 'estate, pomeriggio: accesi ventilconvettore e climatizzatori');
-  await ora(3); s = await st(); ok(s.carico < .03 && s.mono === 0 && s.dual === 0 && (await page.textContent('#cStato')) === 'A riposo', 'estate, notte: tutto a riposo');
+  await page.click('#bEst'); await ora(15); s = await st(); ok(s.estate && s.carico > .6 && (await fa('uhp')).startsWith('Raffresca'), 'estate, pomeriggio: raffresca'); await sleep(500); await foto('casa_estate_pomeriggio');
+  ok(s.fcoil > .5 && s.mono > .9 && s.dual > .9 && (await fa('clima')).startsWith('Accesi'), 'estate, pomeriggio: accesi ventilconvettore e climatizzatori');
+  await ora(3); s = await st(); ok(s.carico < .03 && s.mono === 0 && s.dual === 0 && (await fa('uhp')).startsWith('Ferma'), 'estate, notte: tutto a riposo');
   await page.click('#bInv'); ok(!(await st()).estate, 'ritorno a inverno');
   // orbita e zoom
   // un punto libero della scena, non coperto da etichette o pannelli (le etichette seguono i prodotti e possono finire ovunque)
   const [px, py] = await page.evaluate(([W, H]) => { for (const [x, y] of [[.4, .45], [.5, .55], [.3, .6], [.6, .4], [.2, .5], [.7, .6], [.5, .35]]) { const e = document.elementFromPoint(W * x, H * y); if (e && e.id === 'gl') return [W * x, H * y]; } return [W * .4, H * .45]; }, [W, H]);
   const az0 = await page.evaluate(() => window.__casa.Casa.cam.az); await page.mouse.move(px, py); await page.mouse.down(); await page.mouse.move(px + 80, py + 20, { steps: 4 }); await page.mouse.up();
   ok(await page.evaluate(() => window.__casa.Casa.cam.az) !== az0, 'la casa si gira trascinando');
+  await page.click('#bPlay'); await page.mouse.move(px, py); await page.mouse.down(); await page.mouse.move(px - 60, py, { steps: 4 }); await page.mouse.up(); ok((await st()).modo === 'pausa', 'trascinando la casa la giornata si ferma'); await ora(15);
   const z0 = await page.evaluate(() => window.__casa.Casa.cam.zoom); await page.mouse.move(px, py); await page.mouse.wheel(0, -300); await sleep(200); ok(await page.evaluate(() => window.__casa.Casa.cam.zoom) < z0, 'la rotella avvicina');
   // dalla Casa al prodotto e ritorno alla Casa
-  await page.locator('.tag').first().evaluate(b => b.click()); ok(await scena('prodotto'), "l'etichetta sulla macchina apre il prodotto"); await fino(async () => await fr.locator('.back').count() > 0, 15000);
+  const scheda = async k => { await page.locator('.tag').nth(k).evaluate(b => b.click()); return page.isVisible('#cSheet'); };
+  ok(await scheda(0) && (await page.textContent('#shNome')) === 'UHP 120' && (await page.textContent('#shText')).length > 10, "l'etichetta apre la scheda: cosa sta facendo adesso"); await foto('casa_scheda');
+  await page.click('#shX'); ok(!(await page.isVisible('#cSheet')), 'la scheda si chiude');
+  const apriTag = async k => { await scheda(k); await page.click('#shApri'); };
+  await apriTag(0); ok(await scena('prodotto'), "dalla scheda si apre il prodotto"); await fino(async () => await fr.locator('.back').count() > 0, 15000);
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal prodotto riporta alla Casa');
   // acqua calda nella giornata della Casa
-  await ora(7.3); let c = await st(); ok(c.doccia === 1 && c.caldo < 1 && (await page.textContent('#cAcs')).startsWith('Doccia'), 'ore 7:18, doccia: esce acqua calda');
-  await ora(9); c = await st(); ok(c.ricarica && (await page.textContent('#cAcs')).includes('ricarica'), 'dopo la doccia il serbatoio si ricarica');
-  await ora(5); ok((await page.textContent('#cAcs')).includes('pronta'), 'prima dell\'alba acqua calda pronta'); await ora(15); await sleep(400); await foto('casa_acs');
+  await ora(7.3); let c = await st(); ok(c.doccia === 1 && c.caldo < 1 && (await fa('acs')).startsWith('Doccia'), 'ore 7:18, doccia: esce acqua calda');
+  await ora(9); c = await st(); ok(c.ricarica && (await fa('acs')).includes('ricarica'), 'dopo la doccia il serbatoio si ricarica');
+  await ora(5); ok((await fa('acs')).includes('pronta'), 'prima dell\'alba acqua calda pronta'); await ora(15); await sleep(400); await foto('casa_acs');
   // HP 300PSDX: dalla Casa alla pagina completa, film e strumenti
-  await page.locator('.tag').nth(1).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'acs', "l'etichetta dell'HP 300PSDX apre il prodotto"); ok(page.url().endsWith('#acs'), 'indirizzo #acs');
+  await apriTag(1); ok(await scena('prodotto') && (await st()).prodotto === 'acs', "l'etichetta dell'HP 300PSDX apre il prodotto"); ok(page.url().endsWith('#acs'), 'indirizzo #acs');
   ok(await fino(async () => await fr.locator('#kDoccia').count() > 0, 20000), "la pagina dell'HP 300PSDX si carica");
   const acs = f => fr.locator('body').evaluate((_, f) => (0, eval)(f), f), premi = id => fr.locator('#' + id).evaluate(b => b.click()), sa = () => acs('window.__acs.stato()');
   await fino(async () => !!(await acs('!!window.__acs'))); await sleep(800); await foto('acs_inizio');
@@ -95,10 +119,10 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), "il ritorno dall'HP 300PSDX riporta alla Casa");
   // fotovoltaico nella Casa e pagina completa
   await ora(12.5); c = await st(); ok(c.pv > .4 && c.bat >= 0 && c.sole, 'inverno, mezzogiorno: il fotovoltaico produce più di quanto serve');
-  ok((await page.textContent('#cFv')).startsWith('Sole') && (await page.textContent('#cAcs')).includes('65'), "con il sole in più l'acqua calda sale a 65 °C");
+  ok((await fa('fv')).startsWith('Il sole') && (await fa('acs')).includes('65'), "con il sole in più l'acqua calda sale a 65 °C");
   await ora(22.5); c = await st(); ok(c.pv === 0 && (c.bat < 0 || c.rete < 0), 'sera: la casa va a batteria o a rete');
   await page.click('#bEst'); await ora(13); c = await st(); ok(c.soc > .5 && c.pv > .8, 'estate, primo pomeriggio: tanto sole e batteria carica'); await sleep(400); await foto('casa_fv'); await page.click('#bInv');
-  await page.locator('.tag').nth(2).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'fv', "l'etichetta del fotovoltaico apre il prodotto");
+  await apriTag(2); ok(await scena('prodotto') && (await st()).prodotto === 'fv', "l'etichetta del fotovoltaico apre il prodotto");
   ok(await fino(async () => await fr.locator('#sS').count() > 0, 20000), 'la pagina del fotovoltaico si carica');
   const fv = q => fr.locator('body').evaluate((_, q) => (0, eval)(q), q); await fino(async () => !!(await fv('!!window.__fv'))); await sleep(800); await foto('fv_inizio');
   let f = await fv('window.__fv.stato()'); ok(f.mode === 'start' && f.pezzi > 350 && f.gruppi === 6, `il fotovoltaico parte dalla schermata d'inizio con ${f.pezzi} pezzi in 6 gruppi`);
@@ -115,7 +139,7 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('casa'), 'il ritorno dal fotovoltaico riporta alla Casa');
   // ventilconvettore (tappa 5) e climatizzatori (tappa 6): dalla Casa alla pagina completa, film e strumenti
   for (const [k, id, nome, n0, ng, card, chiave] of [[3, 'fcoil', 'ventilconvettore', 400, 7, 1, 'Ventilatore'], [4, 'clima', 'climatizzatori', 650, 6, 1, 'YA3']]) {
-    await page.locator('.tag').nth(k).evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === id, `l'etichetta del ${nome} apre il prodotto`); ok(page.url().endsWith('#' + id), `indirizzo #${id}`);
+    await apriTag(k); ok(await scena('prodotto') && (await st()).prodotto === id, `l'etichetta del ${nome} apre il prodotto`); ok(page.url().endsWith('#' + id), `indirizzo #${id}`);
     ok(await fino(async () => await fr.locator('#bGo').count() > 0, 20000), `la pagina del ${nome} si carica`);
     const q = f => fr.locator('body').evaluate((_, f) => (0, eval)(f), f), api = `window.__${id}`; await fino(async () => !!(await q(`!!${api}`)), 20000); await sleep(800); await foto(id + '_inizio');
     let x = await q(`${api}.stato()`); ok(x.mode === 'start' && x.pezzi > n0 && x.gruppi === ng, `${nome}: schermata d'inizio con ${x.pezzi} pezzi in ${ng} gruppi`);
@@ -132,10 +156,10 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   }
   // ibrido (tappa 4): scambio del generatore nella Casa, caldaia nelle ore più fredde, pagina completa
   await page.click('#bIbr'); c = await st(); ok(c.gen === 'ibrido' && (await page.textContent('.tag')).startsWith('HYBREER 3'), "il pulsante Ibrido mette l'ibrido al posto della UHP");
-  await ora(6.5); c = await st(); ok(c.caldaia > .9 && c.carico > .7 && (await page.isVisible('#cCal')), 'inverno, mattino presto: caldaia accesa insieme alla pompa di calore'); await sleep(500); await foto('casa_ibrido_mattino');
-  await ora(12.5); c = await st(); ok(c.caldaia === 0 && !(await page.isVisible('#cCal')), 'inverno, mezzogiorno: la caldaia è spenta');
-  await page.click('#bEst'); await ora(15); c = await st(); ok(c.caldaia === 0 && c.carico > .6 && (await page.textContent('#cStato')) === 'Raffresca', "estate: raffresca solo la pompa di calore"); await page.click('#bInv');
-  await page.locator('.tag').first().evaluate(b => b.click()); ok(await scena('prodotto') && (await st()).prodotto === 'ibrido', "l'etichetta dell'ibrido apre il prodotto"); ok(page.url().endsWith('#ibrido'), 'indirizzo #ibrido');
+  await ora(6.5); c = await st(); ok(c.caldaia > .9 && c.carico > .7 && (await fa('ibrido')).includes('caldaia è accesa'), 'inverno, mattino presto: caldaia accesa insieme alla pompa di calore'); await sleep(500); await foto('casa_ibrido_mattino');
+  await ora(12.5); c = await st(); ok(c.caldaia === 0 && (await fa('ibrido')).startsWith('Lavora solo la pompa di calore'), 'inverno, mezzogiorno: la caldaia è spenta');
+  await page.click('#bEst'); await ora(15); c = await st(); ok(c.caldaia === 0 && c.carico > .6 && (await fa('ibrido')).startsWith('Raffresca solo la pompa di calore'), "estate: raffresca solo la pompa di calore"); await page.click('#bInv');
+  await apriTag(0); ok(await scena('prodotto') && (await st()).prodotto === 'ibrido', "l'etichetta dell'ibrido apre il prodotto"); ok(page.url().endsWith('#ibrido'), 'indirizzo #ibrido');
   ok(await fino(async () => await fr.locator('#sT').count() > 0, 20000), "la pagina dell'ibrido si carica");
   const ib = q => fr.locator('body').evaluate((_, q) => (0, eval)(q), q); await fino(async () => !!(await ib('!!window.__ibrido && !!window.__ui')), 20000); await sleep(800); await foto('ibrido_inizio');
   let x = await ib('window.__ibrido.stato()'); ok(x.mode === 'start' && x.pezzi > 850 && x.gruppi === 11, `l'ibrido parte dalla schermata d'inizio con ${x.pezzi} pezzi in 11 gruppi`);
