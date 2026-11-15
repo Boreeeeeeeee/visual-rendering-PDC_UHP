@@ -188,10 +188,10 @@ const Casa = (() => {
       add(rbox(.1, h, .09, .015), std({ color: cols[(r() * cols.length) | 0], roughness: .6 }), sx - .02, FY + y + .0125 + h / 2, z + .05); } }
   add(new THREE.CylinderGeometry(.22, .18, .5, 20, 1, true), std({ color: 0xc9b48f, roughness: .9, side: THREE.DoubleSide }), 2.42, FY + .25, -.55);     // accanto alla lavatrice: davanti copriva l'HP 300PSDX
   // mansarda: camera con letto matrimoniale, comodino con lampada, tappeto e poltrona
-  { const bx = -1.6, bz = -1.25; add(rbox(1.6, .32, 2.0, .04), rovere, bx, FM + .16, bz); add(rbox(1.56, .2, 1.95, .08), std({ color: 0xf1efe9, roughness: .9 }), bx, FM + .42, bz + .01);
-    add(rbox(1.5, .08, 1.1, .05), std({ color: 0x8aa0ad, roughness: .95 }), bx, FM + .54, bz + .42); for (const s of [-1, 1]) add(rbox(.6, .14, .35, .06), bianco, bx + s * .4, FM + .58, bz - .72);
-    add(rbox(1.6, .9, .06, .02), rovere, bx, FM + .45, -HD + TW + .05);
-    add(rbox(.4, .45, .38, .02), rovere, bx - 1.08, FM + .225, -HD + TW + .22); add(cyl(.06, .3, 12), laccato, bx - 1.08, FM + .6, -HD + TW + .22);     // comodino a sinistra: a destra c'è la batteria
+  { const bx = -1.4, bz = -1.25; add(rbox(1.4, .32, 2.0, .04), rovere, bx, FM + .16, bz); add(rbox(1.36, .2, 1.95, .08), std({ color: 0xf1efe9, roughness: .9 }), bx, FM + .42, bz + .01);
+    add(rbox(1.3, .08, 1.1, .05), std({ color: 0x8aa0ad, roughness: .95 }), bx, FM + .54, bz + .42); for (const s of [-1, 1]) add(rbox(.55, .14, .35, .06), bianco, bx + s * .35, FM + .58, bz - .72);
+    add(rbox(1.4, .9, .06, .02), rovere, bx, FM + .45, -HD + TW + .05);
+    add(rbox(.4, .45, .38, .02), rovere, bx - .98, FM + .225, -HD + TW + .22); add(cyl(.06, .3, 12), laccato, bx - .98, FM + .6, -HD + TW + .22);     // comodino a sinistra: a destra c'è la batteria
     const t = add(new THREE.PlaneGeometry(2.4, 1.9), std({ color: 0xb9a68c, roughness: 1 }), bx, FM + .006, bz + .6); t.rotation.x = -PI / 2;
     add(rbox(.7, .4, .7, .08), std({ color: 0x9b8a74, roughness: .95 }), .55, FM + .2, .9); add(rbox(.7, .45, .16, .06), std({ color: 0x9b8a74, roughness: .95 }), .55, FM + .55, .62); }
   // battiscopa bianchi lungo i muri e le pareti divisorie (sul muro di sinistra si ferma alla porta)
@@ -361,11 +361,13 @@ const Casa = (() => {
   // persone: sagome semplici, solo per far capire i momenti della giornata (chi fa la doccia, chi la sera sta sul divano). Generiche, non a misura.
   const caps = (r, l) => new THREE.CapsuleGeometry(r, l, 4, 12);
   function persona(posa, x, y, z, ry = 0) {
-    const p = new THREE.Group(), m = std({ color: 0xc9d2da, roughness: .6, transparent: true, opacity: 0 });
+    const p = new THREE.Group(), m = std({ color: 0x7f97ad, roughness: .55, transparent: true, opacity: 0 });     // blu-grigio: bianche si confondevano con i muri
     const pz = (geo, px, py, pzz, rx = 0, rz = 0) => { const o = mesh(geo, m, px, py, pzz); o.rotation.set(rx, 0, rz); p.add(o); return o; };
     if (posa === 'seduta') {          // origine sulla seduta: cosce in avanti, gambe giù fino al pavimento (43 cm più in basso)
       for (const sx of [-1, 1]) { pz(caps(.068, .3), sx * .1, .07, .2, PI / 2); pz(caps(.056, .32), sx * .1, -.19, .43); pz(caps(.045, .34), sx * .21, .36, .08, .45); }
       pz(caps(.15, .26), 0, .37, -.03, -.1).scale.set(1, 1, .7); pz(cyl(.045, .1, 12), 0, .66, -.05); pz(new THREE.SphereGeometry(.105, 18, 14), 0, .8, -.04);
+    } else if (posa === 'sdraiata') {  // a letto, origine sul cuscino: fuori dal piumone si vedono solo testa e spalle (il resto lo copre il piumone)
+      pz(new THREE.SphereGeometry(.105, 18, 14), 0, .1, 0); pz(caps(.08, .26), 0, .06, .2, 0, PI / 2);
     } else {                          // in piedi, origine ai piedi; sotto la doccia con le mani alla testa
       const d = posa === 'doccia';
       for (const sx of [-1, 1]) { pz(caps(.066, .72), sx * .095, .43, 0); if (d) pz(caps(.045, .2), sx * .15, 1.55, .03, 0, sx * .43); else pz(caps(.045, .5), sx * .23, 1.1, .02); }
@@ -375,6 +377,11 @@ const Casa = (() => {
   }
   const pDoccia = persona('doccia', .56, FY + .06, -1.9);     // accanto al getto: l'acqua che scende si vede
   const pDivano = [persona('seduta', -.85, FY + .43, .55, -PI / 2), persona('seduta', -.85, FY + .43, 1.3, -PI / 2)];     // sul divano, rivolte alla televisione
+  const pLetto = [persona('sdraiata', -1.75, FM + .62, -1.95), persona('sdraiata', -1.05, FM + .62, -1.95)];     // teste sui cuscini, il piumone basso: da davanti si vedono               // a letto in mansarda, sotto il piumone
+  const pTavolo = [persona('seduta', -2.02, FY + .47, -.95, PI / 2), persona('seduta', -.68, FY + .47, -.95, -PI / 2)];    // al tavolo da pranzo
+  const pPoltrona = persona('seduta', .55, FM + .42, .8);                                                                    // d'estate in poltrona in mansarda
+  const piumone = add(rbox(1.3, .08, 1.48, .03), std({ color: 0xe3e9ec, roughness: .95, transparent: true, opacity: 0 }), -1.4, FM + .56, -.99); piumone.visible = false;
+  const PERSONE = [pDoccia, ...pDivano, ...pLetto, ...pTavolo, pPoltrona];
   // acqua della doccia: gocce che scendono dal soffione quando la doccia è aperta
   const ND = 110, dPos = new Float32Array(ND * 3), RD = rng(77), dSeed = Array.from({ length: ND }, () => [RD(), RD(), RD()]), SOFF = V(.3, FY + 1.96, -HD + TW + .26);
   const gocce = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(dPos, 3)), new THREE.PointsMaterial({ size: .055, color: 0x5cb8ff, transparent: true, opacity: 0, depthWrite: false }));
@@ -464,31 +471,31 @@ const Casa = (() => {
     mansarda: { c: V(0, 3.9, -.4), r: 3.5, az: -7, el: 17 },        // le due console del dual
     soggiorno: { c: V(-2.3, 1.45, .6), r: 2.3, az: 16, el: 10 },   // YA3 sulla parete di sinistra (vista da destra, se no la copre il muro) e il divano
   };
-  const MO = (t, titolo, testo, chi, quadro) => ({ t, titolo, testo, chi, quadro });
-  const SOLE_I = [MO(12.5, 'Il sole lavora', 'Il fotovoltaico sul tetto alimenta la casa. Quello che avanza carica la batteria in mansarda.', ['fv'], 'sole'),
-    MO(13.5, 'Sole in più', 'Con il sole che avanza l\'HP 300PSDX porta l\'acqua a 65 °C: la mette da parte per la sera.', ['fv', 'acs'], 'soleAcqua')];
+  const MO = (t, titolo, testo, chi, quadro, icona) => ({ t, titolo, testo, chi, quadro, icona });     // icona: simbolo sulla barra del giorno
+  const SOLE_I = [MO(12.5, 'Il sole lavora', 'Il fotovoltaico sul tetto alimenta la casa. Quello che avanza carica la batteria in mansarda.', ['fv'], 'sole', 'sole'),
+    MO(13.5, 'Sole in più', 'Con il sole che avanza l\'HP 300PSDX porta l\'acqua a 65 °C: la mette da parte per la sera.', ['fv', 'acs'], 'soleAcqua', 'termo')];
   const ESTATE = gen => [
-    MO(7.2, 'Mattino', 'La casa è ancora fresca e tutto riposa. Per la doccia l\'acqua calda è già pronta nell\'HP 300PSDX.', ['acs'], 'doccia'),
+    MO(7.2, 'Mattino', 'La casa è ancora fresca e tutto riposa. Per la doccia l\'acqua calda è già pronta nell\'HP 300PSDX.', ['acs'], 'doccia', 'doccia'),
     MO(10.25, 'Il sole scalda la casa', gen === 'ibrido' ? 'Parte il raffrescamento: la pompa di calore lavora al contrario e porta fuori il calore della casa. D\'estate la caldaia resta spenta.'
-      : 'Parte il raffrescamento: la pompa di calore lavora al contrario e porta fuori il calore della casa. Pavimento e ventilconvettore rinfrescano.', [gen, 'fcoil'], 'calore'),
-    MO(12.25, 'Sotto il tetto', 'La mansarda si scalda per prima: partono le due console del climatizzatore dual.', ['clima'], 'mansarda'),
-    MO(13.5, 'Pieno sole', 'Il fotovoltaico copre quello che serve alla casa e carica la batteria. Con il sole in più l\'acqua calda sale a 65 °C.', ['fv', 'acs'], 'soleAcqua'),
-    Object.assign(MO(15, 'Le ore più calde', 'In soggiorno aiuta anche il climatizzatore a parete. Fuori, la sua unità esterna butta via il calore.', ['clima'], 'soggiorno'), { dove: { clima: V(-HW + TW + .1, FY + 2.6, 1.8) } }),     // etichetta sullo YA3, non sulla console in mansarda
-    MO(21, 'Sera', 'Il sole è andato: la casa va con la batteria caricata di giorno. Fuori rinfresca e i climatizzatori si spengono.', ['fv'], null)];
+      : 'Parte il raffrescamento: la pompa di calore lavora al contrario e porta fuori il calore della casa. Pavimento e ventilconvettore rinfrescano.', [gen, 'fcoil'], 'calore', 'fiocco'),
+    MO(12.25, 'Sotto il tetto', 'La mansarda si scalda per prima: partono le due console del climatizzatore dual.', ['clima'], 'mansarda', 'ventola'),
+    MO(13.5, 'Pieno sole', 'Il fotovoltaico copre quello che serve alla casa e carica la batteria. Con il sole in più l\'acqua calda sale a 65 °C.', ['fv', 'acs'], 'soleAcqua', 'sole'),
+    Object.assign(MO(15, 'Le ore più calde', 'In soggiorno aiuta anche il climatizzatore a parete. Fuori, la sua unità esterna butta via il calore.', ['clima'], 'soggiorno', 'ventola'), { dove: { clima: V(-HW + TW + .1, FY + 2.6, 1.8) } }),     // etichetta sullo YA3, non sulla console in mansarda
+    MO(21, 'Sera', 'Il sole è andato: la casa va con la batteria caricata di giorno. Fuori rinfresca e i climatizzatori si spengono.', ['fv'], null, 'luna')];
   const MOMENTI = {
     inverno: [
-      MO(6.25, 'Prima della sveglia', 'Fuori fa freddo. La pompa di calore prende calore dall\'aria e lo passa all\'acqua: pavimento e ventilconvettore scaldano la casa.', ['uhp', 'fcoil'], 'calore'),
-      MO(7.2, 'La doccia', 'L\'acqua calda esce dall\'HP 300PSDX, che la tiene pronta nel suo serbatoio. Finita la doccia si ricarica da solo.', ['acs'], 'doccia'),
+      MO(6.25, 'Prima della sveglia', 'Fuori fa freddo. La pompa di calore prende calore dall\'aria e lo passa all\'acqua: pavimento e ventilconvettore scaldano la casa.', ['uhp', 'fcoil'], 'calore', 'alba'),
+      MO(7.2, 'La doccia', 'L\'acqua calda esce dall\'HP 300PSDX, che la tiene pronta nel suo serbatoio. Finita la doccia si ricarica da solo.', ['acs'], 'doccia', 'doccia'),
       ...SOLE_I,
-      MO(17.5, 'Tramonto', 'Il sole è andato: la casa va con l\'energia della batteria. Fuori torna il freddo e la pompa di calore lavora di più.', ['fv', 'uhp'], null),
-      MO(23, 'Notte', 'La batteria è scarica: il poco che serve arriva dalla rete. La pompa di calore rallenta e tiene la casa calda fino al mattino.', ['uhp', 'rete'], 'calore')],
+      MO(17.5, 'Tramonto', 'Il sole è andato: la casa va con l\'energia della batteria. Fuori torna il freddo e la pompa di calore lavora di più.', ['fv', 'uhp'], null, 'tramonto'),
+      MO(23, 'Notte', 'La batteria è scarica: il poco che serve arriva dalla rete. La pompa di calore rallenta e tiene la casa calda fino al mattino.', ['uhp', 'rete'], 'calore', 'luna')],
     inverno_ibrido: [
-      MO(2.5, 'Notte fonda', 'Fuori scende sotto la soglia impostata: si accende la caldaia e lavora insieme alla pompa di calore.', ['ibrido'], 'ibrido'),
-      MO(6.25, 'Prima della sveglia', 'Pompa di calore e caldaia insieme: pavimento e ventilconvettore scaldano la casa prima che vi alziate.', ['ibrido', 'fcoil'], 'calore'),
-      MO(7.2, 'La doccia', 'La caldaia scalda solo la casa: l\'acqua calda della doccia la fa l\'HP 300PSDX, con la sua pompa di calore.', ['acs'], 'doccia'),
-      MO(9.25, 'Si spegne la caldaia', 'Fuori si scalda: la caldaia si spegne e resta solo la pompa di calore, che consuma meno.', ['ibrido'], 'ibrido'),
+      MO(2.5, 'Notte fonda', 'Fuori scende sotto la soglia impostata: si accende la caldaia e lavora insieme alla pompa di calore.', ['ibrido'], 'ibrido', 'fiamma'),
+      MO(6.25, 'Prima della sveglia', 'Pompa di calore e caldaia insieme: pavimento e ventilconvettore scaldano la casa prima che vi alziate.', ['ibrido', 'fcoil'], 'calore', 'alba'),
+      MO(7.2, 'La doccia', 'La caldaia scalda solo la casa: l\'acqua calda della doccia la fa l\'HP 300PSDX, con la sua pompa di calore.', ['acs'], 'doccia', 'doccia'),
+      MO(9.25, 'Si spegne la caldaia', 'Fuori si scalda: la caldaia si spegne e resta solo la pompa di calore, che consuma meno.', ['ibrido'], 'ibrido', 'fiammaNo'),
       ...SOLE_I,
-      MO(17.5, 'Tramonto', 'Il sole è andato: la casa va con l\'energia della batteria. Fuori torna il freddo e la pompa di calore lavora di più.', ['fv', 'ibrido'], null)],
+      MO(17.5, 'Tramonto', 'Il sole è andato: la casa va con l\'energia della batteria. Fuori torna il freddo e la pompa di calore lavora di più.', ['fv', 'ibrido'], null, 'tramonto')],
     estate: ESTATE('uhp'), estate_ibrido: ESTATE('ibrido'),
   };
   const chiave = (estate = S.estate) => (estate ? 'estate' : 'inverno') + (S.gen === 'ibrido' ? '_ibrido' : '');
@@ -523,7 +530,7 @@ const Casa = (() => {
     accesi = new Set(fermo && R.m ? R.m.chi.flatMap(c => RAMI[c] || []) : []);
   }
   function info() { const lib = R.modo === 'libero', L = lista();
-    return { modo: R.modo, fase: R.fase, i: lib || (R.fase === 'corsa' && R.girata) ? -1 : R.i, n: L.length, lista: L, chiave: chiave(), ombra: R.ombra,
+    return { modo: R.modo, fase: R.fase, i: lib || (R.fase === 'corsa' && R.girata) ? -1 : R.i, n: L.length, lista: L, chiave: chiave(), ombra: R.ombra, alba: S.estate ? 5.6 : 7.7, tram: S.estate ? 21 : 16.8,
       titolo: lib ? (S.estate ? 'Estate' : 'Inverno') : R.m.titolo, testo: lib ? fase(S.t, S.estate) : R.m.testo, chi: lib || R.fase !== 'sosta' ? [] : R.m.chi }; }
   function notifica() { S.play = R.modo === 'auto'; onStato(S, info()); }
   // cosa sta facendo adesso un prodotto (scheda che si apre toccandolo)
@@ -538,6 +545,7 @@ const Casa = (() => {
 
   // camera: segue l'inquadratura del momento; trascinando si gira a mano (e la giornata si ferma). La parte libera dello schermo (fuori da riquadro e barra)
   // la dà l'interfaccia: il centro della camera finisce al centro di quella parte.
+  const VO = { x: 0, y: 0, tx: 0, ty: 0, pronto: false };     // centro della parte libera: si sposta piano quando cambia l'altezza del riquadro
   const cam = { az: rad(-7), el: rad(19), zoom: 1, dist: 20, tgt: V(.6, 2.6, 0) }; let W = 1, H = 1, tv = .27, th = .27, segui = true, quadro = null, entrata = false;
   const base = { tgt: V(.6, 2.6, 0), dist: 20, az: rad(-7), el: rad(19) }, meta = { tgt: V(), dist: 20, az: 0, el: 0 };
   function inquadra(nome) { quadro = nome; const q = QUADRI[nome];
@@ -545,7 +553,7 @@ const Casa = (() => {
     const m = Math.min(tv, th); meta.tgt.copy(q.c); meta.az = rad(q.az); meta.el = rad(q.el); meta.dist = Math.min(base.dist, q.r * Math.sqrt(1 + m * m) / m + .3); }
   function resize(w, h, area) { W = w; H = h; const A = area && area.w > 60 && area.h > 60 ? area : { x: 0, y: 0, w, h };
     camera.aspect = w / h; camera.fov = A.w < A.h ? 40 : 30;
-    camera.setViewOffset(w, h, w / 2 - (A.x + A.w / 2), h / 2 - (A.y + A.h / 2), w, h); camera.updateProjectionMatrix();
+    VO.tx = w / 2 - (A.x + A.w / 2); VO.ty = h / 2 - (A.y + A.h / 2); if (!VO.pronto) { VO.x = VO.tx; VO.y = VO.ty; VO.pronto = true; } camera.setViewOffset(w, h, VO.x, VO.y, w, h); camera.updateProjectionMatrix();
     const t = Math.tan(rad(camera.fov) / 2); tv = t * A.h / h; th = t * A.w / h;
     base.dist = Math.max(4.9 / th, 3.5 / tv) + 2.6; base.el = rad(A.w < A.h ? 16 : 19); base.tgt.set(.6, A.w < A.h ? 2.9 : 2.7, 0);
     inquadra(quadro); }
@@ -553,6 +561,7 @@ const Casa = (() => {
   const etich = V(); let onEtichetta = () => {};
   function tick(dt, now) {
     regia(dt);
+    if (Math.abs(VO.tx - VO.x) + Math.abs(VO.ty - VO.y) > .3) { const k = 1 - Math.exp(-dt * 4); VO.x += (VO.tx - VO.x) * k; VO.y += (VO.ty - VO.y) * k; camera.setViewOffset(W, H, VO.x, VO.y, W, H); }
     if (segui) { const k = 1 - Math.exp(-dt * 2.2); cam.tgt.lerp(meta.tgt, k); cam.az += (meta.az - cam.az) * k; cam.el += (meta.el - cam.el) * k; cam.dist += (meta.dist - cam.dist) * k; cam.zoom += (1 - cam.zoom) * k; }
     for (const tb of tubi) { const v = tb.ramo in VEL ? VEL[tb.ramo] : S.carico > .02 ? .5 + 1.6 * S.carico : 0; tb.tx.offset.x -= dt * tb.verso * v;
       const o = accesi.has(tb.ramo) ? R.foco * attivo(tb.ramo) * .85 : 0; tb.gm.opacity = o; tb.scia.visible = o > .01;
@@ -567,8 +576,12 @@ const Casa = (() => {
     ariaT.geometry.attributes.position.needsUpdate = ariaT.geometry.attributes.color.needsUpdate = true;
     for (const e of ELICHE) e.el.rotation.z -= dt * 16 * ATT[e.chi];
     // persone: la doccia quando è aperta, il divano la sera (e d'estate nel primo pomeriggio, sotto il climatizzatore)
-    const t = S.t, sera = t > 17.25 && t < 22.75, pomeriggio = S.estate && t > 14.25 && t < 16.75, a4 = Math.min(1, dt * 4);
-    [[pDoccia, S.doccia], [pDivano[0], sera || pomeriggio], [pDivano[1], sera]].forEach(([q, on]) => { q.m.opacity += ((on ? 1 : 0) - q.m.opacity) * a4; q.p.visible = q.m.opacity > .02; });
+    // persone: a letto di notte, una sotto la doccia, a colazione e a pranzo al tavolo, d'estate una in poltrona in mansarda, la sera sul divano
+    const t = S.t, a4 = Math.min(1, dt * 4), letto = t >= 22.75 || t < 6.95, colazione = t >= 7.6 && t < 8.3, pranzo = t >= 12.4 && t < 14,
+      poltrona = S.estate && t >= 11.4 && t < 13, sera = t > 17.25 && t < 22.75, pomeriggio = S.estate && t > 14.25 && t < 16.75;
+    [[pDoccia, S.doccia], [pDivano[0], sera || pomeriggio], [pDivano[1], sera && !S.doccia], [pLetto[0], letto], [pLetto[1], letto], [pTavolo[0], colazione], [pTavolo[1], colazione || pranzo], [pPoltrona, poltrona]]
+      .forEach(([q, on]) => { q.m.opacity += ((on ? 1 : 0) - q.m.opacity) * a4; q.p.visible = q.m.opacity > .02; });
+    piumone.material.opacity = pLetto[0].m.opacity; piumone.visible = piumone.material.opacity > .02;
     gocce.material.opacity += (.85 * S.doccia - gocce.material.opacity) * a4; gocce.visible = gocce.material.opacity > .02;
     if (gocce.visible) { const hh = SOFF.y - FY - .08; for (let i = 0; i < ND; i++) { const s = dSeed[i], f = (now * 1.7 + s[1]) % 1;
       dPos[i * 3] = SOFF.x + (s[0] - .5) * .16 + f * .05; dPos[i * 3 + 1] = SOFF.y - f * hh; dPos[i * 3 + 2] = SOFF.z + (s[2] - .5) * .1 + f * .1; } gocce.geometry.attributes.position.needsUpdate = true; }
@@ -610,7 +623,7 @@ const Casa = (() => {
   function ora(t) { if (R.modo !== 'libero') { R.modo = 'libero'; segui = true; inquadra(null); } S.t = clamp(t, 0, 24) % 24; applica(); }
   function stagione(estate) { S.estate = !!estate; if (R.modo === 'libero') applica(); else entraIn(0); }
   entraIn(0);
-  return { scene, camera, resize, tick, down, move, up, wheel, S, R, cam, POSTO, viste, generatore, ibrido: !!IBR, descrivi, info, ora, stagione, play, avanti, indietro, vai,
+  return { persone: () => PERSONE.filter(q => q.p.visible).length, scene, camera, resize, tick, down, move, up, wheel, S, R, cam, POSTO, viste, generatore, ibrido: !!IBR, descrivi, info, ora, stagione, play, avanti, indietro, vai,
     entra() { if (!entrata) { entrata = true; cam.tgt.copy(base.tgt); cam.az = base.az; cam.el = base.el; cam.dist = base.dist; } notifica(); },
     su(apri, stato, etichetta) { onApri = apri; onStato = stato; onEtichetta = etichetta; } };
 })();

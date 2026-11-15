@@ -46,25 +46,27 @@ for (const [W, H, touch] of [[390, 780, true], [844, 390, true], [1280, 720, fal
   ok(await fr.locator('.back').evaluate(a => { const r = a.getBoundingClientRect(); return a.ownerDocument.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === a; }), 'il ritorno è toccabile sopra la schermata d\'inizio');
   await fr.locator('.back').evaluate(a => a.click()); ok(await scena('home'), 'il ritorno dal prodotto riporta alla Home');
   ok(await page.evaluate(() => document.getElementById('prod').hidden), 'uscendo la pagina del prodotto si scarica');
-  // Casa: la giornata a momenti
+  // Casa: la giornata a momenti (attese fino a 60 s: a 1280×720 senza scheda grafica un passaggio tra due momenti può durare più di 20 s)
   await page.click('#bCasa'); ok(await scena('casa'), 'il pulsante porta nella Casa'); ok(page.url().endsWith('#casa'), 'indirizzo #casa');
   let s = await st(); ok(s.modo === 'auto' && s.momento === 0 && (await page.textContent('#cTit')) === 'Prima della sveglia', 'la Casa parte dal primo momento, da sola');
-  ok(await page.evaluate(() => document.querySelectorAll('#cMarks .mk').length) === 6, 'sei momenti segnati sulla barra');
+  ok(await page.evaluate(() => document.querySelectorAll('#cIcons .mi').length) === 6, 'sei simboli dei momenti sulla barra del giorno');
+  ok((await st()).persone === 2, 'prima della sveglia due persone dormono in mansarda');
   const t0 = s.ora; await sleep(1500); ok((await st()).ora !== t0, "l'orologio avanza da solo");
-  ok(await fino(async () => (await st()).foco > .5, 20000), 'sul momento si accendono le scie dei tubi');
+  ok(await fino(async () => (await st()).foco > .5, 60000), 'sul momento si accendono le scie dei tubi');
   const mostrate = () => page.evaluate(() => [...document.querySelectorAll('.tag')].filter(t => t.style.visibility !== 'hidden').map(t => t.textContent));
   let tg = await mostrate(); ok(tg.length === 2 && tg.some(t => t.startsWith('UHP')) && tg.some(t => t.startsWith('F-COIL')), 'si vedono solo le etichette dei prodotti al lavoro: ' + tg.join(', '));
   await foto('casa_momento1');
-  await page.click('#bAvanti'); ok(await fino(async () => { const x = await st(); return x.momento === 1 && x.fase === 'sosta'; }, 20000), 'Avanti porta al momento dopo');
-  ok((await page.textContent('#cTit')) === 'La doccia' && (await st()).doccia === 1, 'secondo momento: la doccia, con l\'acqua calda aperta');
+  await page.locator('#cIcons .mi').nth(1).click(); ok(await fino(async () => { const x = await st(); return x.momento === 1 && x.fase === 'sosta'; }, 60000), 'il simbolo della doccia porta a quel momento');
+  ok((await page.textContent('#cTit')) === 'La doccia' && (await st()).doccia === 1 && (await st()).persone >= 1, 'secondo momento: la doccia, con l\'acqua calda aperta e una persona sotto');
   await sleep(1500); tg = await mostrate(); ok(tg.length === 1 && tg[0].startsWith('HP 300PSDX'), 'nella doccia si vede solo l\'etichetta dell\'HP 300PSDX'); await foto('casa_doccia');
-  await page.click('#bIndietro'); ok(await fino(async () => { const x = await st(); return x.momento === 0 && x.fase === 'sosta'; }, 20000), 'Indietro torna al momento prima');
+  await page.locator('#cIcons .mi').nth(0).click(); ok(await fino(async () => { const x = await st(); return x.momento === 0 && x.fase === 'sosta'; }, 60000), 'il primo simbolo torna al primo momento');
   await page.click('#bPlay'); s = await st(); const t1 = s.ora; await sleep(800); ok(s.modo === 'pausa' && (await st()).ora === t1, 'Pausa ferma la giornata');
+  tg = await mostrate(); ok(tg.length === 2, 'in pausa restano solo le etichette del momento');
   await page.click('#bPlay'); ok((await st()).modo === 'auto', 'Avvia la fa ripartire');
   await page.click('#bEst'); s = await st(); ok(s.estate && s.momento === 0 && (await page.textContent('#cTit')) === 'Mattino', 'Estate: si riparte dal primo momento d\'estate'); await page.click('#bInv');
   // la barra: lasciata vicino a un momento, si riparte da lì; trascinata altrove, la giornata è libera
   await page.evaluate(() => { const r = document.getElementById('sDay'); r.value = 12.6; r.dispatchEvent(new Event('input', { bubbles: true })); r.dispatchEvent(new Event('change', { bubbles: true })); });
-  ok(await fino(async () => { const x = await st(); return x.modo === 'auto' && x.momento === 2 && x.fase === 'sosta'; }, 20000), 'lasciando la barra vicino a un momento, la giornata riparte da quel momento');
+  ok(await fino(async () => { const x = await st(); return x.modo === 'auto' && x.momento === 2 && x.fase === 'sosta'; }, 60000), 'lasciando la barra vicino a un momento, la giornata riparte da quel momento');
   ok((await page.textContent('#cTit')) === 'Il sole lavora', 'terzo momento: il sole lavora'); await sleep(1200); await foto('casa_sole');
   const ora = v => page.evaluate(v => { const s = document.getElementById('sDay'); s.value = v; s.dispatchEvent(new Event('input', { bubbles: true })); }, v);
   const fa = id => page.evaluate(id => window.__casa.Casa.descrivi(id), id);

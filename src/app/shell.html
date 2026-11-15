@@ -52,13 +52,13 @@
   #bHome { position: absolute; right: var(--pad); top: max(var(--pad), env(safe-area-inset-top)); pointer-events: auto; min-height: 40px; padding: 0 14px; font-size: 14px }
   #cSpot { position: absolute; inset: 0; pointer-events: none; opacity: 0;
     background: radial-gradient(ellipse var(--rx, 40vw) var(--ry, 40vh) at var(--sx, 50%) var(--sy, 50%), rgba(4,7,9,0) 50%, rgba(4,7,9,.5) 100%) }
-  #cCard { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 52px); width: min(calc(100% - 2 * var(--pad)), 440px); pointer-events: auto;
-    padding: 12px 16px 14px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px) }
+  #cCard { position: absolute; left: var(--pad); top: calc(max(var(--pad), env(safe-area-inset-top)) + 52px); width: min(calc(100% - 2 * var(--pad)), 420px); pointer-events: auto;
+    padding: 9px 14px 10px; border-radius: 14px; background: rgba(13,18,22,.72); border: 1px solid var(--line); backdrop-filter: blur(10px) }
   #cHead { display: flex; align-items: center; gap: 12px }
-  #cHour { font: 700 30px/1 var(--display); letter-spacing: .03em; font-variant-numeric: tabular-nums }
-  #cTit { flex: 1; min-width: 0; font: 700 17px/1.1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--green) }
-  #cNum { font: 600 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); white-space: nowrap }
-  #cText { margin: 8px 0 0; font-size: 15px; line-height: 1.38; min-height: 4.14em }
+  #cHour { font: 700 24px/1 var(--display); letter-spacing: .03em; font-variant-numeric: tabular-nums }
+  #cTit { flex: 1; min-width: 0; font: 700 15px/1.1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--green); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  #cNum { font: 600 11px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); white-space: nowrap }
+  #cText { margin: 5px 0 0; font-size: 14px; line-height: 1.36 }
   #cCard.nuovo #cTit, #cCard.nuovo #cText { animation: nuovo .6s ease both } @keyframes nuovo { from { opacity: 0; transform: translateY(5px) } }
   #cBar { position: absolute; left: 50%; bottom: max(var(--pad), env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(calc(100% - 2 * var(--pad)), 900px); pointer-events: auto;
     display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(10px) }
@@ -66,22 +66,27 @@
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden }
   .seg button { white-space: nowrap; min-height: 40px; padding: 0 14px; border: 0; background: transparent; font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer }
   .seg button[aria-pressed=true] { background: var(--green); color: #10140f }
-  #cRun { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px }
+  #cRun { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px }
   .tondo { flex: none; width: 42px; height: 42px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; cursor: pointer; font: 600 24px/1 var(--display) }
-  .tondo:hover, .tondo:focus-visible { border-color: var(--green) }
   #bPlay { width: 46px; height: 46px; background: var(--green); color: #10140f; border-color: transparent } #bPlay svg { width: 16px; height: 16px; fill: currentColor }
-  #cLine { position: relative; flex: 1; min-width: 0; height: 46px }
-  #cLine input { position: absolute; left: 0; right: 0; top: 0 }
-  #cMarks { position: absolute; left: 13px; right: 13px; top: 0; height: 34px; pointer-events: none }
-  .mk { position: absolute; top: 17px; width: 0; height: 0 }
-  .mk::before { content: ""; position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: #0d1216; border: 2px solid rgba(255,255,255,.65); transition: transform .3s }
-  .mk.fatto::before { background: var(--green); border-color: var(--green) } .mk.ora::before { background: #fff; border-color: #fff; transform: scale(1.7) }
-  .mk span { display: none; position: absolute; left: 0; top: 13px; transform: translateX(-50%); font: 600 11px/1 var(--body); color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums } .mk.ora span { display: block }
-  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer; --f: 30% }
-  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(90deg, rgba(169,189,143,.55) var(--f), rgba(255,255,255,.2) var(--f)) }
-  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,.2) } input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: rgba(169,189,143,.55) }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--green); border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.5) }
-  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--green); border: 3px solid #fff }
+  /* barra del giorno: sopra i simboli dei momenti (si toccano), in mezzo il cielo della giornata con l'ora che scorre, sotto le ore */
+  #cDay { position: relative; flex: 1; min-width: 0; display: grid; gap: 3px }
+  #cIcons { position: relative; height: 32px }
+  .mi { position: absolute; top: 0; width: 32px; height: 32px; margin-left: -16px; padding: 0; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.35); background: #10161b; color: #dfe6e9; cursor: pointer; display: grid; place-items: center; transition: background .3s, transform .3s, opacity .3s }
+  .mi svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round }
+  .mi.fatto { opacity: .55 } .mi.ora { background: var(--green); color: #10140f; border-color: #fff; transform: scale(1.15) }
+  #cTrack { position: relative; height: 26px; border-radius: 13px; background-color: #142338; background-repeat: no-repeat; background-position: 13px 0; background-size: calc(100% - 26px) 100% }
+  #cTicks { position: absolute; left: 13px; right: 13px; top: 0; bottom: 0; pointer-events: none }
+  #cTicks i { position: absolute; top: 4px; bottom: 4px; width: 2px; margin-left: -1px; border-radius: 1px; background: rgba(255,255,255,.75) }
+  #cTrack input { position: absolute; inset: 0; height: 26px }
+  #sDay::-webkit-slider-runnable-track { height: 26px; background: transparent } #sDay::-moz-range-track { background: transparent } #sDay::-moz-range-progress { background: transparent }
+  #sDay::-webkit-slider-thumb { width: 26px; height: 26px; margin-top: 0; background: #fff; border: 3px solid #10140f; box-shadow: 0 0 0 2px #fff, 0 2px 10px rgba(0,0,0,.6) }
+  #sDay::-moz-range-thumb { width: 20px; height: 20px; background: #fff; border: 3px solid #10140f }
+  #cOre { position: relative; height: 12px; margin: 0 13px; font: 500 10px/1 var(--body); color: var(--dim); font-variant-numeric: tabular-nums }
+  #cOre span { position: absolute; top: 0; transform: translateX(-50%) } #cOre span:nth-child(1) { left: 0 } #cOre span:nth-child(2) { left: 25% } #cOre span:nth-child(3) { left: 50% } #cOre span:nth-child(4) { left: 75% } #cOre span:nth-child(5) { left: 100% }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 34px; margin: 0; background: transparent; cursor: pointer }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; border-radius: 50% }
+  input[type=range]::-moz-range-thumb { border-radius: 50% }
   #cSheet { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--barH, 70px) + max(var(--pad), env(safe-area-inset-bottom)) + 10px); width: min(calc(100% - 2 * var(--pad)), 420px); pointer-events: auto;
     padding: 14px 16px 16px; border-radius: 16px; background: rgba(13,18,22,.95); border: 1px solid var(--green); box-shadow: 0 12px 40px rgba(0,0,0,.5); display: grid; gap: 10px }
   #cSheet[hidden] { display: none }
@@ -93,14 +98,14 @@
   .tag::after { content: ""; position: absolute; left: calc(50% + var(--sx, 0px)); top: 100%; width: 2px; height: var(--gambo, 14px); background: var(--green); transform: translateX(-50%) }
   .tag.su { animation: pulsa 1.8s ease-in-out infinite } @keyframes pulsa { 50% { box-shadow: 0 0 0 7px rgba(169,189,143,.32), 0 6px 22px rgba(0,0,0,.45) } }
   @media (max-width: 560px) {
-    #cCard { padding: 10px 14px 12px } #cHour { font-size: 26px } #cTit { font-size: 15px } #cText { font-size: 14px; min-height: 5.52em }
+    #cCard { padding: 8px 12px 9px } #cHour { font-size: 22px } #cTit { font-size: 14px } #cNum { display: none } #cText { font-size: 13.5px; line-height: 1.33 }
     #cBar { flex-wrap: wrap; gap: 8px; padding: 8px 10px } #cOpt { width: 100%; justify-content: space-between } .seg button { min-height: 36px; padding: 0 9px; font-size: 12px; letter-spacing: .05em } #cRun { flex-basis: 100% }
-    #cLine { height: 34px } .mk span { display: none } .tag { min-height: 34px; padding: 0 12px; font-size: 13px } }
+    .tag { min-height: 34px; padding: 0 12px; font-size: 13px } }
   @media (max-height: 460px) {
     #cCard { top: calc(max(var(--pad), env(safe-area-inset-top)) + 38px); width: min(36%, 300px); padding: 8px 12px 9px }
-    #cHead { flex-wrap: wrap; gap: 2px 10px } #cHour { font-size: 22px } #cTit { font-size: 14px } #cNum { display: none } #cText { margin-top: 5px; font-size: 12.5px; line-height: 1.32; min-height: 6.6em }
+    #cHour { font-size: 20px } #cTit { font-size: 13px } #cNum { display: none } #cText { margin-top: 4px; font-size: 12.5px; line-height: 1.3 }
     #cBar { width: min(calc(100% - 2 * var(--pad)), 820px); flex-wrap: nowrap; padding: 5px 8px; gap: 8px } #cOpt { width: auto } .seg button { min-height: 34px; padding: 0 9px; font-size: 11.5px }
-    .tondo { width: 36px; height: 36px; font-size: 20px } #bPlay { width: 40px; height: 40px } #cLine { height: 34px } .mk span { display: none } #bHome { min-height: 36px; font-size: 13px; padding: 0 12px }
+    #bPlay { width: 40px; height: 40px } #cIcons { height: 28px } .mi { width: 28px; height: 28px; margin-left: -14px } .mi svg { width: 15px; height: 15px } #cOre { display: none } #bHome { min-height: 36px; font-size: 13px; padding: 0 12px }
     #cSheet { padding: 10px 14px 12px; gap: 6px } #shNome { font-size: 18px } #shText { font-size: 13px; min-height: 0 } .tag { min-height: 32px; font-size: 12px } }
 
   #prod { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg) } #prod[hidden] { display: none }
@@ -154,10 +159,12 @@
         <div class="seg" id="cGen" role="group" aria-label="Generatore" hidden><button id="bUhp" type="button" aria-pressed="true">Pompa di calore</button><button id="bIbr" type="button" aria-pressed="false">Ibrido</button></div>
       </div>
       <div id="cRun">
-        <button class="tondo" id="bIndietro" type="button" aria-label="Momento prima">&#8249;</button>
         <button class="tondo" id="bPlay" type="button" aria-label="Pausa"></button>
-        <div id="cLine"><input type="range" id="sDay" min="0" max="24" step="0.05" value="6" aria-label="Ora del giorno"><div id="cMarks"></div></div>
-        <button class="tondo" id="bAvanti" type="button" aria-label="Momento dopo">&#8250;</button>
+        <div id="cDay">
+          <div id="cIcons"></div>
+          <div id="cTrack"><div id="cTicks"></div><input type="range" id="sDay" min="0" max="24" step="0.05" value="6" aria-label="Ora del giorno"></div>
+          <div id="cOre"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+        </div>
       </div>
     </div>
   </section>
