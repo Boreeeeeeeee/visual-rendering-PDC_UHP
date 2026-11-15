@@ -551,7 +551,7 @@ const Casa = (() => {
   // intonaco: dentro chiaro, fuori color sabbia (la faccia esterna dei muri ha un materiale suo)
   const intonaco = sd => rep(cv(256, 256, (c, w, h) => { c.fillStyle = '#f4f1ea'; c.fillRect(0, 0, w, h); const r = rng(sd); for (let i = 0; i < 7000; i++) { c.fillStyle = r() < .5 ? `rgba(255,255,255,${.08 + r() * .1})` : `rgba(70,58,40,${.05 + r() * .07})`; c.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); } }), 3, 3);
   const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xdcd6c8, map: intonaco(17), roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
-  const facciata = std({ color: 0xe6cfa2, map: intonaco(19), roughness: .95 }), DZ = -1.55;     // DZ: centro della porta d'ingresso, sulla parete di sinistra
+  const facciata = std({ color: 0xe6cfa2, map: intonaco(19), roughness: .95 }), DZ = -.95;     // DZ: centro della porta d'ingresso, sulla parete di sinistra (dietro c'è la cucina)
   const sez = m => [m, m, m, m, cut, m];   // faccia +z = taglio
   const g = new THREE.Group(); scene.add(g);
   const add = (geo, mat, x, y, z, parent = g) => { const o = mesh(geo, mat, x, y, z); parent.add(o); return o; };
@@ -589,10 +589,6 @@ const Casa = (() => {
 
   // arredi essenziali, solo per far leggere le stanze
   const soft = std({ color: 0x5d6f7c, roughness: .95 }), legno = std({ color: 0x6b5238, roughness: .7 }), bianco = std({ color: 0xf1f1ee, roughness: .4 }), nero = std({ color: 0x17191b, roughness: .5 });
-  add(rbox(1.9, .38, .8, .06), soft, -1.6, FY + .24, -HD + TW + .5); add(rbox(1.9, .5, .2, .06), soft, -1.6, FY + .6, -HD + TW + .16);
-  for (const x of [-2.5, -.7]) add(rbox(.18, .5, .8, .05), soft, x, FY + .35, -HD + TW + .5);
-  const rug = add(new THREE.PlaneGeometry(2.2, 1.3), std({ color: 0x8c3f32, roughness: 1 }), -1.6, FY + .006, .1); rug.rotation.x = -PI / 2;
-  add(rbox(1.0, .06, .55, .02), legno, -1.6, FY + .36, .1); for (const [x, z] of [[-2, -.1], [-1.2, -.1], [-2, .3], [-1.2, .3]]) add(cyl(.02, .34, 8), nero, x, FY + .17, z);
   add(box(.04, .62, 1.05), nero, -HW + TW + .03, FY + 1.35, .9);    // televisore sulla parete sinistra
   const vetro = new THREE.MeshBasicMaterial({ color: 0x9cc4e4 });
   const finestra = (x, w, h, y) => { add(box(w + .12, h + .12, .03), bianco, x, y, -HD + TW + .012); add(box(w, h, .02), vetro, x, y, -HD + TW + .026); add(box(.04, h, .03), bianco, x, y, -HD + TW + .03); };
@@ -601,7 +597,7 @@ const Casa = (() => {
   add(box(.02, 1.9, .85), new THREE.MeshStandardMaterial({ color: 0xbfe0ee, transparent: true, opacity: .28, roughness: .1 }), 1.13, FY + .98, -HD + TW + .45);
   const cromo = std({ color: 0xc9ccd0, metalness: .9, roughness: .2 });     // colonna doccia a sinistra della finestra del bagno, che va da x .39 a 1.11 con il telaio
   add(cyl(.012, 1.95, 8), cromo, .3, FY + 1.03, -HD + TW + .1); add(box(.024, .024, .14), cromo, .3, FY + 2.0, -HD + TW + .17); add(cyl(.08, .02, 16), cromo, .3, FY + 1.98, -HD + TW + .26);
-  add(rbox(.5, .14, .4, .03), bianco, P1 + .3, FY + .85, .5); add(box(.42, .7, .32), legno, P1 + .28, FY + .43, .5);     // lavabo
+  add(rbox(.5, .14, .4, .03), bianco, P1 + .3, FY + .85, .2); add(box(.42, .7, .32), legno, P1 + .28, FY + .43, .2);     // lavabo, contro la parete divisoria (sopra lo specchio)
 
   // ───────── esterno (passo 3 del 15 novembre): coppi, colmo, gronde e pluviali, zoccolo, marciapiede, porta, finestra con persiane, scala, giardino, cielo ─────────
   // Tutto generico e ricostruito, come il resto della casa: serve a far sembrare vera la casa, non è un prodotto Unical.
@@ -683,6 +679,62 @@ const Casa = (() => {
   for (let i = 0; i < NS; i++) { const a = RS() * PI * 2, e = .12 + RS() * 1.3, r = CIELO_R * .92; sPos[i * 3] = Math.cos(a) * Math.cos(e) * r; sPos[i * 3 + 1] = Math.sin(e) * r; sPos[i * 3 + 2] = Math.sin(a) * Math.cos(e) * r; }
   const stelle = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(sPos, 3)), new THREE.PointsMaterial({ size: 1.8, sizeAttenuation: false, color: 0xffffff, transparent: true, opacity: 0, fog: false, depthWrite: false }));
   stelle.renderOrder = -9; scene.add(stelle);
+
+  // ───────── interni (passo 4 del 15 novembre): cucina, pranzo, libreria e piante in soggiorno; bagno completo; scaffali in lavanderia; camera in mansarda; battiscopa ─────────
+  // Generici e ricostruiti come il resto della casa. Colori neutri: i protagonisti restano i prodotti Unical.
+  const rovere = std({ color: 0xb48a5e, roughness: .6 }), laccato = std({ color: 0xeeece6, roughness: .45 }), inox = std({ color: 0xc4c8cb, roughness: .3, metalness: .8 }), vetroNero = std({ color: 0x111315, roughness: .15, metalness: .2 });
+  const tAnte = cv(256, 64, (c, w, h) => { c.fillStyle = '#f2f0ea'; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(80,70,60,.35)'; for (let x = 0; x <= w; x += 64) c.fillRect(x, 0, 2, h); c.fillRect(0, 14, w, 1); c.fillStyle = 'rgba(60,60,60,.6)'; for (let x = 24; x < w; x += 64) c.fillRect(x, 6, 16, 3); });
+  const zb = -HD + TW;                                                                                  // faccia interna del muro di fondo
+  // cucina sotto la finestra: frigorifero a colonna a sinistra, basi con lavello sotto la finestra e piano a induzione a destra
+  add(box(.56, 1.95, .6), laccato, -HW + TW + .29, FY + .975, zb + .31); add(box(.02, .5, .02), inox, -HW + TW + .52, FY + 1.35, zb + .62);
+  { const L = 2.0, x0 = -HW + TW + .58, xc = x0 + L / 2, t = tAnte.clone(); t.repeat.set(L / 2.4, 1); t.wrapS = THREE.RepeatWrapping; t.needsUpdate = true;
+    add(box(L, .84, .58), [laccato, laccato, laccato, laccato, std({ map: t, roughness: .45 }), laccato], xc, FY + .44, zb + .3); add(box(L + .02, .04, .62), rovere, xc, FY + .88, zb + .31);
+    add(box(.5, .02, .4), inox, -1.3, FY + .895, zb + .3); add(cyl(.012, .25, 8), inox, -1.3, FY + 1.02, zb + .1); add(box(.02, .02, .14), inox, -1.3, FY + 1.14, zb + .17);
+    add(box(.56, .012, .5), vetroNero, x0 + L - .38, FY + .906, zb + .3);
+    add(cyl(.09, .14, 12), std({ color: 0x9c6b48, roughness: .8 }), x0 + .3, FY + .97, zb + .22); add(new THREE.IcosahedronGeometry(.13, 1), std({ color: 0x5a7d38, roughness: .9, flatShading: true }), x0 + .3, FY + 1.13, zb + .22); }
+  // tavolo da pranzo rotondo con due sedie
+  { const tx = -1.35, tz = -.95; add(cyl(.45, .04, 32), rovere, tx, FY + .74, tz); add(cyl(.04, .7, 10), antr, tx, FY + .37, tz); add(cyl(.22, .03, 20), antr, tx, FY + .015, tz);
+    for (const s of [-1, 1]) { const cx = tx + s * .62, n = new THREE.Group(); n.position.set(cx, FY, tz); n.rotation.y = s > 0 ? -PI / 2 : PI / 2; g.add(n);
+      n.add(mesh(box(.42, .04, .42), rovere, 0, .45, 0), mesh(box(.42, .42, .04), rovere, 0, .68, -.19));
+      for (const [lx, lz] of [[-.18, -.18], [.18, -.18], [-.18, .18], [.18, .18]]) n.add(mesh(cyl(.014, .45, 6), antr, lx, .225, lz)); } }
+  // libreria sulla parete divisoria, libri di colori spenti
+  { const bx = P1 - .2, z0 = -1.65, z1 = -.6, hh = 1.9; for (const y of [0, .45, .9, 1.35, 1.8]) add(box(.3, .025, z1 - z0), rovere, bx, FY + .02 + y, (z0 + z1) / 2);
+    for (const z of [z0, z1]) add(box(.3, hh, .025), rovere, bx, FY + hh / 2, z);
+    const r = rng(71), col = [0x7d8a8f, 0xa98f6a, 0x6f5a4a, 0x9aa38c, 0xc2b8a3, 0x5d6b77], libri = new THREE.InstancedMesh(box(1, 1, 1), std({ roughness: .8 }), 60), m4 = new THREE.Matrix4(); let k = 0;
+    for (const y of [0, .45, .9, 1.35]) { let z = z0 + .03; while (z < z1 - .08 && k < 60) { const w = .03 + r() * .03, h = .26 + r() * .12; m4.makeScale(.2, h, w).setPosition(bx, FY + .035 + y + h / 2, z + w / 2); libri.setMatrixAt(k, m4); libri.setColorAt(k, new THREE.Color(col[(r() * col.length) | 0])); z += w + .004; k++; if (r() < .08) z += .12; } }
+    libri.count = k; g.add(libri); }
+  // divano davanti alla televisione (parete di sinistra), tavolino, tappeto, lampada da terra, pianta grande nell'angolo davanti
+  add(rbox(.65, .38, 1.9, .06), soft, -.925, FY + .24, .9); add(rbox(.2, .5, 1.9, .06), soft, -.5, FY + .6, .9);
+  for (const z of [.04, 1.76]) add(rbox(.8, .5, .18, .05), soft, -.95, FY + .35, z);
+  { const t = add(new THREE.PlaneGeometry(2.3, 1.8), std({ color: 0x8c5a48, roughness: 1 }), -1.65, FY + .006, .9); t.rotation.x = -PI / 2; }
+  add(rbox(.5, .05, 1.0, .02), rovere, -1.85, FY + .4, .9); for (const [x, z] of [[-2.05, .45], [-1.65, .45], [-2.05, 1.35], [-1.65, 1.35]]) add(cyl(.018, .38, 8), antr, x, FY + .19, z);
+  add(cyl(.012, 1.55, 8), antr, -.45, FY + .78, -.27); add(cyl(.16, .02, 18), antr, -.45, FY + .01, -.27); add(new THREE.CylinderGeometry(.12, .18, .26, 20, 1, true), std({ color: 0xf3ead7, roughness: .7, side: THREE.DoubleSide }), -.45, FY + 1.6, -.27);     // in fondo al divano
+  const vaso = (x, z, s) => { add(new THREE.CylinderGeometry(.16 * s, .12 * s, .34 * s, 18), std({ color: 0xd9d4ca, roughness: .7 }), x, FY + .17 * s, z); const r = rng(Math.round(x * 31 + z * 17) >>> 0);
+    for (let k = 0; k < 6; k++) add(new THREE.IcosahedronGeometry((.16 + r() * .1) * s, 1), std({ color: k % 2 ? 0x4f7533 : 0x3f6129, roughness: .9, flatShading: true }), x + (r() - .5) * .25 * s, FY + (.5 + r() * .55) * s, z + (r() - .5) * .25 * s); };
+  vaso(-2.68, -.12, 1.05);     // tra la porta e il ventilconvettore, dietro di lui: davanti a sinistra lo copriva, accanto al divano affollava la doccia
+  // bagno: specchio sopra il lavabo, vaso sanitario, rivestimento in piastrelle fino a 1,2 m, tappetino
+  const tPias = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#e9ecec'; c.fillRect(0, 0, w, h); c.strokeStyle = '#c9cfd0'; c.lineWidth = 2; c.strokeRect(0, 0, w, h); }), 1, 1);
+  const piastrelle = (L, x, z, rotY) => { const t = tPias.clone(); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(L / .2, 1.2 / .2); t.needsUpdate = true; const o = add(box(L, 1.2, .008), std({ map: t, roughness: .3 }), x, FY + .6, z); o.rotation.y = rotY; };
+  piastrelle(P2 - P1 - .1, (P1 + P2) / 2, zb + .005, 0); piastrelle(2.6, P1 + .055, -1.08, PI / 2); piastrelle(2.6, P2 - .055, -1.08, PI / 2);
+  add(box(.015, .7, .5), std({ color: 0xbfd2dc, roughness: .05, metalness: .9 }), P1 + .07, FY + 1.5, .2); add(box(.02, .74, .54), bianco, P1 + .06, FY + 1.5, .2);
+  { const wx = P2 - .25, wz = -.75; add(rbox(.4, .4, .36, .08), bianco, wx - .02, FY + .2, wz); add(rbox(.5, .05, .38, .02), bianco, wx - .07, FY + .42, wz); add(rbox(.18, .42, .4, .03), bianco, wx + .1, FY + .62, wz); }
+  { const t = add(new THREE.PlaneGeometry(.6, .4), std({ color: 0x9bb2bd, roughness: 1 }), .7, FY + .007, -1.25); t.rotation.x = -PI / 2; }
+  // lavanderia: scaffali sulla parete di destra con flaconi e scatole, cesto della biancheria
+  { const sx = HW - TW - .15; for (const y of [1.5, 1.9]) { add(box(.3, .025, .8), rovere, sx, FY + y, -1.5); for (const z of [-1.8, -1.2]) add(box(.02, .12, .02), antr, HW - TW - .01, FY + y - .06, z); }
+    const r = rng(83), cols = [0x8fb3c9, 0xe8e4d8, 0xc98f6a, 0xa3b88f, 0xd9c27a]; for (const y of [1.5, 1.9]) for (let z = -1.83; z < -1.2; z += .13 + r() * .05) { const h = .14 + r() * .12;
+      add(rbox(.1, h, .09, .015), std({ color: cols[(r() * cols.length) | 0], roughness: .6 }), sx - .02, FY + y + .0125 + h / 2, z + .05); } }
+  add(new THREE.CylinderGeometry(.22, .18, .5, 20, 1, true), std({ color: 0xc9b48f, roughness: .9, side: THREE.DoubleSide }), 2.42, FY + .25, -.55);     // accanto alla lavatrice: davanti copriva l'HP 300PSDX
+  // mansarda: camera con letto matrimoniale, comodino con lampada, tappeto e poltrona
+  { const bx = -1.6, bz = -1.25; add(rbox(1.6, .32, 2.0, .04), rovere, bx, FM + .16, bz); add(rbox(1.56, .2, 1.95, .08), std({ color: 0xf1efe9, roughness: .9 }), bx, FM + .42, bz + .01);
+    add(rbox(1.5, .08, 1.1, .05), std({ color: 0x8aa0ad, roughness: .95 }), bx, FM + .54, bz + .42); for (const s of [-1, 1]) add(rbox(.6, .14, .35, .06), bianco, bx + s * .4, FM + .58, bz - .72);
+    add(rbox(1.6, .9, .06, .02), rovere, bx, FM + .45, -HD + TW + .05);
+    add(rbox(.4, .45, .38, .02), rovere, bx - 1.08, FM + .225, -HD + TW + .22); add(cyl(.06, .3, 12), laccato, bx - 1.08, FM + .6, -HD + TW + .22);     // comodino a sinistra: a destra c'è la batteria
+    const t = add(new THREE.PlaneGeometry(2.4, 1.9), std({ color: 0xb9a68c, roughness: 1 }), bx, FM + .006, bz + .6); t.rotation.x = -PI / 2;
+    add(rbox(.7, .4, .7, .08), std({ color: 0x9b8a74, roughness: .95 }), .55, FM + .2, .9); add(rbox(.7, .45, .16, .06), std({ color: 0x9b8a74, roughness: .95 }), .55, FM + .55, .62); }
+  // battiscopa bianchi lungo i muri e le pareti divisorie (sul muro di sinistra si ferma alla porta)
+  { const bat = std({ color: 0xf4f2ec, roughness: .5 }), bs = (L, x, z, rotY) => { const o = add(box(L, .05, .012), bat, x, FY + .025, z); o.rotation.y = rotY; };
+    bs(DZ - .5 - zb, -HW + TW + .006, (zb + DZ - .5) / 2, PI / 2); bs(HD - DZ - .5, -HW + TW + .006, (DZ + .5 + HD) / 2, PI / 2); bs(HD - zb, HW - TW - .006, (zb + HD) / 2, PI / 2);
+    bs(HW - TW - P2 - .05, (P2 + .05 + HW - TW) / 2, zb + .006, 0); for (const x of [P1 - .056, P2 + .056]) bs(3.2, x, -1.0, PI / 2); }     // nel bagno ci sono le piastrelle
 
   const lampM = new THREE.MeshBasicMaterial({ color: 0x40382a });
   // luci di casa: plafoniere a soffitto. Un lampadario appeso, guardando la casa dal fronte, finiva davanti alle finestre o alla testa dell'HP 300PSDX
@@ -845,7 +897,7 @@ const Casa = (() => {
 
   // persone: sagome semplici, solo per far capire i momenti della giornata (chi fa la doccia, chi la sera sta sul divano). Generiche, non a misura.
   const caps = (r, l) => new THREE.CapsuleGeometry(r, l, 4, 12);
-  function persona(posa, x, y, z) {
+  function persona(posa, x, y, z, ry = 0) {
     const p = new THREE.Group(), m = std({ color: 0xc9d2da, roughness: .6, transparent: true, opacity: 0 });
     const pz = (geo, px, py, pzz, rx = 0, rz = 0) => { const o = mesh(geo, m, px, py, pzz); o.rotation.set(rx, 0, rz); p.add(o); return o; };
     if (posa === 'seduta') {          // origine sulla seduta: cosce in avanti, gambe giù fino al pavimento (43 cm più in basso)
@@ -856,10 +908,10 @@ const Casa = (() => {
       for (const sx of [-1, 1]) { pz(caps(.066, .72), sx * .095, .43, 0); if (d) pz(caps(.045, .2), sx * .15, 1.55, .03, 0, sx * .43); else pz(caps(.045, .5), sx * .23, 1.1, .02); }
       pz(caps(.155, .3), 0, 1.13, 0).scale.set(1, 1, .68); pz(cyl(.045, .1, 12), 0, 1.47, 0); pz(new THREE.SphereGeometry(.105, 18, 14), 0, 1.6, 0);
     }
-    p.position.set(x, y, z); p.visible = false; g.add(p); return { p, m };
+    p.position.set(x, y, z); p.rotation.y = ry; p.visible = false; g.add(p); return { p, m };
   }
   const pDoccia = persona('doccia', .56, FY + .06, -1.9);     // accanto al getto: l'acqua che scende si vede
-  const pDivano = [persona('seduta', -1.6, FY + .43, -1.92), persona('seduta', -2.2, FY + .43, -1.92)];
+  const pDivano = [persona('seduta', -.85, FY + .43, .55, -PI / 2), persona('seduta', -.85, FY + .43, 1.3, -PI / 2)];     // sul divano, rivolte alla televisione
   // acqua della doccia: gocce che scendono dal soffione quando la doccia è aperta
   const ND = 110, dPos = new Float32Array(ND * 3), RD = rng(77), dSeed = Array.from({ length: ND }, () => [RD(), RD(), RD()]), SOFF = V(.3, FY + 1.96, -HD + TW + .26);
   const gocce = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(dPos, 3)), new THREE.PointsMaterial({ size: .055, color: 0x5cb8ff, transparent: true, opacity: 0, depthWrite: false }));
