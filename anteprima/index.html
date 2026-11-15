@@ -548,7 +548,10 @@ const Casa = (() => {
   // Piano terra alto 2,80 m: lo YA3 in soggiorno vuole 2,3 m sotto e 15 cm sopra (manuale 00339164 p.12, fig. 3.1), cioè almeno 2,75 m.
 
   // materiali: i tagli (pareti, solaio e tetto sezionati) hanno un colore a parte, come in un disegno in sezione
-  const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xd8d2c4, roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
+  // intonaco: dentro chiaro, fuori color sabbia (la faccia esterna dei muri ha un materiale suo)
+  const intonaco = sd => rep(cv(256, 256, (c, w, h) => { c.fillStyle = '#f4f1ea'; c.fillRect(0, 0, w, h); const r = rng(sd); for (let i = 0; i < 7000; i++) { c.fillStyle = r() < .5 ? `rgba(255,255,255,${.08 + r() * .1})` : `rgba(70,58,40,${.05 + r() * .07})`; c.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); } }), 3, 3);
+  const cut = std({ color: 0xe9e2d0, roughness: .9 }), wall = std({ color: 0xdcd6c8, map: intonaco(17), roughness: .92 }), slab = std({ color: 0x8d8b84, roughness: .95 });
+  const facciata = std({ color: 0xe6cfa2, map: intonaco(19), roughness: .95 }), DZ = -1.55;     // DZ: centro della porta d'ingresso, sulla parete di sinistra
   const sez = m => [m, m, m, m, cut, m];   // faccia +z = taglio
   const g = new THREE.Group(); scene.add(g);
   const add = (geo, mat, x, y, z, parent = g) => { const o = mesh(geo, mat, x, y, z); parent.add(o); return o; };
@@ -567,15 +570,21 @@ const Casa = (() => {
   const fLiv = std({ map: tWood, roughness: .7, emissive: 0x000000 }), fBag = std({ map: tTile, roughness: .5, emissive: 0x000000 });
   const fl = (x0, x1, m) => { const o = add(new THREE.PlaneGeometry(x1 - x0, 2 * HD - TW), m, (x0 + x1) / 2, FY + .002, TW / 2); o.rotation.x = -PI / 2; return o; };
   fl(-HW + TW, P1, fLiv); fl(P1, HW - TW, fBag);
-  add(box(2 * HW, H2, TW), wall, 0, FY + H2 / 2, -HD + TW / 2);
-  add(box(2 * HW - 2 * TW, .2, 2 * HD - TW), sez(slab), 0, FY + WH + .1, TW / 2);      // solaio della mansarda
-  for (const s of [-1, 1]) add(box(TW, H2, 2 * HD), sez(wall), s * (HW - TW / 2), FY + H2 / 2, 0);
+  add(box(2 * HW, H2, TW), [wall, wall, wall, wall, wall, facciata], 0, FY + H2 / 2, -HD + TW / 2);
+  { const x0 = -HW + TW, x1 = HW - TW, z0 = -HD + TW, z1 = HD, bx0 = 1.82, bx1 = HW - TW, bz0 = 1.35, bz1 = 2.55, y = FY + WH + .1;      // solaio della mansarda, con il buco della scala a chiocciola
+    const pz = (a, b, c, d) => add(box(b - a, .2, d - c), sez(slab), (a + b) / 2, y, (c + d) / 2);
+    pz(x0, bx0, z0, z1); pz(bx0, bx1, z0, bz0); pz(bx0, bx1, bz1, z1); }
+  for (const s of [-1, 1]) add(box(TW, H2, 2 * HD), s > 0 ? [facciata, wall, wall, wall, cut, wall] : [wall, facciata, wall, wall, cut, wall], s * (HW - TW / 2), FY + H2 / 2, 0);
   for (const x of [P1, P2]) add(box(.1, WH, 2 * HD - 2.0), sez(wall), x, FY + WH / 2, -1.0);
   // timpano posteriore e tetto a due falde con il colmo dal fronte al retro: il fronte è tagliato, le falde restano
   const tri = new THREE.Shape(); tri.moveTo(-HW, 0); tri.lineTo(HW, 0); tri.lineTo(0, RH); tri.closePath();
   add(new THREE.ExtrudeGeometry(tri, { depth: TW, bevelEnabled: false }), wall, 0, FY + H2, -HD);
-  const tRoof = rep(cv(64, 64, (c, w, h) => { c.fillStyle = '#4a3f3a'; c.fillRect(0, 0, w, h); c.fillStyle = '#3a312d'; for (let x = 0; x < w; x += 16) c.fillRect(x, 0, 2, h); c.fillRect(0, 0, w, 3); }), 10, 12);
-  const roofM = std({ map: tRoof, roughness: .85 }), SPORTO = .4, ang = Math.atan(RH / HW), LF = (HW + SPORTO) / Math.cos(ang);
+  // coppi in cotto: file che scendono lungo la falda (bande chiare al centro e scure ai lati), con la riga dove un coppo copre quello sotto
+  const tCoppo = cv(256, 256, (c, w, h) => { const r = rng(29); for (let y = 0; y < h; y += 32) { const gr = c.createLinearGradient(0, y, 0, y + 32); gr.addColorStop(0, '#5e2a18'); gr.addColorStop(.5, '#c27650'); gr.addColorStop(1, '#5e2a18'); c.fillStyle = gr; c.fillRect(0, y, w, 32);
+    for (let x = (y / 32 % 2) * 32 + r() * 8; x < w; x += 64) { const g2 = c.createLinearGradient(x, 0, x + 10, 0); g2.addColorStop(0, 'rgba(30,10,4,.7)'); g2.addColorStop(1, 'rgba(30,10,4,0)'); c.fillStyle = g2; c.fillRect(x, y + 2, 10, 28); } }
+    for (let i = 0; i < 3000; i++) { c.fillStyle = `rgba(${r() < .5 ? '255,220,190' : '40,15,5'},${.05 + r() * .08})`; c.fillRect(r() * w, r() * h, 1 + r() * 2, 1); } });
+  const tRoof = tCoppo.clone(); tRoof.wrapS = tRoof.wrapT = THREE.RepeatWrapping; tRoof.repeat.set(2.7, 3.8); tRoof.needsUpdate = true;
+  const roofM = std({ map: tRoof, bumpMap: tRoof, bumpScale: 3, roughness: .85 }), SPORTO = .4, ang = Math.atan(RH / HW), LF = (HW + SPORTO) / Math.cos(ang);
   const falde = [-1, 1].map(s => { const o = add(box(LF, .12, 2 * HD + .3), [roofM, roofM, roofM, std({ color: 0x9c8468, roughness: .9 }), cut, roofM], s * (HW + SPORTO) / 2, FY + H2 + RH - Math.tan(ang) * (HW + SPORTO) / 2 + .07, -.15); o.rotation.z = -s * ang; return o; });
 
   // arredi essenziali, solo per far leggere le stanze
@@ -593,6 +602,88 @@ const Casa = (() => {
   const cromo = std({ color: 0xc9ccd0, metalness: .9, roughness: .2 });     // colonna doccia a sinistra della finestra del bagno, che va da x .39 a 1.11 con il telaio
   add(cyl(.012, 1.95, 8), cromo, .3, FY + 1.03, -HD + TW + .1); add(box(.024, .024, .14), cromo, .3, FY + 2.0, -HD + TW + .17); add(cyl(.08, .02, 16), cromo, .3, FY + 1.98, -HD + TW + .26);
   add(rbox(.5, .14, .4, .03), bianco, P1 + .3, FY + .85, .5); add(box(.42, .7, .32), legno, P1 + .28, FY + .43, .5);     // lavabo
+
+  // ───────── esterno (passo 3 del 15 novembre): coppi, colmo, gronde e pluviali, zoccolo, marciapiede, porta, finestra con persiane, scala, giardino, cielo ─────────
+  // Tutto generico e ricostruito, come il resto della casa: serve a far sembrare vera la casa, non è un prodotto Unical.
+  const rame = std({ color: 0xb36f43, roughness: .45, metalness: .6 }), antr = std({ color: 0x3b3f42, roughness: .6 }), pietra = std({ color: 0xbdb6aa, roughness: .9 });
+  // colmo: una fila di coppi sulla cima del tetto
+  falde.forEach(f => f.updateMatrixWorld(true));
+  const cima = falde[1].localToWorld(V(-LF / 2, .06, 0));
+  add(new THREE.CylinderGeometry(.11, .11, 2 * HD + .3, 14), std({ map: tCoppo, color: 0xb86a45, roughness: .85 }), 0, cima.y - .03, -.15).rotation.x = PI / 2;
+  // gronde in rame sotto il bordo basso delle falde, pluviali agli angoli fino al marciapiede
+  falde.forEach((f, k) => { const s = k ? 1 : -1, e = f.localToWorld(V(s * LF / 2, -.06, 0)), gx = e.x + s * .06, gy = e.y - .05;
+    add(new THREE.CylinderGeometry(.065, .065, 2 * HD + .3, 14), rame, gx, gy, -.15).rotation.x = PI / 2;
+    for (const z of [-HD - .08, HD - .18]) { const xp = s * (HW + .07);
+      add(new THREE.TubeGeometry(spezzata([V(gx, gy - .04, z), V(gx, gy - .28, z), V(xp, gy - .55, z), V(xp, .2, z), V(xp + s * .18, .03, z)], .07), 40, .036, 10), rame, 0, 0, 0); } });
+  // zoccolo in pietra alla base dei muri esterni (interrotto dalla porta) e marciapiede in lastre attorno alla casa
+  const tLastre = rep(cv(128, 128, (c, w, h) => { c.fillStyle = '#c9c4ba'; c.fillRect(0, 0, w, h); const r = rng(21); for (let y = 0; y < h; y += 32) for (let x = 0; x < w; x += 64) { const v = 185 + r() * 30 | 0; c.fillStyle = `rgb(${v},${v - 4},${v - 10})`; c.fillRect(x + 1, y + 1, 62, 30); } }), 1, 1);
+  const tZoccolo = rep(cv(128, 64, (c, w, h) => { c.fillStyle = '#7d776d'; c.fillRect(0, 0, w, h); const r = rng(23); for (let y = 0; y < h; y += 21) for (let x = (y / 21 % 2) * 20; x < w; x += 40) { const v = 115 + r() * 40 | 0; c.fillStyle = `rgb(${v},${v - 5},${v - 12})`; c.fillRect(x + 1, y + 1, 38, 19); } }), 1, 1);
+  const zoccolo = (L, x, z, rotY) => { const t = tZoccolo.clone(); t.repeat.set(L / .6, 1); t.needsUpdate = true; const o = add(box(L, .42, .03), std({ map: t, roughness: .9 }), x, .21, z); o.rotation.y = rotY; };
+  zoccolo(2 * HW + .06, 0, -HD - .015, 0);
+  zoccolo(2 * HD, HW + .015, 0, PI / 2);
+  zoccolo(HD + DZ - .5, -HW - .015, -HD + (HD + DZ - .5) / 2, PI / 2); zoccolo(HD - DZ - .5, -HW - .015, DZ + .5 + (HD - DZ - .5) / 2, PI / 2);
+  const lastre = (w, d, x, z) => { const t = tLastre.clone(); t.repeat.set(w / .8, d / .8); t.needsUpdate = true; add(box(w, .016, d), std({ map: t, roughness: .95 }), x, .008, z); };
+  lastre(2 * HW + 1.6, .8, 0, -HD - .4); lastre(.8, 2 * HD + .8, -HW - .4, .4); lastre(.8, 2 * HD + .8, HW + .4, .4); lastre(2 * HW, .8, 0, HD + .4);
+  // porta d'ingresso sulla parete di sinistra: telaio, anta in legno con maniglia, gradino, pensilina e lampada. Dentro la stessa anta.
+  const tPorta = cv(64, 256, (c, w, h) => { c.fillStyle = '#6b4529'; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(30,15,5,.35)'; for (let x = 6; x < w; x += 10) c.fillRect(x, 0, 1, h); c.strokeStyle = 'rgba(30,15,5,.5)'; c.lineWidth = 2; c.strokeRect(8, 12, w - 16, 104); c.strokeRect(8, 132, w - 16, 112); });
+  const porta = std({ map: tPorta, roughness: .65 });
+  for (const [x, m, dx] of [[-HW - .025, antr, -1], [-HW + TW + .02, bianco, 1]]) {
+    add(box(.05, 2.2, .1), m, x, FY + 1.1, DZ - .5); add(box(.05, 2.2, .1), m, x, FY + 1.1, DZ + .5); add(box(.05, .1, 1.1), m, x, FY + 2.2, DZ);
+    add(box(.04, 2.1, .9), porta, x + dx * .005, FY + 1.05, DZ); add(cyl(.012, .14, 10), cromo, x + dx * .04, FY + 1.0, DZ + .34).rotation.x = PI / 2; }
+  add(box(.5, .1, 1.3), pietra, -HW - .25, .05, DZ);
+  add(box(.85, .05, 1.5), antr, -HW - .43, FY + 2.42, DZ); for (const dz of [-.6, .6]) add(box(.6, .03, .03), antr, -HW - .3, FY + 2.32, DZ + dz).rotation.z = -.5;
+  const lampEstM = new THREE.MeshBasicMaterial({ color: 0x4a4236 }); add(box(.08, .16, .1), lampEstM, -HW - .06, FY + 2.05, DZ + .78);
+  const lampEst = new THREE.PointLight(0xffc98a, 0, 5, 1.6); lampEst.position.set(-HW - .3, FY + 2.0, DZ + .78); g.add(lampEst);
+  // finestra sulla parete di destra (lavanderia), da fuori con davanzale in pietra e persiane verdi aperte; da dentro telaio e davanzale
+  { const WZ = -.6, wy = FY + 1.6, ww = .8, wh = .95, xo = HW, xi = HW - TW;
+    const tPers = cv(64, 128, (c, w, h) => { c.fillStyle = '#4e6a45'; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(15,25,12,.55)'; for (let y = 6; y < h - 4; y += 6) c.fillRect(5, y, w - 10, 2); c.strokeStyle = 'rgba(15,25,12,.6)'; c.lineWidth = 3; c.strokeRect(2, 2, w - 4, h - 4); });
+    const pers = std({ map: tPers, roughness: .7 });
+    for (const [x, d] of [[xo, 1], [xi, -1]]) { add(box(.05, wh + .12, ww + .12), bianco, x + d * .02, wy, WZ); add(box(.02, wh, ww), vetro, x + d * .035, wy, WZ); add(box(.03, wh, .04), bianco, x + d * .045, wy, WZ);
+      add(box(.12, .04, ww + .22), d > 0 ? pietra : bianco, x + d * .06, wy - wh / 2 - .08, WZ); }
+    for (const s of [-1, 1]) add(box(.03, wh + .08, ww / 2 + .02), pers, xo + .03, wy, WZ + s * (ww / 2 + ww / 4 + .08)); }
+  // scala a chiocciola tra la lavanderia e la mansarda, nell'angolo davanti a destra (lì non copre nessun prodotto inquadrato): 15 gradini in legno attorno a un palo,
+  // ringhiera elicoidale, in mansarda si esce verso il centro, dove il tetto è più alto
+  { const SX = 2.42, SZ = 1.95, R = .5, N = 15, DA = rad(22), alzata = (FM - FY) / (N + 1), a0 = -PI / 2 - DA / 2 - N * DA, acc = std({ color: 0x2f3337, roughness: .45, metalness: .6 }), gr = std({ color: 0x9a7650, roughness: .6 });
+    add(cyl(.035, FM + 1.0 - FY, 14), acc, SX, (FY + FM + 1.0) / 2, SZ);
+    const rh = [];
+    for (let i = 0; i < N; i++) { const a = a0 + i * DA, y = FY + (i + 1) * alzata;
+      add(new THREE.CylinderGeometry(R, R, .045, 8, 1, false, a, DA * .9), gr, SX, y - .022, SZ);
+      const am = a + DA * .45; if (i % 2 === 0) add(cyl(.009, .9, 6), acc, SX + Math.sin(am) * (R - .04), y + .45, SZ + Math.cos(am) * (R - .04)); }
+    for (let k = 0; k <= 48; k++) { const u = k / 48, a = a0 + u * (N - 1) * DA + DA * .45, y = FY + alzata + u * (N - 1) * alzata + .9; rh.push(new THREE.Vector3(SX + Math.sin(a) * (R - .04), y, SZ + Math.cos(a) * (R - .04))); }
+    add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rh), 96, .018, 8), acc, 0, 0, 0);
+    // balaustra attorno al buco, aperta dietro (da lì si arriva in mansarda)
+    const yb = FM + .95, rail = (x0, z0, x1, z1) => { const L = Math.hypot(x1 - x0, z1 - z0); const o = add(box(L, .04, .04), acc, (x0 + x1) / 2, yb, (z0 + z1) / 2); o.rotation.y = -Math.atan2(z1 - z0, x1 - x0);
+      for (let k = 0; k <= Math.round(L / .16); k++) { const u = k / Math.round(L / .16); add(cyl(.01, .95, 6), acc, lerp(x0, x1, u), FM + .475, lerp(z0, z1, u)); } };
+    rail(SX - .6, SZ - .6, HW - TW, SZ - .6); }     // davanti c'è il taglio, a destra il muro, a sinistra si esce
+
+  // giardino: prato, vialetto di pietre fino alla porta, siepe sui tre lati, due alberi che cambiano con la stagione
+  const tErba = rep(cv(128, 128, (c, w, h) => { c.fillStyle = '#d6dccb'; c.fillRect(0, 0, w, h); const r = rng(41); for (let i = 0; i < 2600; i++) { const v = r(); c.fillStyle = v < .5 ? `rgba(40,70,20,${.08 + r() * .14})` : `rgba(255,255,220,${.05 + r() * .1})`; c.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 3); } }), 70, 70);
+  ground.material.map = tErba; ground.material.needsUpdate = true;
+  { const pts = [[-3.75, DZ], [-4.35, DZ + .25], [-4.85, DZ + .85], [-5.2, DZ + 1.55], [-5.4, DZ + 2.3], [-5.5, DZ + 3.05], [-5.55, DZ + 3.8], [-5.55, DZ + 4.55], [-5.5, DZ + 5.3], [-5.45, DZ + 6.05]], r = rng(53);
+    const im = new THREE.InstancedMesh(rbox(.48, .04, .36, .02), pietra, pts.length), m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+    pts.forEach(([x, z], i) => { q.setFromAxisAngle(V(0, 1, 0), (r() - .5) * .6 + (i < 3 ? .6 : 0)); m4.compose(V(x, .02, z), q, V(.9 + r() * .25, 1, .9 + r() * .25)); im.setMatrixAt(i, m4); }); g.add(im); }
+  const tSiepe = rep(cv(128, 128, (c, w, h) => { c.fillStyle = '#2f4424'; c.fillRect(0, 0, w, h); const r = rng(61); for (let i = 0; i < 2200; i++) { const v = 30 + r() * 55 | 0; c.fillStyle = `rgba(${v * .7 | 0},${v + 18},${v * .45 | 0},.6)`; c.beginPath(); c.arc(r() * w, r() * h, 1 + r() * 3, 0, 7); c.fill(); } }), 4, 1);
+  for (const [w, d, x, z] of [[16.6, .7, .55, -6.2], [.7, 5.6, -7.75, -3.75], [.7, 5.6, 8.85, -3.75]]) { const t = tSiepe.clone(); t.repeat.set(Math.max(w, d) / 1.2, 1); t.needsUpdate = true; add(rbox(w, .84, d, .2), std({ map: t, bumpMap: t, bumpScale: 4, roughness: 1 }), x, .42, z); }
+  const corteccia = std({ color: 0x5a4636, roughness: .95 }), chiome = [];
+  function albero(x, z, sc) { const a = new THREE.Group(); a.position.set(x, 0, z); a.scale.setScalar(sc); g.add(a);
+    const ramo = (x0, y0, z0, x1, y1, z1, r0) => { const d = V(x1 - x0, y1 - y0, z1 - z0), L = d.length(), o = mesh(new THREE.CylinderGeometry(r0 * .6, r0, L, 8), corteccia, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); o.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); a.add(o); };
+    ramo(0, 0, 0, 0, 2.1, 0, .16); const r = rng(Math.round(x * 13 + z * 7) >>> 0);
+    for (let k = 0; k < 6; k++) { const an = k * PI / 3 + r(), h = 1.5 + r() * .6, L = .9 + r() * .5; ramo(0, h, 0, Math.cos(an) * L, h + .8 + r() * .5, Math.sin(an) * L, .07);
+      ramo(Math.cos(an) * L * .6, h + .5, Math.sin(an) * L * .6, Math.cos(an + .5) * L * 1.2, h + 1.4, Math.sin(an + .5) * L * 1.2, .035); }
+    const ch = new THREE.Group(); a.add(ch); const verde = std({ color: 0x46692f, roughness: .95, flatShading: true }), verde2 = std({ color: 0x5a7d38, roughness: .95, flatShading: true });
+    for (let k = 0; k < 12; k++) { const an = k * 2.4 + r(), rr = k ? .45 + r() * .65 : 0, s = .5 + r() * .32; const o = mesh(new THREE.IcosahedronGeometry(s, 1), k % 3 ? verde : verde2, Math.cos(an) * rr, 2.9 + r() * 1.1 - rr * .3, Math.sin(an) * rr); o.rotation.set(r() * 3, r() * 3, 0); ch.add(o); }
+    chiome.push({ ch, verde }); }
+  albero(-6.4, -3.8, 1); albero(7.3, -4.4, .82);
+
+  // cielo: cupola con il colore dell'orizzonte in basso e quello dello zenit in alto, luna e stelle di notte
+  const CIELO_R = 110, cupola = new THREE.Mesh(new THREE.SphereGeometry(CIELO_R, 32, 16), new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }));
+  cupola.geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(cupola.geometry.attributes.position.count * 3), 3)); cupola.renderOrder = -10; scene.add(cupola);
+  const luna = add(new THREE.SphereGeometry(1.1, 20, 14), new THREE.MeshBasicMaterial({ color: 0xe9eef5, fog: false, transparent: true }), -16, 18, -50);
+  const NS = 420, sPos = new Float32Array(NS * 3), RS = rng(97);
+  for (let i = 0; i < NS; i++) { const a = RS() * PI * 2, e = .12 + RS() * 1.3, r = CIELO_R * .92; sPos[i * 3] = Math.cos(a) * Math.cos(e) * r; sPos[i * 3 + 1] = Math.sin(e) * r; sPos[i * 3 + 2] = Math.sin(a) * Math.cos(e) * r; }
+  const stelle = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(sPos, 3)), new THREE.PointsMaterial({ size: 1.8, sizeAttenuation: false, color: 0xffffff, transparent: true, opacity: 0, fog: false, depthWrite: false }));
+  stelle.renderOrder = -9; scene.add(stelle);
+
   const lampM = new THREE.MeshBasicMaterial({ color: 0x40382a });
   // luci di casa: plafoniere a soffitto. Un lampadario appeso, guardando la casa dal fronte, finiva davanti alle finestre o alla testa dell'HP 300PSDX
   const lampade = [[-1.6, .1, 9], [.75, .3, 3.5], [2.3, .4, 4.5]].map(([x, z, i]) => { add(cyl(.17, .05, 24), lampM, x, FY + WH - .025, z); const y = FY + WH - .15;
@@ -663,7 +754,7 @@ const Casa = (() => {
     tubo([V(.6, FM + 1.2, zc), V(.6, FM + .59, zc), V(-.02, FM + .59, zc)], .014, 1, 'bat');
     tubo([V(.92, FM + 1.2, zc), V(.92, FM + .06, zc), V(-.3, FM + .06, zc), V(-.3, yq + .2, zc)], .012, 1, 'casa');
     const zs = -HD + TW + .02, xs = -HW + TW + .02, ys = FY + .06;     // rete: giù al battiscopa, dietro il divano e sotto il ventilconvettore, fuori fino al contatore (non passa sulla finestra)
-    tubo([V(-.4, yq - .2, zi + .05), V(-.4, ys, zs), V(xs, ys, zs), V(xs, ys, 1.0), V(-HW - .03, ys, 1.0), V(-HW - .03, FY + 1.1, 1.0)], .012, 1, 'rete');
+    tubo([V(-.4, yq - .2, zi + .05), V(-.4, ys, zs), V(xs, ys, zs), V(xs, ys, DZ - .62), V(xs, FY - .04, DZ - .56), V(xs, FY - .04, DZ + .56), V(xs, ys, DZ + .62), V(xs, ys, 1.0), V(-HW - .03, ys, 1.0), V(-HW - .03, FY + 1.1, 1.0)], .012, 1, 'rete');     // sotto la soglia della porta passa nel pavimento
   }
   // aria dei terminali (ventilconvettore, climatizzatori, ventole delle unità esterne): punti che escono dalle bocche quando la macchina lavora
   const EMIT = [], ELICHE = [];
@@ -814,7 +905,7 @@ const Casa = (() => {
       r[i] = { pv, ld, b, rete: av - b, soc }; }
     return r; });
   const fase = (t, estate) => { const f = FASI[(estate ? 'estate' : 'inverno') + (S.gen === 'ibrido' ? '_ibrido' : '')]; let r = f[0][1]; for (const [h, s] of f) if (t >= h) r = s; return r; };
-  let onStato = () => {}; const VEL = {}, BIANCO = C(0xffffff);
+  let onStato = () => {}; const VEL = {}, BIANCO = C(0xffffff), zen = C(0), tmp2 = C(0), NOTTE_Z = C(0x02040a), CREP_Z = C(0x2a2c4f), ZEN_E = C(0x2f6db3), ZEN_I = C(0x4d6f8f);
   function applica() {
     const { t, estate } = S, alba = estate ? 5.6 : 7.7, tram = estate ? 21 : 16.8, k = clamp((t - alba) / (tram - alba)), su = t > alba && t < tram ? Math.sin(k * PI) : 0;
     const giorno = sm(0, .22, su), crep = sm(0, .1, su) * (1 - sm(.12, .4, su));
@@ -825,6 +916,12 @@ const Casa = (() => {
     ground.material.color.set(estate ? 0x5c7a45 : 0x66705a).multiplyScalar(.22 + .78 * sm(0, .3, su + crep)); vetro.color.copy(scene.background).lerp(tmp.set(0xffffff), .25 * giorno);
     const sveglia = t > 6 && t < 23.4, luci = (1 - giorno) * (sveglia ? 1 : 0);
     lampade.forEach(l => { l.intensity = l.userData.max * luci; }); lampM.color.setHSL(.1, .8, .12 + .7 * luci);
+    lampEst.intensity = 2.2 * luci; lampEstM.color.setHSL(.1, .8, .14 + .66 * luci);
+    zen.copy(NOTTE_Z).lerp(CREP_Z, crep).lerp(estate ? ZEN_E : ZEN_I, giorno);
+    { const cc = cupola.geometry.attributes.color, pp = cupola.geometry.attributes.position; for (let i = 0; i < pp.count; i++) { tmp2.copy(scene.background).lerp(zen, sm(-.02, .55, pp.getY(i) / CIELO_R)); cc.setXYZ(i, tmp2.r, tmp2.g, tmp2.b); } cc.needsUpdate = true; }
+    const notte = 1 - sm(0, .12, su + crep), kn = ((t - tram + 24) % 24) / (24 - (tram - alba)); stelle.material.opacity = .85 * notte; luna.material.opacity = notte; luna.visible = notte > .02;
+    luna.position.set(lerp(-34, 30, kn), 9 + Math.sin(clamp(kn) * PI) * 22, -55);
+    chiome.forEach(c => { c.ch.visible = estate; });     // d'inverno gli alberi sono spogli
     S.carico = carico(t, estate); S.fcoil = sm(.02, .3, S.carico); const cl = clima(t, estate); S.dual = cl.dual; S.mono = cl.mono;
     // ore più fredde dell'inverno (indicative, nessun numero a schermo): la caldaia dell'ibrido si accende e lavora insieme alla pompa di calore
     S.caldaia = S.gen === 'ibrido' && !estate ? sm(1.3, 1.8, t) * (1 - sm(8.3, 8.8, t)) : 0;
@@ -845,7 +942,7 @@ const Casa = (() => {
   // Inquadrature: centro, raggio da far stare nella parte libera dello schermo, azimut e alzo in gradi. "casa" = tutta la casa.
   const QUADRI = {
     calore: { c: V(.9, 1.0, .1), r: 4.2, az: -7, el: 21 },          // pompa di calore, pavimento e ventilconvettore
-    ibrido: { c: V(2.75, 1.25, -.5), r: 2.7, az: -14, el: 15 },     // HP_QOR fuori, caldaia e kit in lavanderia
+    ibrido: { c: V(2.75, 1.25, -.5), r: 2.7, az: -27, el: 14 },     // HP_QOR fuori, caldaia e kit in lavanderia (da sinistra: la scala davanti a destra non copre la caldaia)
     doccia: { c: V(1.25, 1.2, -1.6), r: 1.75, az: -4, el: 12 },     // HP 300PSDX e doccia
     sole: { c: V(.15, 4.0, -.7), r: 3.4, az: -7, el: 15 },          // moduli sul tetto, inverter e batteria in mansarda (più in alto il tetto copre la mansarda)
     soleAcqua: { c: V(.8, 3.0, -1.2), r: 4.2, az: -7, el: 21 },     // tetto, mansarda e lavanderia
@@ -861,7 +958,7 @@ const Casa = (() => {
       : 'Parte il raffrescamento: la pompa di calore lavora al contrario e porta fuori il calore della casa. Pavimento e ventilconvettore rinfrescano.', [gen, 'fcoil'], 'calore'),
     MO(12.25, 'Sotto il tetto', 'La mansarda si scalda per prima: partono le due console del climatizzatore dual.', ['clima'], 'mansarda'),
     MO(13.5, 'Pieno sole', 'Il fotovoltaico copre quello che serve alla casa e carica la batteria. Con il sole in più l\'acqua calda sale a 65 °C.', ['fv', 'acs'], 'soleAcqua'),
-    MO(15, 'Le ore più calde', 'In soggiorno aiuta anche il climatizzatore a parete. Fuori, la sua unità esterna butta via il calore.', ['clima'], 'soggiorno'),
+    Object.assign(MO(15, 'Le ore più calde', 'In soggiorno aiuta anche il climatizzatore a parete. Fuori, la sua unità esterna butta via il calore.', ['clima'], 'soggiorno'), { dove: { clima: V(-HW + TW + .1, FY + 2.6, 1.8) } }),     // etichetta sullo YA3, non sulla console in mansarda
     MO(21, 'Sera', 'Il sole è andato: la casa va con la batteria caricata di giorno. Fuori rinfresca e i climatizzatori si spengono.', ['fv'], null)];
   const MOMENTI = {
     inverno: [
@@ -961,7 +1058,8 @@ const Casa = (() => {
     if (gocce.visible) { const hh = SOFF.y - FY - .08; for (let i = 0; i < ND; i++) { const s = dSeed[i], f = (now * 1.7 + s[1]) % 1;
       dPos[i * 3] = SOFF.x + (s[0] - .5) * .16 + f * .05; dPos[i * 3 + 1] = SOFF.y - f * hh; dPos[i * 3 + 2] = SOFF.z + (s[2] - .5) * .1 + f * .1; } gocce.geometry.attributes.position.needsUpdate = true; }
     posaCamera();
-    viste.forEach((v, i) => { etich.copy(v.pos).project(camera); onEtichetta(i, (etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1); });
+    const dove = R.modo !== 'libero' && R.m && R.m.dove;
+    viste.forEach((v, i) => { etich.copy(dove && dove[v.def.id] || v.pos).project(camera); onEtichetta(i, (etich.x * .5 + .5) * W, (-etich.y * .5 + .5) * H, etich.z < 1); });
   }
   // gesti: trascinare, pizzicare o usare la rotella ferma la giornata e lascia la camera alla mano
   function aMano() { segui = false; if (R.modo === 'auto') { R.modo = 'pausa'; notifica(); } }
