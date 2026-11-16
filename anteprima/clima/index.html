@@ -1156,7 +1156,7 @@ function audioOn(v) {
       AC = new (window.AudioContext || window.webkitAudioContext)(); const out = AC.createGain(); out.gain.value = .5; out.connect(AC.destination); AC.out = out;
       const nb = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       const ns = AC.createBufferSource(); ns.buffer = nb; ns.loop = true; const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 420; bp.Q.value = .6; humF = AC.createGain(); humF.gain.value = 0; ns.connect(bp).connect(humF).connect(out); ns.start(); humF.bp = bp;
-      const os = AC.createOscillator(); os.type = 'sawtooth'; os.frequency.value = 55; const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 190; humC = AC.createGain(); humC.gain.value = 0; os.connect(lp).connect(humC).connect(out); os.start(); humC.os = os;
+      const os = AC.createOscillator(); os.type = 'triangle'; os.frequency.value = 55; const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 140; /* ronzio morbido */ humC = AC.createGain(); humC.gain.value = 0; os.connect(lp).connect(humC).connect(out); os.start(); humC.os = os;
     }
     AC.resume();
     sfx = k => {
@@ -1169,7 +1169,7 @@ function audioOn(v) {
     };
   } catch (e) { U.snd = false; sfx = null; press($('bSnd'), false); press($('bSnd2'), false); }
 }
-function audioTick() { if (!AC || !U.snd || !CFG.ronzio) return; const t = AC.currentTime, vis = mode === 'film' ? (!started ? 0 : Tm < T_ASM ? .5 : Tm > T_RUN ? 1 : 0) : 1, [f, c] = CFG.ronzio(S); humF.gain.setTargetAtTime(Math.min(.2, f * .028) * vis, t, .15); humF.bp.frequency.setTargetAtTime(240 + f * 60, t, .2); humC.gain.setTargetAtTime(Math.min(.09, c * .025) * vis, t, .15); humC.os.frequency.setTargetAtTime(38 + c * 9, t, .2); }
+function audioTick() { if (!AC || !U.snd || !CFG.ronzio) return; const t = AC.currentTime, vis = mode === 'film' ? (!started ? 0 : Tm < T_ASM ? .5 : Tm > T_RUN ? 1 : 0) : 1, [f, c] = CFG.ronzio(S); humF.gain.setTargetAtTime(Math.min(.05, f * .007) * vis, t, .15); humF.bp.frequency.setTargetAtTime(220 + f * 35, t, .2); humC.gain.setTargetAtTime(Math.min(.022, c * .006) * vis, t, .15); /* più basso di prima (fino a .2 e .09: dava fastidio) */ humC.os.frequency.setTargetAtTime(38 + c * 9, t, .2); }
 
 // scheda del gruppo
 function closeCard() { U.sel = -1; $('cardIn').hidden = true; $('howTouchRow').hidden = false; for (const c of $('chips').children) press(c, false); }
